@@ -1,0 +1,123 @@
+{
+  "items": [
+    {
+      "type": "file",
+      "path": "00. Dashboard/🏠 Home.md",
+      "title": "🏠 홈으로"
+    },
+    {
+      "type": "group",
+      "title": "📥 수집",
+      "items": [
+        {
+          "type": "folder",
+          "path": "01. Captures",
+          "title": "✍️ 캡처"
+        },
+        {
+          "type": "folder",
+          "path": "07. Books",
+          "title": "📚 도서 관리"
+        },
+        {
+          "type": "folder",
+          "path": "06. Resources/Notes",
+          "title": "📝 노트"
+        },
+        {
+          "type": "folder",
+          "path": "06. Resources/Scraps",
+          "title": "✂️ 스크랩"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "title": "🗂️ 정리",
+      "items": [
+        {
+          "type": "folder",
+          "path": "06. Resources/Insights",
+          "title": "💡 인사이트"
+        },
+        {
+          "type": "folder",
+          "path": "06. Resources/Sentences",
+          "title": "✏️ 문장 수집"
+        },
+        {
+          "type": "folder",
+          "path": "06. Resources",
+          "title": "📂 자료 전체"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "title": "⚙️ 관리",
+      "items": [
+        {
+          "type": "folder",
+          "path": "02. Boxes",
+          "title": "📦 박스 관리"
+        },
+        {
+          "type": "folder",
+          "path": "03. Goals",
+          "title": "🎯 목표 관리"
+        },
+        {
+          "type": "folder",
+          "path": "04. Projects",
+          "title": "🚀 프로젝트 관리"
+        },
+        {
+          "type": "folder",
+          "path": "05. Tasks",
+          "title": "✅ 할일 관리"
+        },
+        {
+          "type": "folder",
+          "path": "08. Journal/Daily",
+          "title": "📅 저널 관리"
+        },
+        {
+          "type": "folder",
+          "path": "08. Journal/Weekly",
+          "title": "📆 위클리"
+        },
+        {
+          "type": "folder",
+          "path": "08. Journal/Monthly",
+          "title": "🗓️ 먼슬리"
+        },
+        {
+          "type": "folder",
+          "path": "09. Bottlenecks",
+          "title": "🚧 장애물 관리"
+        },
+        {
+          "type": "folder",
+          "path": "Archive",
+          "title": "🗄️ 아카이브"
+        }
+      ]
+    },
+    {
+      "type": "group",
+      "title": "📌 고정된 자료",
+      "items": []
+    },
+    {
+      "type": "group",
+      "title": "⚡ 오늘의 루틴/습관",
+      "items": [
+        {
+          "type": "folder",
+          "path": "08. Journal/Daily",
+          "title": "📅 오늘 저널 열기"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,12 @@
+{
+  "useMarkdownLinks": false,
+  "newFileLocation": "current",
+  "newLinkFormat": "shortest",
+  "attachmentFolderPath": "Assets",
+  "promptDelete": true,
+  "defaultViewMode": "preview",
+  "foldHeading": false,
+  "showLineNumber": false,
+  "spellcheck": false,
+  "strictLineBreaks": false
+}
