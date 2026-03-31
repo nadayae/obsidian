@@ -365,6 +365,415 @@ hr {
 }
 
 /* ============================================================
+   TIMELINE — DataviewJS 간트 차트
+   ============================================================ */
+
+.sb-timeline {
+  position: relative;
+  overflow-x: auto;
+  padding: 12px 0;
+  font-size: 0.75rem;
+}
+
+.sb-timeline-header {
+  display: flex;
+  border-bottom: 1px solid var(--sb-border);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+  position: sticky;
+  top: 0;
+  background: var(--sb-card);
+  z-index: 2;
+}
+
+.sb-timeline-header .sb-tl-date {
+  flex: 1;
+  text-align: center;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--sb-text-4);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  min-width: 36px;
+}
+
+.sb-timeline-header .sb-tl-date.today {
+  color: #007aff;
+  font-weight: 700;
+}
+
+.sb-tl-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  min-height: 32px;
+  position: relative;
+}
+
+.sb-tl-bar {
+  position: absolute;
+  height: 26px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  z-index: 1;
+}
+
+.sb-tl-bar:hover { opacity: 0.85; }
+
+.sb-tl-bar.status-진행중  { background: #34c759; }
+.sb-tl-bar.status-집중    { background: #ff9500; }
+.sb-tl-bar.status-시작전  { background: #8e8e93; }
+.sb-tl-bar.status-완료    { background: #007aff; }
+.sb-tl-bar.status-중단    { background: #ff3b30; }
+.sb-tl-bar.default        { background: #5856d6; }
+
+.sb-tl-dday {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 1px 5px;
+  border-radius: 3px;
+  margin-right: 4px;
+  background: rgba(255,255,255,0.25);
+}
+
+.sb-tl-info {
+  font-size: 0.6rem;
+  opacity: 0.85;
+  margin-left: 6px;
+}
+
+.sb-tl-today-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: #ff3b30;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.sb-tl-today-dot {
+  position: absolute;
+  top: -4px;
+  left: -3px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ff3b30;
+}
+
+/* ============================================================
+   KANBAN — 카드 보드 스타일
+   ============================================================ */
+
+.sb-kanban {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 8px 0;
+}
+
+.sb-kanban-col {
+  min-width: 220px;
+  max-width: 280px;
+  flex-shrink: 0;
+  background: var(--sb-card-2);
+  border-radius: var(--sb-radius);
+  padding: 10px;
+}
+
+.sb-kanban-col-title {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--sb-text-4);
+  padding: 4px 6px 8px;
+  border-bottom: 1px solid var(--sb-border);
+  margin-bottom: 8px;
+}
+
+.sb-kanban-card {
+  background: var(--sb-card);
+  border-radius: var(--sb-radius-sm);
+  box-shadow: var(--sb-shadow-sm);
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  cursor: pointer;
+  transition: box-shadow 0.15s;
+}
+
+.sb-kanban-card:hover {
+  box-shadow: var(--sb-shadow);
+}
+
+.sb-kanban-card-title {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--sb-text-1);
+  margin-bottom: 4px;
+}
+
+.sb-kanban-card-title a {
+  color: var(--sb-text-1);
+  text-decoration: none;
+}
+
+.sb-kanban-card-meta {
+  font-size: 0.65rem;
+  color: var(--sb-text-4);
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.sb-kanban-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  border-radius: 3px;
+  font-size: 0.6rem;
+  font-weight: 600;
+}
+
+.sb-kanban-badge.red     { background: #ffe5e5; color: #d00; }
+.sb-kanban-badge.orange  { background: #fff3e0; color: #e65100; }
+.sb-kanban-badge.green   { background: #e8f5e9; color: #2e7d32; }
+.sb-kanban-badge.blue    { background: #e3f2fd; color: #1565c0; }
+.sb-kanban-badge.gray    { background: #f0f0f0; color: #666; }
+
+/* ============================================================
+   GALLERY — 박스 갤러리 카드
+   ============================================================ */
+
+.sb-gallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+  padding: 8px 0;
+}
+
+.sb-gallery-card {
+  background: var(--sb-card);
+  border-radius: var(--sb-radius);
+  box-shadow: var(--sb-shadow-sm);
+  padding: 16px;
+  cursor: pointer;
+  transition: box-shadow 0.15s, transform 0.15s;
+}
+
+.sb-gallery-card:hover {
+  box-shadow: var(--sb-shadow);
+  transform: translateY(-1px);
+}
+
+.sb-gallery-icon {
+  font-size: 1.8rem;
+  margin-bottom: 8px;
+}
+
+.sb-gallery-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sb-text-1);
+  margin-bottom: 4px;
+}
+
+.sb-gallery-title a {
+  color: var(--sb-text-1);
+  text-decoration: none;
+}
+
+.sb-gallery-desc {
+  font-size: 0.7rem;
+  color: var(--sb-text-4);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+
+.sb-gallery-stats {
+  font-size: 0.6rem;
+  color: var(--sb-text-4);
+  display: flex;
+  gap: 8px;
+}
+
+/* ============================================================
+   SECTION HEADERS — 대시보드 섹션 제목
+   ============================================================ */
+
+.sb-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+
+.sb-section-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--sb-text-1);
+  letter-spacing: -0.02em;
+}
+
+.sb-section-count {
+  font-size: 0.65rem;
+  color: var(--sb-text-4);
+  background: var(--sb-card-2);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* ============================================================
+   STATUS TAGS (inline)
+   ============================================================ */
+
+.sb-status {
+  display: inline-block;
+  padding: 1px 8px;
+  border-radius: 4px;
+  font-size: 0.62rem;
+  font-weight: 600;
+}
+
+.sb-status.진행중  { background: #dcf8e6; color: #1b7a3d; }
+.sb-status.집중    { background: #fff3cd; color: #856404; }
+.sb-status.시작전  { background: #f0f0f0; color: #666; }
+.sb-status.완료    { background: #d4e5ff; color: #1a5276; }
+.sb-status.중단    { background: #fce4e4; color: #c0392b; }
+
+/* ============================================================
+   NAV TABS — 탭 네비게이션
+   ============================================================ */
+
+.sb-tabs {
+  display: flex;
+  gap: 2px;
+  border-bottom: 1px solid var(--sb-border);
+  padding-bottom: 0;
+  margin-bottom: 12px;
+  overflow-x: auto;
+}
+
+.sb-tab {
+  padding: 6px 12px;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--sb-text-4);
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  white-space: nowrap;
+  transition: all 0.15s;
+}
+
+.sb-tab:hover {
+  color: var(--sb-text-2);
+  background: var(--sb-hover);
+  border-radius: var(--sb-radius-xs) var(--sb-radius-xs) 0 0;
+}
+
+.sb-tab.active {
+  color: var(--sb-text-1);
+  font-weight: 600;
+  border-bottom-color: var(--sb-text-1);
+}
+
+/* ============================================================
+   QUICK ACTIONS BAR — 상단 빠른 추가
+   ============================================================ */
+
+.sb-quick-actions {
+  display: flex;
+  gap: 6px;
+  padding: 8px 0;
+  flex-wrap: wrap;
+}
+
+/* ============================================================
+   CALENDAR MINI — 할 일 캘린더 미니
+   ============================================================ */
+
+.sb-calendar-mini {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+  font-size: 0.7rem;
+  text-align: center;
+}
+
+.sb-calendar-mini .sb-cal-header {
+  font-weight: 600;
+  font-size: 0.6rem;
+  color: var(--sb-text-4);
+  text-transform: uppercase;
+  padding: 4px 0;
+}
+
+.sb-calendar-mini .sb-cal-day {
+  padding: 6px 2px;
+  border-radius: var(--sb-radius-xs);
+  color: var(--sb-text-2);
+}
+
+.sb-calendar-mini .sb-cal-day.today {
+  background: #007aff;
+  color: white;
+  font-weight: 700;
+}
+
+.sb-calendar-mini .sb-cal-day.has-tasks {
+  background: var(--sb-card-2);
+  font-weight: 600;
+}
+
+/* ============================================================
+   MANAGEMENT GRID — 관리도구 그리드
+   ============================================================ */
+
+.sb-mgmt-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 8px;
+  padding: 8px 0;
+}
+
+.sb-mgmt-item {
+  background: var(--sb-card);
+  border-radius: var(--sb-radius-sm);
+  box-shadow: var(--sb-shadow-sm);
+  padding: 10px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s;
+  text-decoration: none;
+}
+
+.sb-mgmt-item:hover {
+  box-shadow: var(--sb-shadow);
+  transform: translateY(-1px);
+}
+
+.sb-mgmt-icon {
+  font-size: 1.2rem;
+  margin-bottom: 4px;
+}
+
+.sb-mgmt-label {
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: var(--sb-text-2);
+}
+
+/* ============================================================
    CONTENT WIDTH
    ============================================================ */
 

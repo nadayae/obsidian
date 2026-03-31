@@ -2,7 +2,7 @@
 fileClass: true
 limit: 20
 mapWithTag: false
-version: "2.0"
+version: "2.1"
 fields:
   - id: gl0001
     name: 상태
@@ -22,16 +22,39 @@ fields:
     options:
       sourceType: ValuesList
       valuesList:
-        Q1: Q1
-        Q2: Q2
-        Q3: Q3
-        Q4: Q4
+        1Q: 1Q
+        2Q: 2Q
+        3Q: 3Q
+        4Q: 4Q
   - id: gl0003
-    name: 완료율
+    name: 달성률
     type: Number
     options: {}
   - id: gl0004
-    name: 마감일
+    name: 목표 달성일
     type: Date
     options: {}
+  - id: gl0005
+    name: 년도
+    type: Select
+    options:
+      sourceType: ValuesList
+      valuesList:
+        "2025": "2025"
+        "2026": "2026"
+        "2027": "2027"
+icon: package
+tagNames:
+filesPaths:
+bookmarksGroups:
+excludes:
+extends:
+savedViews: []
+favoriteView:
+fieldsOrder:
+  - gl0005
+  - gl0004
+  - gl0003
+  - gl0002
+  - gl0001
 ---

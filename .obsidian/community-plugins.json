@@ -3,8 +3,11 @@
   "periodic-notes",
   "quickadd",
   "obsidian-tasks-plugin",
-  "dataview",
   "obsidian-buttons",
   "buttons",
-  "metadata-menu"
+  "obsidian-git",
+  "metadata-menu",
+  "dataview",
+  "obsidian-full-calendar",
+  "obsidian-kanban"
 ]

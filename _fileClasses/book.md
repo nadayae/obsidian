@@ -5,7 +5,7 @@ mapWithTag: false
 version: "2.1"
 fields:
   - id: bk0001
-    name: 상태
+    name: 독서 상태
     type: Select
     options:
       sourceType: ValuesList
@@ -15,7 +15,7 @@ fields:
         완독: 완독
         중단: 중단
   - id: bk0002
-    name: 카테고리
+    name: 분야
     type: Select
     options:
       sourceType: ValuesList
@@ -32,11 +32,11 @@ fields:
         만화: 만화
         잡지: 잡지
   - id: bk0003
-    name: 완료율
+    name: 진행률
     type: Number
     options: {}
   - id: bk0004
-    name: 평점
+    name: 별점
     type: Number
     options: {}
   - id: bk0005
@@ -44,7 +44,7 @@ fields:
     type: Date
     options: {}
   - id: bk0006
-    name: 완독일
+    name: 종료일
     type: Date
     options: {}
 icon: package

@@ -5,55 +5,5 @@
   "displayFieldsInContextMenu": true,
   "settingsVersion": "0.8.0",
   "presetFields": [],
-  "fileClassQueries": [
-    {
-      "name": "Tasks",
-      "id": "tasks-fc",
-      "query": "\"05. Tasks\"",
-      "fileClassName": "task",
-      "type": "folder"
-    },
-    {
-      "name": "Goals",
-      "id": "goals-fc",
-      "query": "\"03. Goals\"",
-      "fileClassName": "goal",
-      "type": "folder"
-    },
-    {
-      "name": "Projects",
-      "id": "projects-fc",
-      "query": "\"04. Projects\"",
-      "fileClassName": "project",
-      "type": "folder"
-    },
-    {
-      "name": "Resources",
-      "id": "resources-fc",
-      "query": "\"06. Resources\"",
-      "fileClassName": "resource",
-      "type": "folder"
-    },
-    {
-      "name": "Books",
-      "id": "books-fc",
-      "query": "\"07. Books\"",
-      "fileClassName": "book",
-      "type": "folder"
-    },
-    {
-      "name": "Bottlenecks",
-      "id": "bottlenecks-fc",
-      "query": "\"09. Bottlenecks\"",
-      "fileClassName": "bottleneck",
-      "type": "folder"
-    },
-    {
-      "name": "Boxes",
-      "id": "boxes-fc",
-      "query": "\"02. Boxes\"",
-      "fileClassName": "box",
-      "type": "folder"
-    }
-  ]
+  "fileClassQueries": []
 }

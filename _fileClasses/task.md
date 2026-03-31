@@ -2,21 +2,14 @@
 fileClass: true
 limit: 20
 mapWithTag: false
-version: "2.0"
+version: "2.2"
 fields:
   - id: tk0001
-    name: 상태
-    type: Select
-    options:
-      sourceType: ValuesList
-      valuesList:
-        시작 전: 시작 전
-        진행 중: 진행 중
-        집중: 집중
-        완료: 완료
-        아카이브: 아카이브
+    name: 완료여부
+    type: Boolean
+    options: {}
   - id: tk0002
-    name: 분류
+    name: 구분
     type: Select
     options:
       sourceType: ValuesList
@@ -29,35 +22,46 @@ fields:
         저널: 저널
         나중에: 나중에
   - id: tk0003
-    name: 매트릭스
+    name: 중요긴급
     type: Select
     options:
       sourceType: ValuesList
       valuesList:
-        중요+긴급: 중요+긴급
-        중요: 중요
-        긴급: 긴급
-        해당없음: 해당없음
-        습관|루틴: 습관|루틴
+        1. 중요O + 긴급O: 1. 중요O + 긴급O
+        2. 중요O + 긴급X: 2. 중요O + 긴급X
+        3. 중요X + 긴급O: 3. 중요X + 긴급O
+        4. 중요X + 긴급X: 4. 중요X + 긴급X
+        5. 습관|루틴: 5. 습관|루틴
   - id: tk0004
-    name: 우선순위
-    type: Select
-    options:
-      sourceType: ValuesList
-      valuesList:
-        높음: 높음
-        보통: 보통
-        낮음: 낮음
-  - id: tk0005
-    name: 마감일
-    type: Date
-    options: {}
-  - id: tk0006
-    name: 예상시간
+    name: 소요시간(분)
     type: Number
     options: {}
-  - id: tk0007
+  - id: tk0005
     name: 뽀모도로
     type: Number
     options: {}
+  - id: tk0006
+    name: 날짜
+    type: Date
+    options: {}
+  - id: tk0007
+    name: 수임자
+    type: Input
+    options: {}
+icon: package
+tagNames:
+filesPaths:
+bookmarksGroups:
+excludes:
+extends:
+savedViews: []
+favoriteView:
+fieldsOrder:
+  - tk0007
+  - tk0006
+  - tk0005
+  - tk0004
+  - tk0003
+  - tk0002
+  - tk0001
 ---
