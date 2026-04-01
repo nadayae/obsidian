@@ -204,8 +204,10 @@
   },
   "active": "a2eb182795a35984",
   "lastOpenFiles": [
-    "06. Resources/Q.md",
+    "Templates/T-Project.md",
+    "_fileClasses/resource.md",
     "06. Resources/Untitled.md",
+    "06. Resources/Q.md",
     "03. Goals/나만의 세컨드 브레인 구축하기.md",
     "00. Dashboard/🏠 Home.md",
     "04. Projects/대시보드 이쁘게 구현하기.md",
@@ -231,14 +233,12 @@
     "05. Tasks/Untitled 1.md",
     "05. Tasks/Untitled.md",
     "Templates/T-Task.md",
-    "Templates/T-Project.md",
     "Templates/T-Resource.md",
     "Templates/T-Weekly.md",
     "Templates/T-Daily.md",
     "Templates/T-Goal.md",
     "_fileClasses/task.md",
     "_fileClasses/bottleneck.md",
-    "_fileClasses/resource.md",
     "Templates/T-Capture.md"
   ]
 }
