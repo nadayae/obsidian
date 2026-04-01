@@ -351,13 +351,13 @@ const colors = {
 
 function goalRate(goalName) {
   const projs = goalAllProjects.where(p => p.목표 === goalName || String(p.목표) === goalName);
-  let total = 0, done = 0;
+  if (projs.length === 0) return 0;
+  let sumRate = 0;
   for (let p of projs) {
     const t = goalAllTasks.where(t => t.프로젝트 === p.file.name || String(t.프로젝트) === p.file.name);
-    total += t.length;
-    done += t.where(t => t.완료여부 === true).length;
+    if (t.length > 0) sumRate += (t.where(t => t.완료여부 === true).length / t.length) * 100;
   }
-  return total > 0 ? Math.round((done / total) * 100) : 0;
+  return Math.round(sumRate / projs.length);
 }
 
 let html = `<div class="sb-kanban">`;

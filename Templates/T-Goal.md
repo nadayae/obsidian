@@ -21,15 +21,15 @@ fileClass: goal
 
 ```dataviewjs
 const me = dv.current().file.name;
+const allT = dv.pages('"05. Tasks"');
 const projects = dv.pages('"04. Projects"').where(p => p.목표 === me || String(p.목표) === me);
-let totalTasks = 0, doneTasks = 0;
+let sumRate = 0;
 for (let p of projects) {
-  const tasks = dv.pages('"05. Tasks"').where(t => t.프로젝트 === p.file.name || String(t.프로젝트) === p.file.name);
-  totalTasks += tasks.length;
-  doneTasks += tasks.where(t => t.완료여부 === true).length;
+  const t = allT.where(t => t.프로젝트 === p.file.name || String(t.프로젝트) === p.file.name);
+  if (t.length > 0) sumRate += (t.where(t => t.완료여부 === true).length / t.length) * 100;
 }
-const rate = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
-dv.el("div", `<progress value="${rate}" max="100" style="width:100%;"></progress><div style="font-size:0.8rem; margin-top:4px;">달성률 <b>${rate}%</b> (${doneTasks}/${totalTasks} tasks · ${projects.length} projects)</div>`);
+const rate = projects.length > 0 ? Math.round(sumRate / projects.length) : 0;
+dv.el("div", `<progress value="${rate}" max="100" style="width:100%;"></progress><div style="font-size:0.8rem; margin-top:4px;">달성률 <b>${rate}%</b> (${projects.length}개 프로젝트 평균)</div>`);
 ```
 
 ---

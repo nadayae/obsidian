@@ -13,20 +13,6 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "04. Projects/노션을 옵시디언으로 이사하기.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "노션을 옵시디언으로 이사하기"
-            }
-          },
-          {
-            "id": "a2eb182795a35984",
-            "type": "leaf",
-            "state": {
-              "type": "markdown",
-              "state": {
                 "file": "00. Dashboard/🏠 Home.md",
                 "mode": "source",
                 "source": false
@@ -35,8 +21,7 @@
               "title": "🏠 Home"
             }
           }
-        ],
-        "currentTab": 1
+        ]
       }
     ],
     "direction": "vertical"
@@ -93,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "745189a8707a5fcd",
@@ -202,16 +188,17 @@
       "obsidian-kanban:Create new board": false
     }
   },
-  "active": "a2eb182795a35984",
+  "active": "117ea4357af2c04c",
   "lastOpenFiles": [
+    "04. Projects/대시보드 이쁘게 구현하기.md",
     "04. Projects/노션을 옵시디언으로 이사하기.md",
     "00. Dashboard/🏠 Home.md",
+    "00. Dashboard/01. Captures.md",
     "06. Resources/노션에서 옵시디언으로 (경험담).md",
     "Templates/T-Project.md",
     "_fileClasses/resource.md",
     "06. Resources/Q.md",
     "03. Goals/나만의 세컨드 브레인 구축하기.md",
-    "04. Projects/대시보드 이쁘게 구현하기.md",
     "05. Tasks/대시보드 및 각 템플릿 구조 만들기.md",
     "Templates/T-Box.md",
     "03. Goals/나만의 세컨드 브레인 구축하기.md.tmp.39844.1774885243270",
@@ -219,7 +206,6 @@
     "Templates/T-Task.md.tmp.39844.1774885178762",
     "02. Boxes/자기관리.md",
     "2026-03-31.md",
-    "00. Dashboard/01. Captures.md",
     "01. Captures",
     "00. Dashboard/🏠 Home.md.tmp.39844.1774884688174",
     "00. Dashboard/🏠 Home.md.tmp.39844.1774884547742",

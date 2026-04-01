@@ -8,5 +8,6 @@
   "foldHeading": false,
   "showLineNumber": false,
   "spellcheck": false,
-  "strictLineBreaks": false
+  "strictLineBreaks": false,
+  "readableLineLength": true
 }

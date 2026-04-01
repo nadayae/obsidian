@@ -777,7 +777,6 @@ hr {
    CONTENT WIDTH
    ============================================================ */
 
-.mod-cm6 .cm-s-obsidian,
 .markdown-preview-view,
 .markdown-source-view .cm-contentContainer,
 .view-content {
@@ -785,10 +784,14 @@ hr {
   width: 100% !important;
 }
 
-.markdown-preview-view .markdown-preview-section {
+.markdown-preview-view .markdown-preview-sizer {
   max-width: 1100px !important;
   margin: 0 auto !important;
-  padding: 0 48px !important;
+}
+
+.markdown-preview-view .markdown-preview-section {
+  margin: 0 auto !important;
+  padding: 0 40px !important;
 }
 
 /* ============================================================
