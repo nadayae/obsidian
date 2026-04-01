@@ -282,16 +282,14 @@ html += `</div>`;
 dv.el("div", html);
 ```
 
-```button
-name 새로 만들기
-type command
-action QuickAdd: New Project
-color default
-```
-
 ---
 
 ## 🚀 프로젝트
+
+```dataviewjs
+const btn = dv.el("button", "+ 추가", {cls: "sb-add-btn"});
+btn.addEventListener("click", () => app.commands.executeCommandById("quickadd:choice:New Project"));
+```
 
 ```dataviewjs
 const allTasks = dv.pages('"05. Tasks"');
@@ -301,11 +299,15 @@ const colors = {
   "진행 중": "green", "집중": "orange", "시작 전": "gray",
   "완료": "blue", "중단": "red"
 };
+const today = dv.date("today");
 
-function calcRate(projName) {
+function calcInfo(projName) {
   const t = allTasks.where(t => t.프로젝트 === projName || String(t.프로젝트) === projName);
-  if (t.length === 0) return 0;
-  return Math.round((t.where(t => t.완료여부 === true).length / t.length) * 100);
+  const total = t.length;
+  const done = t.where(t => t.완료여부 === true).length;
+  const remain = total - done;
+  const rate = total > 0 ? Math.round((done / total) * 100) : 0;
+  return { total, done, remain, rate };
 }
 
 let html = `<div class="sb-kanban">`;
@@ -316,15 +318,35 @@ for (let status of statuses) {
 
   for (let p of items) {
     const badge = colors[status] || "gray";
-    const rate = calcRate(p.file.name);
+    const info = calcInfo(p.file.name);
+
+    // D-day
+    let dday = "";
+    if (p.날짜) {
+      const diff = Math.round(dv.date(p.날짜).diff(today, "days").days);
+      dday = diff > 0 ? `D-${diff}` : diff === 0 ? "D-Day" : `D+${Math.abs(diff)}`;
+    }
+
+    // 날짜 범위
+    const startDate = p.생성일 ? dv.date(p.생성일).toFormat("yyyy/MM/dd") : "";
+    const endDate = p.날짜 ? dv.date(p.날짜).toFormat("yyyy/MM/dd") : "";
+    const dateRange = startDate && endDate ? `${startDate} → ${endDate}` : endDate || startDate || "";
+
+    // 박스
+    const box = p.박스 ? String(p.박스) : "";
+
     html += `<div class="sb-kanban-card">`;
     html += `<div class="sb-kanban-card-title"><a class="internal-link" href="${p.file.name}">${p.제목 || p.file.name}</a></div>`;
-    html += `<div style="height:3px; background:#e0e0e0; border-radius:2px; margin:4px 0;"><div style="height:100%; width:${rate}%; background:#34c759; border-radius:2px;"></div></div>`;
-    html += `<div class="sb-kanban-card-meta">`;
-    html += `<span class="sb-kanban-badge ${badge}">${status}</span>`;
-    html += `<span>${rate}%</span>`;
-    if (p.날짜) html += `<span>${dv.date(p.날짜).toFormat("MM/dd")}</span>`;
-    html += `</div>`;
+
+    if (dday) html += `<div style="font-size:0.65rem; font-weight:700; color:#007aff; margin:2px 0;">${dday}</div>`;
+
+    html += `<div style="height:3px; background:#e0e0e0; border-radius:2px; margin:4px 0;"><div style="height:100%; width:${info.rate}%; background:#34c759; border-radius:2px;"></div></div>`;
+    html += `<div style="font-size:0.65rem; color:#636366;">${info.rate.toFixed(2)}%</div>`;
+    html += `<div style="font-size:0.62rem; color:#8e8e93; margin-top:2px;">총 작업: ${info.total} | 남은 작업: ${info.remain} | ${info.rate}% 달성</div>`;
+
+    if (box) html += `<div style="font-size:0.62rem; color:#8e8e93; margin-top:2px;">📦 ${box}</div>`;
+    if (dateRange) html += `<div style="font-size:0.62rem; color:#8e8e93; margin-top:1px;">📅 ${dateRange}</div>`;
+
     html += `</div>`;
   }
   if (items.length === 0) {
