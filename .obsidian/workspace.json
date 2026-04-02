@@ -84,7 +84,7 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": true
               },
               "icon": "lucide-folder-closed",
               "title": "파일 탐색기"
@@ -230,7 +230,7 @@
       "templater-obsidian:Templater": false
     }
   },
-  "active": "3356b0b0d8434419",
+  "active": "d8411454daa42e08",
   "lastOpenFiles": [
     "Templates/T-Task.md",
     "Templates/T-Resource.md",
