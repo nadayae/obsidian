@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Templates/T-Task.md",
+                "file": "00. Dashboard/Second Brain.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "T-Task"
+              "title": "Second Brain"
             }
           }
         ]
@@ -189,9 +189,11 @@
   },
   "active": "052925657130d2ce",
   "lastOpenFiles": [
-    "Templates/T-Project.md",
-    "05. Tasks/이쁘게 만들고 있는 중.md",
+    "05. Tasks/애국가.md",
     "00. Dashboard/Second Brain.md",
+    "05. Tasks/이쁘게 만들고 있는 중.md",
+    "Templates/T-Task.md",
+    "Templates/T-Project.md",
     "05. Tasks/Task_1775118641838.md",
     "05. Tasks/무제.md",
     "04. Projects/대시보드 이쁘게 구현하기.md",
@@ -215,8 +217,6 @@
     "06. Resources/노션에서 옵시디언으로 (경험담).md",
     "00. Dashboard/Untitled Kanban.md",
     "Templates/T-Resource.md",
-    "Templates/T-Task.md",
-    "Templates/T-Monthly.md",
     "05. Tasks/무제",
     "_fileClasses"
   ]
