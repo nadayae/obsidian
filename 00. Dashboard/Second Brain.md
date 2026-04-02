@@ -405,73 +405,96 @@ dv.el("div", html);
 ---
 
 ```dataviewjs
-const header = dv.el("div", "", {cls: "sb-section-header"});
-header.innerHTML = `<span class="sb-section-icon-title"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:-3px; margin-right:6px;"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/><path d="M9 12H4s.55-3.03 2-4c1.62-1.08 5 0 5 0"/><path d="M12 15v5s3.03-.55 4-2c1.08-1.62 0-5 0-5"/></svg>프로젝트</span>`;
-const btn = header.createEl("button", {text: "+ 추가", cls: "sb-add-btn"});
-btn.addEventListener("click", () => app.commands.executeCommandById("quickadd:choice:New Project"));
-
-const allTasks = dv.pages('"05. Tasks"');
-const pages = dv.pages('"04. Projects"').where(p => p.상태 !== "아카이브");
-const statuses = ["진행 중", "집중", "시작 전", "완료", "중단"];
-const colors = {
-  "진행 중": "green", "집중": "orange", "시작 전": "gray",
-  "완료": "blue", "중단": "red"
-};
+// 1. 데이터 로드 및 설정
 const today = dv.date("today");
+const daysInMonth = today.daysInMonth; 
+// "Projects" 폴더 내 파일 중 시작일/목표일이 있는 것들
+const projectPages = dv.pages('"Projects"').filter(p => p.시작일 && p.목표일);
 
-function calcInfo(projName) {
-  const t = allTasks.where(t => t.프로젝트 === projName || String(t.프로젝트) === projName);
-  const total = t.length;
-  const done = t.where(t => t.완료여부 === true).length;
-  const remain = total - done;
-  const rate = total > 0 ? Math.round((done / total) * 100) : 0;
-  return { total, done, remain, rate };
-}
+// 데이터 가공 및 '목표' 기준 그룹화
+const timelineData = projectPages.map(p => {
+    const start = dv.date(p.시작일);
+    const end = dv.date(p.목표일);
+    if (!start || !end) return null;
 
-let html = `<div class="sb-kanban">`;
-for (let status of statuses) {
-  const items = pages.where(p => p.상태 === status);
-  html += `<div class="sb-kanban-col">`;
-  html += `<div class="sb-kanban-col-title">${status} (${items.length})</div>`;
+    // 이번 달 포함 여부
+    const isVisible = (start.month === today.month && start.year === today.year) || 
+                      (end.month === today.month && end.year === today.year) ||
+                      (start < today && end > today);
+    if (!isVisible) return null;
 
-  for (let p of items) {
-    const badge = colors[status] || "gray";
-    const info = calcInfo(p.file.name);
+    let dStart = (start.year < today.year || (start.year === today.year && start.month < today.month)) ? 1 : start.day;
+    let dEnd = (end.year > today.year || (end.year === today.year && end.month > today.month)) ? daysInMonth : end.day;
+    
+    return {
+        name: p.file.name,
+        link: p.file.path,
+        start: dStart,
+        end: dEnd,
+        progress: p.진행률 || 0,
+        goal: p.목표 || "기타/미지정" // '목표' 속성이 없으면 분류함
+    };
+}).filter(p => p !== null);
 
-    // D-day
-    let dday = "";
-    if (p.날짜) {
-      const diff = Math.round(dv.date(p.날짜).diff(today, "days").days);
-      dday = diff > 0 ? `D-${diff}` : diff === 0 ? "D-Day" : `D+${Math.abs(diff)}`;
+// 2. UI 생성
+let html = `<div style="background: rgba(var(--ctp-surface0), 0.2); border: 1px solid rgba(var(--ctp-rosewater), 0.1); border-radius: 12px; padding: 15px; font-family: var(--font-interface);">`;
+
+// 상단 헤더
+html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="font-weight: 800; font-size: 0.9rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">GOAL-BASED TIMELINE</div>
+            <div style="font-size: 0.6rem; color: var(--text-faint); font-family: var(--font-monospace);">${today.year}.${today.toFormat('LL')}</div>
+         </div>`;
+
+if (timelineData.length === 0) {
+    html += `<div style="padding: 30px; text-align: center; font-size: 0.75rem; color: var(--text-faint);">표시할 프로젝트가 없습니다.</div>`;
+} else {
+    // 날짜 헤더
+    html += `<div style="display: grid; grid-template-columns: 140px 1fr; margin-bottom: 10px; border-bottom: 2px solid rgba(var(--ctp-rosewater), 0.1); padding-bottom: 8px;">
+                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); padding-left: 5px;">PROJECT / GOAL</div>
+                <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); text-align: center; font-size: 0.5rem; color: var(--text-faint); font-weight: 700;">`;
+    for (let i = 1; i <= daysInMonth; i++) {
+        html += `<div style="${i === today.day ? 'color: rgb(var(--ctp-rosewater)); font-weight: 900;' : ''}">${i}</div>`;
     }
+    html += `</div></div>`;
 
-    // 날짜 범위
-    const startDate = p.생성일 ? dv.date(p.생성일).toFormat("yyyy/MM/dd") : "";
-    const endDate = p.날짜 ? dv.date(p.날짜).toFormat("yyyy/MM/dd") : "";
-    const dateRange = startDate && endDate ? `${startDate} → ${endDate}` : endDate || startDate || "";
+    // 목표별로 그룹화하여 출력
+    const groups = timelineData.reduce((acc, cur) => {
+        if (!acc[cur.goal]) acc[cur.goal] = [];
+        acc[cur.goal].push(cur);
+        return acc;
+    }, {});
 
-    // 박스
-    const box = p.박스 ? String(p.박스) : "";
+    Object.keys(groups).forEach(goalName => {
+        // 목표 헤더 (구분선 역할)
+        html += `<div style="padding: 8px 5px 4px; font-size: 0.65rem; font-weight: 800; color: rgb(var(--ctp-rosewater)); opacity: 0.9; display: flex; align-items: center; gap: 5px;">
+                    <span>📌</span> ${goalName}
+                 </div>`;
 
-    html += `<div class="sb-kanban-card">`;
-    html += `<div class="sb-kanban-card-title"><a class="internal-link" href="${p.file.name}">${p.제목 || p.file.name}</a></div>`;
-
-    if (dday) html += `<div style="font-size:0.65rem; font-weight:700; color:#007aff; margin:2px 0;">${dday}</div>`;
-
-    html += `<div style="height:3px; background:#e0e0e0; border-radius:2px; margin:4px 0;"><div style="height:100%; width:${info.rate}%; background:#34c759; border-radius:2px;"></div></div>`;
-    html += `<div style="font-size:0.65rem; color:#636366;">${info.rate.toFixed(2)}%</div>`;
-    html += `<div style="font-size:0.62rem; color:#8e8e93; margin-top:2px;">총 작업: ${info.total} | 남은 작업: ${info.remain} | ${info.rate}% 달성</div>`;
-
-    if (box) html += `<div style="font-size:0.62rem; color:#8e8e93; margin-top:2px;">📦 ${box}</div>`;
-    if (dateRange) html += `<div style="font-size:0.62rem; color:#8e8e93; margin-top:1px;">📅 ${dateRange}</div>`;
-
-    html += `</div>`;
-  }
-  if (items.length === 0) {
-    html += `<div style="font-size:0.7rem; color:#8e8e93; text-align:center; padding:16px 0;">비어있음</div>`;
-  }
-  html += `</div>`;
+        groups[goalName].forEach(proj => {
+            const startPos = proj.start;
+            const span = proj.end - proj.start + 1;
+            
+            html += `<div style="display: grid; grid-template-columns: 140px 1fr; align-items: center; padding: 4px 0;">
+                        <div style="overflow: hidden; padding-left: 15px; padding-right: 10px;">
+                            <div style="font-size: 0.65rem; font-weight: 600; color: var(--text-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                <a class="internal-link" href="${proj.link}" style="text-decoration: none; color: inherit;">${proj.name}</a>
+                            </div>
+                        </div>
+                        
+                        <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); height: 16px; position: relative;">
+                            <div style="position: absolute; left: calc(${(today.day - 1) / daysInMonth * 100}%); width: 2px; height: 100%; background: rgba(var(--ctp-rosewater), 0.25); z-index: 1;"></div>
+                            
+                            <div style="grid-column: ${startPos} / span ${span}; background: rgba(var(--ctp-rosewater), 0.15); border: 1px solid rgba(var(--ctp-rosewater), 0.3); border-radius: 4px; height: 8px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
+                                <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); opacity: 0.8;"></div>
+                            </div>
+                        </div>
+                     </div>`;
+        });
+        // 그룹 사이 간격
+        html += `<div style="height: 10px;"></div>`;
+    });
 }
+
 html += `</div>`;
 dv.el("div", html);
 ```
