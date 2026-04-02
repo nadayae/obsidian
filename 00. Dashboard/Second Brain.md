@@ -326,88 +326,89 @@ setTimeout(() => {
 
 ## 🗓️ 프로젝트 타임라인
 ```dataviewjs
-// 1. 데이터 및 범위 설정
 const today = dv.date("today");
-const projectPages = dv.pages('"Projects"').filter(p => 
-    (p.type === "project" || p.file.path.toLowerCase().includes("04. Project")) &&
+
+// 1. 데이터 수집: 04. Projects 폴더 기준
+const projectPages = dv.pages('"04. Projects"').filter(p => 
+    (p.type === "project" || p.file.path.toLowerCase().includes("project")) &&
     p.file.name !== "Project Dashboard"
 ).array();
 
-// 타임라인 범위: 이번 달 시작 ~ 다음 달 말 (기본 2개월치, 프로젝트 길이에 따라 자동 확장)
+// 타임라인 범위 설정
 let minDate = today.startOf("month");
 let maxDate = today.endOf("month").plus({ months: 1 });
 
 const timelineData = projectPages.map(p => {
-    const forceParseDate = (val) => {
+    const parse = (val) => {
         if (!val) return null;
-        let clean = String(val).replace(/[\[\]]/g, "").trim();
-        const match = clean.match(/\d{4}-\d{2}-\d{2}/);
-        if (match) return dv.date(match[0]);
-        return dv.date(clean);
+        let s = String(val).replace(/[\[\]]/g, "").trim();
+        return dv.date(s);
     };
-
-    const start = forceParseDate(p.시작일);
-    const end = forceParseDate(p.목표일) || forceParseDate(p.종료일);
-    if (!start || !end) return null;
-
-    if (start < minDate) minDate = start.startOf("month");
-    if (end > maxDate) maxDate = end.endOf("month");
+    const sDate = parse(p.시작일);
+    const eDate = parse(p.목표일) || parse(p.종료일);
+    
+    if (!sDate || !eDate) return null;
+    if (sDate < minDate) minDate = sDate.startOf("month");
+    if (eDate > maxDate) maxDate = eDate.endOf("month");
 
     return {
-        name: p.file.name,
-        link: p.file.path,
-        start: start,
-        end: end,
-        progress: p.달성률 || p.진행률 || 0,
-        goal: p.목표 || "기타/미지정"
+        name: p.file.name, link: p.file.path,
+        start: sDate, end: eDate,
+        progress: p.달성률 || 0, goal: p.목표 || "기타/미지정"
     };
 }).filter(p => p !== null);
 
 const totalDays = Math.ceil(maxDate.diff(minDate, 'days').days) + 1;
-const dayWidth = 35; // 칸 너비
-const labelWidth = 160; // 프로젝트 이름 영역 너비
+const dayWidth = 35;
+const labelWidth = 160;
 
-// 2. UI 생성
-let html = `<div style="background: rgba(var(--ctp-surface0), 0.3); border: 1px solid rgba(var(--ctp-rosewater), 0.2); border-radius: 12px; padding: 15px; font-family: var(--font-interface);">`;
+// 2. UI 및 스타일 정의
+const containerId = "timeline-" + Date.now();
+let html = `<div id="${containerId}" style="background: rgba(var(--ctp-surface0), 0.2); border-radius: 12px; padding: 15px; border: 1px solid rgba(var(--ctp-rosewater), 0.2); font-family: var(--font-interface);">`;
 
-// 헤더
-html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <div style="font-weight: 800; font-size: 0.9rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">HIGH-CONTRAST TIMELINE</div>
-            <div style="font-size: 0.6rem; color: var(--text-faint);">Shift + Scroll ➔</div>
+// 상단 헤더
+html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="font-weight: 800; font-size: 0.95rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">PROJECT MASTER TIMELINE</div>
+            <div style="font-size: 0.6rem; color: var(--text-faint);">목표 클릭 시 토글 ➔</div>
          </div>`;
 
-// 가로 스크롤 영역
-html += `<div style="overflow-x: auto; padding-bottom: 10px; position: relative;">`;
+// 가로 스크롤 영역 시작
+html += `<div style="overflow-x: auto; padding-bottom: 10px; position: relative; border-radius: 8px;">`;
 html += `<div style="position: relative; min-width: ${labelWidth + (totalDays * dayWidth)}px;">`;
 
-// [배경 그리드] 찐하게 수정 (실선 + 농도 상향)
-html += `<div style="position: absolute; top: 45px; left: ${labelWidth}px; right: 0; bottom: 0; display: flex; z-index: 0; pointer-events: none;">`;
+// [배경 그리드 레이어]
+html += `<div style="position: absolute; top: 50px; left: ${labelWidth}px; right: 0; bottom: 0; display: flex; z-index: 0; pointer-events: none;">`;
 for (let d = 0; d < totalDays; d++) {
-    const current = minDate.plus({ days: d });
-    // 주말(토, 일) 배경색 살짝 다르게 해서 구분감 더 주기
-    const isWeekend = current.weekday >= 6;
-    html += `<div style="width: ${dayWidth}px; border-right: 1px solid rgba(var(--ctp-rosewater), 0.3); height: 100%; background: ${isWeekend ? 'rgba(var(--ctp-rosewater), 0.03)' : 'transparent'};"></div>`;
+    const curr = minDate.plus({ days: d });
+    const isSun = curr.weekday === 7;
+    html += `<div style="width: ${dayWidth}px; border-right: 1px solid rgba(var(--ctp-rosewater), 0.25); height: 100%; background: ${isSun ? 'rgba(var(--ctp-rosewater), 0.05)' : 'transparent'};"></div>`;
 }
 html += `</div>`;
 
-// 날짜 헤더
-html += `<div style="display: flex; margin-bottom: 10px; border-bottom: 2px solid rgb(var(--ctp-rosewater)); padding-bottom: 8px; position: relative; z-index: 2;">
-            <div style="width: ${labelWidth}px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); flex-shrink: 0;">PROJECT / GOAL</div>
-            <div style="display: flex;">`;
-            
+// [날짜 헤더] 월/일 표시
+html += `<div style="display: flex; margin-bottom: 15px; border-bottom: 3px solid rgb(var(--ctp-rosewater)); padding-bottom: 10px; position: sticky; top: 0; z-index: 10; background: var(--background-primary);">
+            <div style="width: ${labelWidth}px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); align-self: flex-end;">PROJECT / GOAL</div>
+            <div style="display: flex; flex-direction: column;">
+                <div style="display: flex; height: 20px;">`;
+// 월 표시 (Month Header)
+let currentMonth = -1;
 for (let d = 0; d < totalDays; d++) {
-    const current = minDate.plus({ days: d });
-    const isToday = current.hasSame(today, "day");
-    const isFirstDay = current.day === 1;
-    
-    html += `<div style="width: ${dayWidth}px; text-align: center; font-size: 0.5rem; color: ${isToday ? 'rgb(var(--ctp-rosewater))' : 'var(--text-faint)'}; position: relative;">
-                ${isFirstDay ? `<span style="position: absolute; top: -12px; left: 5px; font-weight: 900; color: var(--text-normal); font-size: 0.55rem; background: var(--background-primary); padding: 0 4px; border-radius: 4px;">${current.month}월</span>` : ''}
-                <div style="${isToday ? 'font-weight: 900; color: white; background: rgb(var(--ctp-rosewater)); border-radius: 3px;' : ''}">${current.day}</div>
-             </div>`;
+    const curr = minDate.plus({ days: d });
+    if (curr.month !== currentMonth) {
+        currentMonth = curr.month;
+        html += `<div style="position: absolute; left: ${labelWidth + (d * dayWidth)}px; font-weight: 900; color: var(--text-normal); font-size: 0.75rem; padding-left: 5px;">${curr.month}월</div>`;
+    }
 }
-html += `</div></div>`;
+html += `</div><div style="display: flex;">`;
+// 일 표시 (Day Header)
+for (let d = 0; d < totalDays; d++) {
+    const curr = minDate.plus({ days: d });
+    const isToday = curr.hasSame(today, "day");
+    html += `<div style="width: ${dayWidth}px; text-align: center; font-size: 0.55rem; color: ${isToday ? 'white' : 'var(--text-faint)'}; background: ${isToday ? 'rgb(var(--ctp-rosewater))' : 'transparent'}; border-radius: 3px; font-weight: ${isToday ? '900' : '500'};">${curr.day}</div>`;
+}
+html += `</div></div></div>`;
 
-// 그룹화 및 렌더링
+// [프로젝트 렌더링 - 토글(Details) 적용]
 const groups = timelineData.reduce((acc, cur) => {
     if (!acc[cur.goal]) acc[cur.goal] = [];
     acc[cur.goal].push(cur);
@@ -415,23 +416,28 @@ const groups = timelineData.reduce((acc, cur) => {
 }, {});
 
 Object.keys(groups).forEach(goalName => {
-    html += `<div style="padding: 12px 5px 6px; font-size: 0.7rem; font-weight: 800; color: rgb(var(--ctp-rosewater)); position: relative; z-index: 2;">📌 ${goalName}</div>`;
+    html += `<details open style="margin-bottom: 10px; position: relative; z-index: 5;">
+                <summary style="padding: 10px; font-size: 0.75rem; font-weight: 800; color: rgb(var(--ctp-rosewater)); cursor: pointer; list-style: none; background: rgba(var(--ctp-rosewater), 0.05); border-radius: 6px; margin-bottom: 5px;">
+                    📌 ${goalName} <span style="font-size: 0.6rem; opacity: 0.6; font-weight: 400; margin-left: 10px;">(${groups[goalName].length} projects)</span>
+                </summary>
+                <div style="padding-left: 5px;">`;
     
     groups[goalName].forEach(proj => {
         const startDiff = Math.ceil(proj.start.diff(minDate, 'days').days);
         const duration = Math.ceil(proj.end.diff(proj.start, 'days').days) + 1;
         
-        html += `<div style="display: flex; align-items: center; padding: 8px 0; position: relative; z-index: 2; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.05);">
-                    <div style="width: ${labelWidth}px; padding-left: 15px; padding-right: 10px; flex-shrink: 0; overflow: hidden;">
+        html += `<div style="display: flex; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.05);">
+                    <div style="width: ${labelWidth}px; padding-left: 15px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
                         <a class="internal-link" href="${proj.link}" style="font-size: 0.65rem; font-weight: 600; color: var(--text-normal); text-decoration: none;">${proj.name}</a>
                     </div>
                     <div style="display: flex; height: 24px; position: relative; flex-grow: 1;">
-                        <div style="margin-left: ${startDiff * dayWidth}px; width: ${duration * dayWidth}px; background: rgba(var(--ctp-rosewater), 0.2); border: 1.5px solid rgb(var(--ctp-rosewater)); border-radius: 6px; height: 12px; align-self: center; position: relative; z-index: 2; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="margin-left: ${startDiff * dayWidth}px; width: ${duration * dayWidth}px; background: rgba(var(--ctp-rosewater), 0.15); border: 1.5px solid rgb(var(--ctp-rosewater)); border-radius: 6px; height: 10px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
                             <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); opacity: 1;"></div>
                         </div>
                     </div>
                  </div>`;
     });
+    html += `</div></details>`;
 });
 
 html += `</div></div></div>`;
@@ -500,7 +506,7 @@ if (timelineData.length === 0) {
 } else {
     // 날짜 그리드 헤더
     html += `<div style="display: grid; grid-template-columns: 140px 1fr; margin-bottom: 10px; border-bottom: 2px solid rgba(var(--ctp-rosewater), 0.1); padding-bottom: 8px;">
-                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); padding-left: 5px;">PROJECT / GOAL</div>
+                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); padding-left: 5px;">프로젝트</div>
                 <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); text-align: center; font-size: 0.5rem; color: var(--text-faint); font-weight: 700;">`;
     for (let i = 1; i <= daysInMonth; i++) {
         html += `<div style="${i === today.day ? 'color: rgb(var(--ctp-rosewater)); font-weight: 900;' : ''}">${i}</div>`;
