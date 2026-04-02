@@ -322,16 +322,15 @@ setTimeout(() => {
     });
 }, 250);
 ```
----
 
-## 🗓️ 프로젝트 타임라인
+
 ```dataviewjs
 const today = dv.date("today");
 
 // [색상 정의] image_0.png 배경 및 AnuPpuccin 톤 반영
-const BG_COLOR = "#f5eae0"; // 아주 연한 아이보리 베이지
+const BG_COLOR = "#070300"; // 아주 연한 아이보리 베이지
 const ROSEWATER_BAR_BG = "#e4a6a3"; // 막대기 레일 (조금 더 진한 베이지)
-const ROSEWATER_FILLED = "#9d1d1d"; // [핵심] 선명한 로즈워터 (진행률)
+const ROSEWATER_FILLED = "#f2cdcd"; // [핵심] 선명한 로즈워터 (진행률)
 const ROSEWATER_ACCENT = "#D6817D"; // 월 표시/오늘 강조색 (조금 더 진한 로즈워터)
 
 // 1. 데이터 수집: 04. Projects 폴더 기준
@@ -376,7 +375,7 @@ let html = `<div id="${containerId}" style="background: ${BG_COLOR}; border-radi
 
 // 상단 헤더
 html += `<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; padding: 15px 15px 0;">
-            <div style="font-weight: 900; font-size: 1rem; color: ${ROSEWATER_ACCENT}; letter-spacing: -0.01em;">TIMELINE <span style="font-weight: 300; font-size: 0.65rem; color: var(--text-faint); margin-left: 10px;">${today.year}.${today.toFormat('LL')}</span></div>
+            <div style="font-weight: 900; font-size: 1rem; color: ${ROSEWATER_ACCENT}; letter-spacing: -0.01em;">프로젝트 타임라인 <span style="font-weight: 300; font-size: 0.65rem; color: var(--text-faint); margin-left: 10px;">${today.year}.${today.toFormat('LL')}</span></div>
             <div style="font-size: 0.55rem; color: var(--text-faint); text-transform: uppercase;">Shift + Scroll to Navigate</div>
          </div>`;
 
