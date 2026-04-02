@@ -360,55 +360,58 @@ const timelineData = projectPages.map(p => {
 
 const totalDays = Math.ceil(maxDate.diff(minDate, 'days').days) + 1;
 const dayWidth = 35;
-const labelWidth = 160;
+const labelWidth = 180;
+const fullTimelineWidth = labelWidth + (totalDays * dayWidth);
 
-// 2. UI 및 스타일 정의
+// 2. UI 생성
 const containerId = "timeline-" + Date.now();
-let html = `<div id="${containerId}" style="background: rgba(var(--ctp-surface0), 0.2); border-radius: 12px; padding: 15px; border: 1px solid rgba(var(--ctp-rosewater), 0.2); font-family: var(--font-interface);">`;
+let html = `<div id="${containerId}" style="background: transparent; border-radius: 8px; font-family: var(--font-interface); color: var(--text-normal);">`;
 
 // 상단 헤더
-html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="font-weight: 800; font-size: 0.95rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">PROJECT MASTER TIMELINE</div>
-            <div style="font-size: 0.6rem; color: var(--text-faint);">목표 클릭 시 토글 ➔</div>
+html += `<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 25px; padding: 0 10px;">
+            <div style="font-weight: 900; font-size: 1.1rem; color: rgb(var(--ctp-rosewater)); letter-spacing: -0.02em;">TIMELINE <span style="font-weight: 300; font-size: 0.7rem; color: var(--text-muted); margin-left: 10px;">${today.year}.${today.toFormat('LL')}</span></div>
+            <div style="font-size: 0.55rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.1em;">Shift + Scroll to Navigate</div>
          </div>`;
 
-// 가로 스크롤 영역 시작
-html += `<div style="overflow-x: auto; padding-bottom: 10px; position: relative; border-radius: 8px;">`;
-html += `<div style="position: relative; min-width: ${labelWidth + (totalDays * dayWidth)}px;">`;
+// 가로 스크롤 영역
+html += `<div style="overflow-x: auto; position: relative; border-radius: 4px;">`;
+html += `<div style="position: relative; min-width: ${fullTimelineWidth}px;">`;
 
-// [배경 그리드 레이어]
+// [배경 그리드]
 html += `<div style="position: absolute; top: 50px; left: ${labelWidth}px; right: 0; bottom: 0; display: flex; z-index: 0; pointer-events: none;">`;
 for (let d = 0; d < totalDays; d++) {
     const curr = minDate.plus({ days: d });
-    const isSun = curr.weekday === 7;
-    html += `<div style="width: ${dayWidth}px; border-right: 1px solid rgba(var(--ctp-rosewater), 0.25); height: 100%; background: ${isSun ? 'rgba(var(--ctp-rosewater), 0.05)' : 'transparent'};"></div>`;
+    const isToday = curr.hasSame(today, "day");
+    html += `<div style="width: ${dayWidth}px; border-right: 1px solid rgba(var(--ctp-rosewater), 0.08); height: 100%; background: ${isToday ? 'rgba(var(--ctp-rosewater), 0.03)' : 'transparent'};"></div>`;
 }
 html += `</div>`;
 
-// [날짜 헤더] 월/일 표시
-html += `<div style="display: flex; margin-bottom: 15px; border-bottom: 3px solid rgb(var(--ctp-rosewater)); padding-bottom: 10px; position: sticky; top: 0; z-index: 10; background: var(--background-primary);">
-            <div style="width: ${labelWidth}px; font-size: 0.7rem; font-weight: 800; color: var(--text-muted); align-self: flex-end;">PROJECT / GOAL</div>
+// [날짜 헤더]
+html += `<div style="display: flex; margin-bottom: 0px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); padding-bottom: 12px; position: sticky; top: 0; z-index: 30; background: var(--background-primary);">
+            <div style="width: ${labelWidth}px; font-size: 0.6rem; font-weight: 900; color: var(--text-faint); align-self: flex-end; padding-left: 10px;">PROJECTS</div>
             <div style="display: flex; flex-direction: column;">
-                <div style="display: flex; height: 20px;">`;
-// 월 표시 (Month Header)
+                <div style="display: flex; height: 20px; position: relative;">`;
+
+// 월 표시
 let currentMonth = -1;
 for (let d = 0; d < totalDays; d++) {
     const curr = minDate.plus({ days: d });
     if (curr.month !== currentMonth) {
         currentMonth = curr.month;
-        html += `<div style="position: absolute; left: ${labelWidth + (d * dayWidth)}px; font-weight: 900; color: var(--text-normal); font-size: 0.75rem; padding-left: 5px;">${curr.month}월</div>`;
+        html += `<div style="position: absolute; left: ${d * dayWidth}px; font-weight: 800; color: rgb(var(--ctp-rosewater)); font-size: 0.7rem;">${curr.month}M</div>`;
     }
 }
 html += `</div><div style="display: flex;">`;
-// 일 표시 (Day Header)
+
+// 일 표시
 for (let d = 0; d < totalDays; d++) {
     const curr = minDate.plus({ days: d });
     const isToday = curr.hasSame(today, "day");
-    html += `<div style="width: ${dayWidth}px; text-align: center; font-size: 0.55rem; color: ${isToday ? 'white' : 'var(--text-faint)'}; background: ${isToday ? 'rgb(var(--ctp-rosewater))' : 'transparent'}; border-radius: 3px; font-weight: ${isToday ? '900' : '500'};">${curr.day}</div>`;
+    html += `<div style="width: ${dayWidth}px; text-align: center; font-size: 0.55rem; color: ${isToday ? 'rgb(var(--ctp-rosewater))' : 'var(--text-muted)'}; font-weight: ${isToday ? '900' : '400'};">${curr.day}</div>`;
 }
 html += `</div></div></div>`;
 
-// [프로젝트 렌더링 - 토글(Details) 적용]
+// [프로젝트 리스트 렌더링]
 const groups = timelineData.reduce((acc, cur) => {
     if (!acc[cur.goal]) acc[cur.goal] = [];
     acc[cur.goal].push(cur);
@@ -416,23 +419,25 @@ const groups = timelineData.reduce((acc, cur) => {
 }, {});
 
 Object.keys(groups).forEach(goalName => {
-    html += `<details open style="margin-bottom: 10px; position: relative; z-index: 5;">
-                <summary style="padding: 10px; font-size: 0.75rem; font-weight: 800; color: rgb(var(--ctp-rosewater)); cursor: pointer; list-style: none; background: rgba(var(--ctp-rosewater), 0.05); border-radius: 6px; margin-bottom: 5px;">
-                    📌 ${goalName} <span style="font-size: 0.6rem; opacity: 0.6; font-weight: 400; margin-left: 10px;">(${groups[goalName].length} projects)</span>
+    // 목표 바 디자인: 배경색을 타임라인 끝까지 연결 (Full Width)
+    html += `<details open style="margin-bottom: 0px; position: relative; z-index: 10;">
+                <summary style="padding: 12px 10px; font-size: 0.7rem; font-weight: 800; color: var(--text-normal); cursor: pointer; list-style: none; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.1); background: rgba(var(--ctp-rosewater), 0.05); width: 100%; display: flex; align-items: center; position: sticky; left: 0;">
+                    <span style="color: rgb(var(--ctp-rosewater)); margin-right: 8px;">◈</span> ${goalName.toUpperCase()} 
+                    <span style="font-size: 0.55rem; color: var(--text-faint); margin-left: 10px; font-weight: 400;">/ ${groups[goalName].length} projects</span>
                 </summary>
-                <div style="padding-left: 5px;">`;
+                <div style="padding-top: 5px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.05);">`;
     
     groups[goalName].forEach(proj => {
         const startDiff = Math.ceil(proj.start.diff(minDate, 'days').days);
         const duration = Math.ceil(proj.end.diff(proj.start, 'days').days) + 1;
         
-        html += `<div style="display: flex; align-items: center; padding: 6px 0; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.05);">
-                    <div style="width: ${labelWidth}px; padding-left: 15px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
-                        <a class="internal-link" href="${proj.link}" style="font-size: 0.65rem; font-weight: 600; color: var(--text-normal); text-decoration: none;">${proj.name}</a>
+        html += `<div style="display: flex; align-items: center; padding: 8px 0;">
+                    <div style="width: ${labelWidth}px; padding-left: 20px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: sticky; left: 0; z-index: 5; background: var(--background-primary);">
+                        <a class="internal-link" href="${proj.link}" style="font-size: 0.65rem; font-weight: 500; color: var(--text-muted); text-decoration: none;">${proj.name}</a>
                     </div>
-                    <div style="display: flex; height: 24px; position: relative; flex-grow: 1;">
-                        <div style="margin-left: ${startDiff * dayWidth}px; width: ${duration * dayWidth}px; background: rgba(var(--ctp-rosewater), 0.15); border: 1.5px solid rgb(var(--ctp-rosewater)); border-radius: 6px; height: 10px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
-                            <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); opacity: 1;"></div>
+                    <div style="display: flex; height: 14px; position: relative; flex-grow: 1;">
+                        <div style="margin-left: ${startDiff * dayWidth}px; width: ${duration * dayWidth}px; background: rgba(var(--ctp-rosewater), 0.1); border-radius: 100px; height: 6px; align-self: center; position: relative; z-index: 2; overflow: hidden; border: 1px solid rgba(var(--ctp-rosewater), 0.2);">
+                            <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); border-radius: 100px; opacity: 0.9;"></div>
                         </div>
                     </div>
                  </div>`;
