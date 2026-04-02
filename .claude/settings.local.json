@@ -6,7 +6,16 @@
       "WebFetch(domain:raw.githubusercontent.com)",
       "Bash(find . -name *.css -type f)",
       "WebSearch",
-      "WebFetch(domain:api.github.com)"
+      "WebFetch(domain:api.github.com)",
+      "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/styles/theme.css)",
+      "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/styles/index.css)",
+      "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/Layout.tsx)",
+      "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/Sidebar.tsx)",
+      "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/sections/TodoSection.tsx)",
+      "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/sections/ProjectKanbanSection.tsx)",
+      "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/sections/BoxesSection.tsx)",
+      "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/ui/card.tsx)",
+      "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/ui/badge.tsx)"
     ]
   }
 }
