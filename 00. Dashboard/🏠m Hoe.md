@@ -5,37 +5,50 @@ cssclasses:
   - second-brain
 ---
 
-# 🧠 나의 세컨드 브레인
+```dataviewjs
+const wrap = dv.el("div", "", {attr: {style: "display:flex; align-items:center; gap:16px; flex-wrap:wrap; margin-bottom:8px;"}});
 
-```button
-name 🚀 프로젝트 추가
-type command
-action QuickAdd: New Project
-color default
-```
-```button
-name ✅ 할일 추가
-type command
-action QuickAdd: New Task
-color default
-```
-```button
-name 🎯 목표 추가
-type command
-action QuickAdd: New Goal
-color default
-```
-```button
-name 📝 노트 추가
-type command
-action QuickAdd: New Resource
-color default
-```
-```button
-name ✍️ 캡처 추가
-type command
-action QuickAdd: New Capture
-color default
+// 프로필 카드
+wrap.innerHTML += `
+<div style="display:inline-flex; align-items:center; gap:12px; background:rgba(var(--ctp-surface0), 0.6); border:1px solid rgba(var(--ctp-surface1), 0.8); border-radius:14px; padding:10px 16px; flex-shrink:0;">
+  <div style="width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg, rgb(var(--ctp-rosewater)), rgb(var(--ctp-pink))); display:flex; align-items:center; justify-content:center; font-size:1.1rem; font-weight:800; color:rgb(var(--ctp-base)); box-shadow:0 2px 8px rgba(var(--ctp-rosewater),0.35); flex-shrink:0;">N</div>
+  <div>
+    <div style="font-weight:700; font-size:0.9rem; color:rgb(var(--ctp-text)); letter-spacing:-0.02em;">nadayae</div>
+    <div style="font-size:0.62rem; color:rgb(var(--ctp-subtext0)); margin-top:1px;">나의 세컨드 브레인 ✨</div>
+  </div>
+</div>`;
+
+// 버튼 목음
+const buttons = [
+  {icon:"🚀", label:"프로젝트", cmd:"quickadd:choice:New Project"},
+  {icon:"✅", label:"할일", cmd:"quickadd:choice:New Task"},
+  {icon:"🎯", label:"목표", cmd:"quickadd:choice:New Goal"},
+  {icon:"📝", label:"노트", cmd:"quickadd:choice:New Resource"},
+  {icon:"✍️", label:"캡처", cmd:"quickadd:choice:New Capture"},
+];
+
+const btnWrap = wrap.createEl("div", {attr: {style: "display:flex; gap:6px; flex-wrap:wrap; align-items:center;"}});
+for (const b of buttons) {
+  const btn = btnWrap.createEl("button", {attr: {style: `
+    display:inline-flex; align-items:center; gap:5px;
+    background:rgba(var(--ctp-surface0), 0.7);
+    border:1px solid rgba(var(--ctp-surface2), 0.6);
+    border-radius:8px; padding:5px 11px;
+    font-size:0.72rem; font-weight:600;
+    color:rgb(var(--ctp-text)); cursor:pointer;
+    transition:all 0.15s;
+  `}});
+  btn.innerHTML = `<span>${b.icon}</span><span>${b.label}</span>`;
+  btn.addEventListener("mouseenter", () => {
+    btn.style.background = `rgba(var(--ctp-rosewater), 0.2)`;
+    btn.style.borderColor = `rgba(var(--ctp-rosewater), 0.6)`;
+  });
+  btn.addEventListener("mouseleave", () => {
+    btn.style.background = `rgba(var(--ctp-surface0), 0.7)`;
+    btn.style.borderColor = `rgba(var(--ctp-surface2), 0.6)`;
+  });
+  btn.addEventListener("click", () => app.commands.executeCommandById(b.cmd));
+}
 ```
 
 ---
