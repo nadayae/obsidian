@@ -328,7 +328,7 @@ setTimeout(() => {
 const today = dv.date("today");
 
 // [색상 정의] image_0.png 배경 및 AnuPpuccin 톤 반영
-const BG_COLOR = "#070300"; // 아주 연한 아이보리 베이지
+const BG_COLOR = "#ffefe3"; // 아주 연한 아이보리 베이지
 const ROSEWATER_BAR_BG = "#e4a6a3"; // 막대기 레일 (조금 더 진한 베이지)
 const ROSEWATER_FILLED = "#f2cdcd"; // [핵심] 선명한 로즈워터 (진행률)
 const ROSEWATER_ACCENT = "#D6817D"; // 월 표시/오늘 강조색 (조금 더 진한 로즈워터)
