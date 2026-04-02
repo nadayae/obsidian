@@ -455,103 +455,97 @@ dv.el("div", html);
 ---
 
 ```dataviewjs
+// 1. 데이터 수집 및 초기 설정
+const projects = dv.pages('"04. Projects"').filter(p => p.type === "project").array();
 const today = dv.date("today");
-const daysInMonth = today.daysInMonth; 
+const statuses = ["계획 전", "계획", "진행중", "집중"];
+const ROSEWATER = "#f2cdcd";
+const containerId = "kanban-container-" + Date.now();
 
-// 1. 데이터 수집 (경로 및 메타데이터 필터링)
-const projectPages = dv.pages().filter(p => 
-    p.file.path.toLowerCase().includes("04. Project") && 
-    p.file.name !== "Project Dashboard" &&
-    p.type === "project" // 속성에 type: project가 있는 것만
-);
+// 2. 탭 메뉴 및 컨테이너 생성
+let html = `
+<div id="${containerId}" style="font-family: var(--font-interface); background: transparent; padding: 10px; border-radius: 12px;">
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px;">
+        <button class="kanban-tab active" data-target="today" style="background: none; border: none; font-weight: 800; font-size: 0.8rem; cursor: pointer; color: ${ROSEWATER}; padding: 5px 10px;">오늘 📅</button>
+        <button class="kanban-tab" data-target="all" style="background: none; border: none; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: var(--text-faint); padding: 5px 10px;">전체 📁</button>
+        <button class="kanban-tab" data-target="overdue" style="background: none; border: none; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: var(--text-faint); padding: 5px 10px;">지연 ⚠️</button>
+        <button class="kanban-tab" data-target="by-goal" style="background: none; border: none; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: var(--text-faint); padding: 5px 10px;">목표별 🎯</button>
+    </div>
 
-const timelineData = projectPages.map(p => {
-    // [파싱 로직 수정] 날짜가 [[2026-04-01]] 처럼 링크일 경우를 대비해 문자열로 강제 변환 후 파싱
-    const getCleanDate = (dateField) => {
-        if (!dateField) return null;
-        let dStr = String(dateField).replace(/[\[\]]/g, ""); // 대괄호 제거
-        return dv.date(dStr);
-    };
+    <div id="kanban-display" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+        </div>
+</div>
 
-    const start = getCleanDate(p.시작일);
-    const end = getCleanDate(p.목표일);
-    
-    if (!start || !end) return null;
+<style>
+    .kanban-tab.active { color: ${ROSEWATER} !important; border-bottom: 2px solid ${ROSEWATER} !important; }
+    .kanban-card:hover { transform: translateY(-2px); transition: 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+</style>
+`;
 
-    // 가시성 체크
-    const isVisible = (start.month === today.month && start.year === today.year) || 
-                      (end.month === today.month && end.year === today.year) ||
-                      (start < today && end > today);
-    
-    if (!isVisible) return null;
-
-    let dStart = (start.year < today.year || (start.year === today.year && start.month < today.month)) ? 1 : start.day;
-    let dEnd = (end.year > today.year || (end.year === today.year && end.month > today.month)) ? daysInMonth : end.day;
-    
-    return {
-        name: p.file.name,
-        link: p.file.path,
-        start: dStart,
-        end: dEnd,
-        progress: p.달성률 || 0, // '진행률' 대신 '달성률' 매칭
-        goal: p.목표 || "기타/미지정"
-    };
-}).filter(p => p !== null);
-
-// 2. UI 생성
-let html = `<div style="background: rgba(var(--ctp-surface0), 0.2); border: 1px solid rgba(var(--ctp-rosewater), 0.1); border-radius: 12px; padding: 15px; font-family: var(--font-interface);">`;
-
-// 상단 헤더
-html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <div style="font-weight: 800; font-size: 0.9rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">GOAL-BASED TIMELINE</div>
-            <div style="font-size: 0.6rem; color: var(--text-faint); font-family: var(--font-monospace);">${today.year}.${today.toFormat('LL')}</div>
-         </div>`;
-
-if (timelineData.length === 0) {
-    html += `<div style="padding: 30px; text-align: center; font-size: 0.75rem; color: #fab387; border: 1px dashed rgba(var(--ctp-rosewater), 0.3); border-radius: 8px;">
-                표시할 프로젝트가 없습니다. <br>
-                <span style="font-size: 0.6rem; opacity: 0.8;">(시작일/목표일 속성이 채워져 있는지 확인해주세요)</span>
-             </div>`;
-} else {
-    // 날짜 그리드 헤더
-    html += `<div style="display: grid; grid-template-columns: 140px 1fr; margin-bottom: 10px; border-bottom: 2px solid rgba(var(--ctp-rosewater), 0.1); padding-bottom: 8px;">
-                <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); padding-left: 5px;">프로젝트</div>
-                <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); text-align: center; font-size: 0.5rem; color: var(--text-faint); font-weight: 700;">`;
-    for (let i = 1; i <= daysInMonth; i++) {
-        html += `<div style="${i === today.day ? 'color: rgb(var(--ctp-rosewater)); font-weight: 900;' : ''}">${i}</div>`;
-    }
-    html += `</div></div>`;
-
-    // 목표별 그룹화
-    const groups = timelineData.reduce((acc, cur) => {
-        if (!acc[cur.goal]) acc[cur.goal] = [];
-        acc[cur.goal].push(cur);
-        return acc;
-    }, {});
-
-    Object.keys(groups).forEach(goalName => {
-        html += `<div style="padding: 8px 5px 4px; font-size: 0.65rem; font-weight: 800; color: rgb(var(--ctp-rosewater));">📌 ${goalName}</div>`;
-        groups[goalName].forEach(proj => {
-            const span = proj.end - proj.start + 1;
-            html += `<div style="display: grid; grid-template-columns: 140px 1fr; align-items: center; padding: 4px 0;">
-                        <div style="overflow: hidden; padding-left: 15px; padding-right: 10px;">
-                            <div style="font-size: 0.65rem; font-weight: 600; color: var(--text-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                <a class="internal-link" href="${proj.link}" style="text-decoration: none; color: inherit;">${proj.name}</a>
-                            </div>
-                        </div>
-                        <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); height: 16px; position: relative;">
-                            <div style="position: absolute; left: calc(${(today.day - 1) / daysInMonth * 100}%); width: 2px; height: 100%; background: rgba(var(--ctp-rosewater), 0.25); z-index: 1;"></div>
-                            <div style="grid-column: ${proj.start} / span ${span}; background: rgba(var(--ctp-rosewater), 0.15); border: 1px solid rgba(var(--ctp-rosewater), 0.3); border-radius: 4px; height: 8px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
-                                <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); opacity: 0.8;"></div>
-                            </div>
-                        </div>
-                     </div>`;
-        });
-        html += `<div style="height: 8px;"></div>`;
-    });
-}
-html += `</div>`;
 dv.el("div", html);
+
+// 3. 렌더링 함수 (섹션별 필터링)
+function renderKanban(target) {
+    const display = document.getElementById("kanban-display");
+    let filtered = [];
+
+    if (target === "today") {
+        filtered = projects.filter(p => p.시작일 && dv.date(p.시작일) <= today && p.목표일 && dv.date(p.목표일) >= today);
+    } else if (target === "all") {
+        filtered = projects;
+    } else if (target === "overdue") {
+        filtered = projects.filter(p => p.목표일 && dv.date(p.목표일) < today && p.상태 !== "완료");
+    } else if (target === "by-goal") {
+        // 목표별은 그룹화해서 보여주거나, 가장 큰 목표 위주로 정렬
+        filtered = projects.sort((a, b) => (a.목표 || "").localeCompare(b.목표 || ""));
+    }
+
+    let boardContent = "";
+    statuses.forEach(status => {
+        const cards = filtered.filter(p => p.상태 === status);
+        boardContent += `
+            <div style="background: rgba(var(--ctp-surface0), 0.3); border-radius: 10px; padding: 12px; min-height: 200px;">
+                <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-align: center; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px;">${status}</div>
+        `;
+
+        cards.forEach(p => {
+            const isOverdue = p.목표일 && dv.date(p.목표일) < today;
+            boardContent += `
+                <div class="kanban-card" style="background: var(--background-primary); border: 1px solid ${isOverdue ? '#e64553' : 'rgba(var(--ctp-rosewater), 0.2)'}; border-radius: 8px; padding: 10px; margin-bottom: 10px; position: relative;">
+                    <div style="font-size: 0.7rem; font-weight: 700; margin-bottom: 5px;">
+                        <a class="internal-link" href="${p.file.path}" style="color: var(--text-normal); text-decoration: none;">${p.file.name}</a>
+                    </div>
+                    <div style="font-size: 0.55rem; color: var(--text-faint); display: flex; justify-content: space-between; align-items: center;">
+                        <span style="background: rgba(var(--ctp-rosewater), 0.1); padding: 2px 5px; border-radius: 4px;">${p.목표 || '기타'}</span>
+                        <span style="font-weight: 600; color: ${isOverdue ? '#e64553' : 'inherit'};">${p.목표일 ? dv.date(p.목표일).toFormat('MM/dd') : ''}</span>
+                    </div>
+                </div>
+            `;
+        });
+        boardContent += `</div>`;
+    });
+    display.innerHTML = boardContent;
+}
+
+// 4. 이벤트 리스너 등록
+setTimeout(() => {
+    const tabs = document.querySelectorAll(".kanban-tab");
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(t => {
+                t.classList.remove("active");
+                t.style.fontWeight = "600";
+                t.style.color = "var(--text-faint)";
+            });
+            tab.classList.add("active");
+            tab.style.fontWeight = "800";
+            tab.style.color = ROSEWATER;
+            renderKanban(tab.dataset.target);
+        });
+    });
+    // 초기 렌더링 (오늘 섹션)
+    renderKanban("today");
+}, 100);
 ```
 
 ---
