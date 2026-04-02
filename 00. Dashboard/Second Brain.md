@@ -54,32 +54,27 @@ for (const b of buttons) {
 ```dataviewjs
 const today = dv.date("today");
 const startOfWeek = today.startOf("week");
+const endOfWeek = today.endOf("week");
 const days = Array.from({length: 7}, (_, i) => startOfWeek.plus({days: i}));
 const dayNames = ["월","화","수","목","금","토","일"];
 
 const allTasks = dv.pages('"05. Tasks"');
 const allResources = dv.pages('"06. Resources"');
 
-const isSameDay = (d1, d2) => {
-    if (!d1 || !d2) return false;
-    const date1 = dv.date(d1);
-    const date2 = dv.date(d2);
-    return date1.hasSame(date2, "day");
-};
-
 const taskTabs = [
-  { id: "all",   icon: "📅", label: "전체",     filter: t => !t.완료여부 },
-  { id: "sched", icon: "⏰", label: "일정",     filter: t => !t.완료여부 && t.구분 === "일정" },
+  // [수정] 필터에서 '완료여부 !== true' 조건을 삭제하여 완료된 것도 포함시킴
+  { id: "all",   icon: "📅", label: "전체",     filter: t => true }, 
+  { id: "sched", icon: "⏰", label: "일정",     filter: t => t.구분 === "일정" },
   { id: "done",  icon: "✅", label: "이번주 완료", filter: t => t.완료여부 === true },
   { id: "recent",icon: "📚", label: "최근 자료",   isResource: true }
 ];
 
-const uid = "cal-" + Math.random().toString(36).substring(2, 7);
+const uid = "final-style-cal-" + Math.random().toString(36).substring(2, 7);
 
 let html = `<details open style="background:rgba(var(--ctp-surface0),0.3); border:1px solid rgba(var(--ctp-surface1),0.5); border-radius:12px; padding:12px;">`;
-html += `<summary style="font-weight:700; cursor:pointer; margin-bottom:10px;">📅 주간 캘린더</summary>`;
+html += `<summary style="font-weight:700; cursor:pointer; margin-bottom:10px;">📅 주간 대시보드 (완료 표시 적용)</summary>`;
 
-html += `<div class="sb-tabs" id="${uid}-bar" style="margin-bottom:12px; display:flex; gap:8px;">`;
+html += `<div class="sb-tabs" id="${uid}-bar" style="margin-bottom:12px; display:flex; gap:8px; flex-wrap:wrap;">`;
 taskTabs.forEach((tab, i) => {
     const active = i === 0 ? "active" : "";
     html += `<div class="sb-tab ${active}" data-tab="${tab.id}" style="font-size:0.75rem; cursor:pointer;" onclick="const r=this.closest('details'); r.querySelectorAll('.sb-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active'); r.querySelectorAll('.sb-tab-panel').forEach(p=>p.style.display='none'); r.querySelector('#${uid}-'+this.dataset.tab).style.display='block';">${tab.icon} ${tab.label}</div>`;
@@ -106,15 +101,28 @@ taskTabs.forEach((tab, i) => {
             html += `<div style="text-align:center; font-size:0.65rem; padding-bottom:4px; ${style}">${d.month}/${d.day} ${dayNames[idx]}</div>`;
         });
         
-        const filtered = allTasks.where(tab.filter);
+        const filteredTasks = allTasks.where(tab.filter);
+
         days.forEach(d => {
-            const dayTasks = filtered.filter(t => isSameDay(t.날짜, d));
-            const bg = d.hasSame(today, "day") ? "background:rgba(0,122,255,0.08);" : "";
-            html += `<div style="min-height:95px; padding:4px; ${bg} border:1px solid rgba(var(--ctp-surface2),0.5); border-radius:8px;">`;
-            dayTasks.slice(0, 4).forEach(t => {
+            const dayTasks = filteredTasks.filter(t => {
+                if (!t.날짜) return false;
+                const taskDate = dv.date(t.날짜);
+                return taskDate && taskDate.year === d.year && taskDate.month === d.month && taskDate.day === d.day;
+            });
+
+            const bg = d.hasSame(today, "day") ? "background:rgba(0,122,255,0.08);" : "background:rgba(var(--ctp-surface0),0.2);";
+            html += `<div style="min-height:110px; padding:4px; ${bg} border:1px solid rgba(var(--ctp-surface2),0.5); border-radius:8px;">`;
+            
+            dayTasks.forEach(t => {
                 const color = t.구분 === "집중" ? "#ff9500" : t.구분 === "일정" ? "#007aff" : "#34c759";
-                html += `<div style="font-size:0.6rem; padding:2px 4px; margin-bottom:2px; border-left:2px solid ${color}; background:rgba(var(--ctp-surface0),0.8); border-radius:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">`;
-                html += `<a class="internal-link" href="${t.file.path}">${t.제목 || t.file.name}</a></div>`;
+                
+                // [수정] 완료 여부에 따른 스타일 분기
+                const isDone = t.완료여부 === true;
+                const textStyle = isDone ? "text-decoration: line-through; opacity: 0.5;" : "";
+                const boxStyle = isDone ? "filter: grayscale(0.5);" : "";
+
+                html += `<div style="font-size:0.6rem; padding:2px 4px; margin-bottom:2px; border-left:2px solid ${color}; background:rgba(var(--ctp-surface1),0.5); border-radius:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; ${textStyle} ${boxStyle}">`;
+                html += `<a class="internal-link" href="${t.file.path}" style="color:inherit; text-decoration:inherit;">${t.제목 || t.file.name}</a></div>`;
             });
             html += `</div>`;
         });
