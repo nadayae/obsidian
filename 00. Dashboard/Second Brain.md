@@ -329,7 +329,7 @@ setTimeout(() => {
 // 1. 데이터 및 범위 설정
 const today = dv.date("today");
 const projectPages = dv.pages('"Projects"').filter(p => 
-    (p.type === "project" || p.file.path.toLowerCase().includes("project")) &&
+    (p.type === "project" || p.file.path.toLowerCase().includes("04. Project")) &&
     p.file.name !== "Project Dashboard"
 ).array();
 
@@ -445,7 +445,7 @@ const daysInMonth = today.daysInMonth;
 
 // 1. 데이터 수집 (경로 및 메타데이터 필터링)
 const projectPages = dv.pages().filter(p => 
-    p.file.path.toLowerCase().includes("04. project") && 
+    p.file.path.toLowerCase().includes("04. Project") && 
     p.file.name !== "Project Dashboard" &&
     p.type === "project" // 속성에 type: project가 있는 것만
 );
