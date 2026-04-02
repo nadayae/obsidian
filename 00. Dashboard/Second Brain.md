@@ -224,7 +224,7 @@ const uid = "hybrid-v4-final-" + Math.random().toString(36).substring(2, 7);
 // 2. UI 생성
 let html = `<div id="${uid}-container" class="dataviewjs-today-view">`;
 html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="font-weight: 800; font-size: 1rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.02em;">DAILY MISSION CONTROL</div>
+            <div style="font-weight: 800; font-size: 1.1rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.02em;">할일</div>
             <button class="add-btn-top" style="background: rgba(var(--ctp-rosewater), 0.2); cursor: pointer; font-size: 0.65rem; color: rgb(var(--ctp-rosewater)); border: 1px solid rgba(var(--ctp-rosewater), 0.4); padding: 6px 14px; border-radius: 4px; font-weight: 700;">+ ADD TASK</button>
          </div>`;
 
