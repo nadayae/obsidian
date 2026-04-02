@@ -53,58 +53,86 @@ for (const b of buttons) {
 
 ---
 
-## ✅ 할 일
-
-### 캘린더 뷰
-
-```dataviewjs
+// 1. 기본 설정 및 데이터 수집
 const today = dv.date("today");
-const tasks = dv.pages('"05. Tasks"').where(t => t.완료여부 !== true);
+const startOfWeek = today.startOf("week");
+const endOfWeek = today.endOf("week");
+const startOfMonth = today.startOf("month");
+const endOfMonth = today.endOf("month");
 
-// 이번 주 날짜 계산
-const dow = today.weekday;
-const monday = today.minus({days: dow - 1});
-const days = [];
-for (let i = 0; i < 7; i++) {
-  days.push(monday.plus({days: i}));
-}
-const dayNames = ["월","화","수","목","금","토","일"];
+const allTasks = dv.pages('"05. Tasks"');
+const allResources = dv.pages('"06. Resources"');
 
-let html = `<div style="display:grid; grid-template-columns: repeat(7, 1fr); gap: 6px; font-size: 0.75rem;">`;
+// 2. 탭 정의 (요청하신 필터 5종)
+const taskTabs = [
+  { id: "week",   icon: "📅", label: "이번 주",     filter: t => t.완료여부 !== true && t.날짜 && dv.date(t.날짜) >= startOfWeek && dv.date(t.날짜) <= endOfWeek },
+  { id: "month",  icon: "🗓️", label: "이번 달",     filter: t => t.완료여부 !== true && t.날짜 && dv.date(t.날짜) >= startOfMonth && dv.date(t.날짜) <= endOfMonth },
+  { id: "sched",  icon: "⏰", label: "일정",       filter: t => t.완료여부 !== true && t.구분 === "일정" },
+  { id: "done",   icon: "✅", label: "이번 주 완료", filter: t => t.완료여부 === true && t.날짜 && dv.date(t.날짜) >= startOfWeek && dv.date(t.날짜) <= endOfWeek },
+  { id: "recent", icon: "📚", label: "최근 자료",   isResource: true }
+];
 
-// 헤더
-for (let i = 0; i < 7; i++) {
-  const d = days[i];
-  const isToday = d.equals(today);
-  const style = isToday
-    ? "font-weight:700; color:#007aff; text-align:center; padding:4px 0; font-size:0.65rem;"
-    : "font-weight:600; color:#636366; text-align:center; padding:4px 0; font-size:0.65rem;";
-  html += `<div style="${style}">${d.month}/${d.day} ${dayNames[i]}</div>`;
-}
+// 3. 고유 ID 생성 (충돌 방지)
+const uid = "task-cal-tabs-" + Math.random().toString(36).slice(2,8);
 
-// 할일 배치
-for (let i = 0; i < 7; i++) {
-  const d = days[i];
-  const isToday = d.equals(today);
-  const dayTasks = tasks.where(t => t.날짜 && dv.date(t.날짜).equals(d));
+// 4. HTML 구조 생성
+let html = `<details open style="background: rgba(var(--ctp-surface0), 0.3); border: 1px solid rgba(var(--ctp-surface1), 0.5); border-radius: 12px; padding: 12px;">`;
+html += `<summary style="font-weight: 700; font-size: 1rem; cursor: pointer; margin-bottom: 10px; color: rgb(var(--ctp-text));">📅 캘린더 뷰 및 필터</summary>`;
 
-  let bg = isToday ? "background:#e3f2fd; border-radius:8px;" : "";
-  html += `<div style="min-height:80px; padding:4px; ${bg} border:1px solid rgba(0,0,0,0.06); border-radius:6px;">`;
+// 4-1. 상단 탭 바
+html += `<div class="sb-tabs" id="${uid}-bar" style="margin-bottom: 12px;">`;
+taskTabs.forEach((tab, i) => {
+  const cls = i === 0 ? "sb-tab active" : "sb-tab";
+  html += `<div class="${cls}" data-tab="${tab.id}" style="font-size: 0.75rem;" onclick="
+    this.parentElement.querySelectorAll('.sb-tab').forEach(t=>t.classList.remove('active'));
+    this.classList.add('active');
+    this.closest('details').querySelectorAll('.sb-tab-panel').forEach(p=>p.style.display='none');
+    this.closest('details').querySelector('#${uid}-'+this.dataset.tab).style.display='block';
+  ">${tab.icon} ${tab.label}</div>`;
+});
+html += `</div>`;
 
-  for (let t of dayTasks.slice(0, 4)) {
-    const color = t.구분 === "집중" ? "#ff9500" : t.구분 === "일정" ? "#007aff" : "#34c759";
-    html += `<div style="font-size:0.65rem; padding:2px 4px; margin-bottom:2px; border-left:2px solid ${color}; background:rgba(0,0,0,0.03); border-radius:2px;">`;
-    html += `<a class="internal-link" href="${t.file.name}">${t.제목 || t.file.name}</a>`;
-    html += `</div>`;
-  }
-  if (dayTasks.length > 4) {
-    html += `<div style="font-size:0.6rem; color:#8e8e93;">+${dayTasks.length - 4}개 더</div>`;
+// 4-2. 탭별 패널 생성
+taskTabs.forEach((tab, i) => {
+  const display = i === 0 ? "block" : "none";
+  html += `<div class="sb-tab-panel" id="${uid}-${tab.id}" style="display:${display};">`;
+
+  if (tab.isResource) {
+    // [최근 자료] 필터 - 리소스 테이블
+    const recentRes = allResources.sort(r => r.file.mtime, "desc").slice(0, 8);
+    html += `<table style="width:100%; font-size:0.8rem; border-collapse:collapse;">`;
+    recentRes.forEach(r => {
+      html += `<tr style="border-bottom:1px solid rgba(var(--ctp-surface2),0.3);">
+        <td style="padding:6px 0;"><a class="internal-link" href="${r.file.name}">${r.file.name}</a></td>
+        <td style="text-align:right; font-size:0.7rem; color:rgb(var(--ctp-subtext0));">${dv.date(r.file.mtime).toFormat("MM/dd HH:mm")}</td>
+      </tr>`;
+    });
+    html += `</table>`;
+  } else {
+    [할 일 관련] 필터 - 할 일 리스트
+    const filtered = allTasks.where(tab.filter).sort(t => t.날짜, "asc");
+    if (filtered.length === 0) {
+      html += `<div style="text-align:center; padding:20px; color:rgb(var(--ctp-subtext1)); font-size:0.8rem;">항목이 없습니다.</div>`;
+    } else {
+      html += `<table style="width:100%; font-size:0.8rem; border-collapse:collapse;">`;
+      filtered.forEach(t => {
+        const dateStr = t.날짜 ? dv.date(t.날짜).toFormat("MM/dd") : "-";
+        const color = t.구분 === "집중" ? "#ff9500" : t.구분 === "일정" ? "#007aff" : "#34c759";
+        html += `<tr style="border-bottom:1px solid rgba(var(--ctp-surface2),0.3);">
+          <td style="padding:6px 0; border-left:3px solid ${color}; padding-left:8px;">
+            <a class="internal-link" href="${t.file.name}">${t.제목 || t.file.name}</a>
+          </td>
+          <td style="text-align:right; font-size:0.7rem; color:rgb(var(--ctp-subtext0));">${dateStr}</td>
+        </tr>`;
+      });
+      html += `</table>`;
+    }
   }
   html += `</div>`;
-}
-html += `</div>`;
+});
+
+html += `</details>`;
 dv.el("div", html);
-```
 
 ### 오늘
 
