@@ -51,9 +51,7 @@ for (const b of buttons) {
 }
 ```
 
----
-
-// 1. 기본 설정 및 데이터 수집
+```dataviewjs
 const today = dv.date("today");
 const startOfWeek = today.startOf("week");
 const endOfWeek = today.endOf("week");
@@ -63,7 +61,6 @@ const endOfMonth = today.endOf("month");
 const allTasks = dv.pages('"05. Tasks"');
 const allResources = dv.pages('"06. Resources"');
 
-// 2. 탭 정의 (요청하신 필터 5종)
 const taskTabs = [
   { id: "week",   icon: "📅", label: "이번 주",     filter: t => t.완료여부 !== true && t.날짜 && dv.date(t.날짜) >= startOfWeek && dv.date(t.날짜) <= endOfWeek },
   { id: "month",  icon: "🗓️", label: "이번 달",     filter: t => t.완료여부 !== true && t.날짜 && dv.date(t.날짜) >= startOfMonth && dv.date(t.날짜) <= endOfMonth },
@@ -72,66 +69,48 @@ const taskTabs = [
   { id: "recent", icon: "📚", label: "최근 자료",   isResource: true }
 ];
 
-// 3. 고유 ID 생성 (충돌 방지)
-const uid = "task-cal-tabs-" + Math.random().toString(36).slice(2,8);
+const uid = "task-cal-tabs-" + Math.random().toString(36).substring(2, 8);
 
-// 4. HTML 구조 생성
-let html = `<details open style="background: rgba(var(--ctp-surface0), 0.3); border: 1px solid rgba(var(--ctp-surface1), 0.5); border-radius: 12px; padding: 12px;">`;
-html += `<summary style="font-weight: 700; font-size: 1rem; cursor: pointer; margin-bottom: 10px; color: rgb(var(--ctp-text));">📅 캘린더 뷰 및 필터</summary>`;
+let html = "";
+html += "<details open style='background:rgba(var(--ctp-surface0),0.3); border:1px solid rgba(var(--ctp-surface1),0.5); border-radius:12px; padding:12px;'>";
+html += "<summary style='font-weight:700; font-size:1rem; cursor:pointer; margin-bottom:10px;'>📅 캘린더 뷰 및 필터</summary>";
 
-// 4-1. 상단 탭 바
-html += `<div class="sb-tabs" id="${uid}-bar" style="margin-bottom: 12px;">`;
+html += "<div class='sb-tabs' id='" + uid + "-bar' style='margin-bottom:12px; display:flex; gap:8px;'>";
 taskTabs.forEach((tab, i) => {
-  const cls = i === 0 ? "sb-tab active" : "sb-tab";
-  html += `<div class="${cls}" data-tab="${tab.id}" style="font-size: 0.75rem;" onclick="
-    this.parentElement.querySelectorAll('.sb-tab').forEach(t=>t.classList.remove('active'));
-    this.classList.add('active');
-    this.closest('details').querySelectorAll('.sb-tab-panel').forEach(p=>p.style.display='none');
-    this.closest('details').querySelector('#${uid}-'+this.dataset.tab).style.display='block';
-  ">${tab.icon} ${tab.label}</div>`;
+  const activeClass = (i === 0) ? "active" : "";
+  html += "<div class='sb-tab " + activeClass + "' data-tab='" + tab.id + "' style='font-size:0.75rem; cursor:pointer;' onclick='const r=this.closest(\"details\"); r.querySelectorAll(\".sb-tab\").forEach(t=>t.classList.remove(\"active\")); this.classList.add(\"active\"); r.querySelectorAll(\".sb-tab-panel\").forEach(p=>p.style.display=\"none\"); r.querySelector(\"#" + uid + "-\" + this.dataset.tab).style.display=\"block\";'>" + tab.icon + " " + tab.label + "</div>";
 });
-html += `</div>`;
+html += "</div>";
 
-// 4-2. 탭별 패널 생성
 taskTabs.forEach((tab, i) => {
-  const display = i === 0 ? "block" : "none";
-  html += `<div class="sb-tab-panel" id="${uid}-${tab.id}" style="display:${display};">`;
+  const display = (i === 0) ? "block" : "none";
+  html += "<div class='sb-tab-panel' id='" + uid + "-" + tab.id + "' style='display:" + display + ";'>";
 
   if (tab.isResource) {
-    // [최근 자료] 필터 - 리소스 테이블
     const recentRes = allResources.sort(r => r.file.mtime, "desc").slice(0, 8);
-    html += `<table style="width:100%; font-size:0.8rem; border-collapse:collapse;">`;
+    html += "<table style='width:100%; font-size:0.8rem; border-collapse:collapse;'>";
     recentRes.forEach(r => {
-      html += `<tr style="border-bottom:1px solid rgba(var(--ctp-surface2),0.3);">
-        <td style="padding:6px 0;"><a class="internal-link" href="${r.file.name}">${r.file.name}</a></td>
-        <td style="text-align:right; font-size:0.7rem; color:rgb(var(--ctp-subtext0));">${dv.date(r.file.mtime).toFormat("MM/dd HH:mm")}</td>
-      </tr>`;
+      html += "<tr style='border-bottom:1px solid rgba(var(--ctp-surface2),0.3);'><td style='padding:6px 0;'><a class='internal-link' href='" + r.file.path + "'>" + r.file.name + "</a></td><td style='text-align:right; font-size:0.7rem; color:gray;'>" + dv.date(r.file.mtime).toFormat("MM/dd HH:mm") + "</td></tr>";
     });
-    html += `</table>`;
+    html += "</table>";
   } else {
-    [할 일 관련] 필터 - 할 일 리스트
     const filtered = allTasks.where(tab.filter).sort(t => t.날짜, "asc");
     if (filtered.length === 0) {
-      html += `<div style="text-align:center; padding:20px; color:rgb(var(--ctp-subtext1)); font-size:0.8rem;">항목이 없습니다.</div>`;
+      html += "<div style='text-align:center; padding:20px; color:gray; font-size:0.8rem;'>항목이 없습니다.</div>";
     } else {
-      html += `<table style="width:100%; font-size:0.8rem; border-collapse:collapse;">`;
+      html += "<table style='width:100%; font-size:0.8rem; border-collapse:collapse;'>";
       filtered.forEach(t => {
         const dateStr = t.날짜 ? dv.date(t.날짜).toFormat("MM/dd") : "-";
-        const color = t.구분 === "집중" ? "#ff9500" : t.구분 === "일정" ? "#007aff" : "#34c759";
-        html += `<tr style="border-bottom:1px solid rgba(var(--ctp-surface2),0.3);">
-          <td style="padding:6px 0; border-left:3px solid ${color}; padding-left:8px;">
-            <a class="internal-link" href="${t.file.name}">${t.제목 || t.file.name}</a>
-          </td>
-          <td style="text-align:right; font-size:0.7rem; color:rgb(var(--ctp-subtext0));">${dateStr}</td>
-        </tr>`;
+        const color = (t.구분 === "집중") ? "#ff9500" : (t.구분 === "일정") ? "#007aff" : "#34c759";
+        html += "<tr style='border-bottom:1px solid rgba(var(--ctp-surface2),0.3);'><td style='padding:6px 0; border-left:3px solid " + color + "; padding-left:8px;'><a class='internal-link' href='" + t.file.path + "'>" + (t.제목 || t.file.name) + "</a></td><td style='text-align:right; font-size:0.7rem; color:gray;'>" + dateStr + "</td></tr>";
       });
-      html += `</table>`;
+      html += "</table>";
     }
   }
-  html += `</div>`;
+  html += "</div>";
 });
 
-html += `</details>`;
+html += "</details>";
 dv.el("div", html);
 
 ### 오늘
