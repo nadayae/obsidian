@@ -326,57 +326,58 @@ setTimeout(() => {
 
 ## 🗓️ 프로젝트 타임라인
 ```dataviewjs
-// 1. 데이터 로드: 'Projects' 폴더 내 '시작일'과 '목표일'이 있는 파일 대상
-const projectPages = dv.pages('"Projects"').filter(p => p.시작일 && p.목표일);
-const today = luxon.DateTime.now();
-const daysInMonth = today.daysInMonth;
+// 1. 데이터 및 시간 설정 (내장 dv.date 활용으로 ReferenceError 방지)
+const today = dv.date("today");
+const daysInMonth = today.daysInMonth; 
+const projectPages = dv.pages('"04. Projects"').filter(p => p.시작일 && p.종료일);
 
-// 타임라인 데이터 정리
+// 타임라인 데이터 가공
 const timelineData = projectPages.map(p => {
     const start = dv.date(p.시작일);
-    const end = dv.date(p.목표일);
+    const end = dv.date(p.종료일);
     
-    // 이번 달에 걸쳐 있는지 확인
+    if (!start || !end) return null;
+
+    // 이번 달 표시 여부 체크
     const isVisible = (start.month === today.month && start.year === today.year) || 
                       (end.month === today.month && end.year === today.year) ||
-                      (start < today && end > today); // 달을 가로지르는 경우
+                      (start < today && end > today);
     
     if (!isVisible) return null;
 
-    // 시작일/종료일의 달력상 위치 계산 (1~말일 사이로 제한)
-    let displayStart = (start.month < today.month || start.year < today.year) ? 1 : start.day;
-    let displayEnd = (end.month > today.month || end.year > today.year) ? daysInMonth : end.day;
+    // 1~말일 사이 위치 계산
+    let displayStart = (start.year < today.year || (start.year === today.year && start.month < today.month)) ? 1 : start.day;
+    let displayEnd = (end.year > today.year || (end.year === today.year && end.month > today.month)) ? daysInMonth : end.day;
     
     return {
         name: p.file.name,
         link: p.file.path,
         start: displayStart,
         end: displayEnd,
-        progress: p.진행률 || 0,
-        status: p.상태 || "진행중"
+        progress: p.진행률 || 0
     };
 }).filter(p => p !== null);
 
 // 2. UI 생성 (초슬림 모드)
 let html = `<div style="background: rgba(var(--ctp-surface0), 0.2); border: 1px solid rgba(var(--ctp-rosewater), 0.1); border-radius: 10px; padding: 12px; font-family: var(--font-interface);">`;
 
-// 헤더
-html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <div style="font-weight: 800; font-size: 0.85rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">PROJECT TIMELINE</div>
-            <div style="font-size: 0.6rem; color: var(--text-faint); font-family: var(--font-monospace);">${today.year}.${today.toFormat('LL')}</div>
+// 상단 헤더
+html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <div style="font-weight: 800; font-size: 0.8rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">PROJECT TIMELINE</div>
+            <div style="font-size: 0.55rem; color: var(--text-faint); font-family: var(--font-monospace);">${today.year}.${today.toFormat('LL')}</div>
          </div>`;
 
-// 그리드 헤더 (날짜 숫자)
-html += `<div style="display: grid; grid-template-columns: 130px 1fr; margin-bottom: 5px; border-bottom: 1px solid rgba(var(--ctp-surface1), 0.3); padding-bottom: 5px;">
+// 날짜 헤더
+html += `<div style="display: grid; grid-template-columns: 130px 1fr; margin-bottom: 5px; border-bottom: 1px solid rgba(var(--ctp-surface1), 0.2); padding-bottom: 5px;">
             <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); padding-left: 4px;">PROJECT</div>
-            <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); text-align: center; font-size: 0.5rem; color: var(--text-faint); font-weight: 600;">`;
+            <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); text-align: center; font-size: 0.45rem; color: var(--text-faint);">`;
 for (let i = 1; i <= daysInMonth; i++) {
     const isToday = i === today.day;
     html += `<div style="${isToday ? 'color: rgb(var(--ctp-rosewater)); font-weight: 900;' : ''}">${i}</div>`;
 }
 html += `</div></div>`;
 
-// 프로젝트 행(Row) 생성
+// 프로젝트별 리스트
 timelineData.forEach(proj => {
     const startPos = proj.start;
     const span = proj.end - proj.start + 1;
@@ -388,11 +389,11 @@ timelineData.forEach(proj => {
                     </div>
                 </div>
                 
-                <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); height: 14px; position: relative;">
-                    <div style="position: absolute; left: calc(${(today.day - 1) / daysInMonth * 100}%); width: 1px; height: 100%; border-left: 1px dashed rgba(var(--ctp-rosewater), 0.2); z-index: 1;"></div>
+                <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); height: 12px; position: relative;">
+                    <div style="position: absolute; left: calc(${(today.day - 1) / daysInMonth * 100}%); width: 1.5px; height: 100%; background: rgba(var(--ctp-rosewater), 0.2); z-index: 1;"></div>
                     
-                    <div style="grid-column: ${startPos} / span ${span}; background: rgba(var(--ctp-rosewater), 0.08); border: 1px solid rgba(var(--ctp-rosewater), 0.15); border-radius: 3px; height: 6px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
-                        <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); opacity: 0.4;"></div>
+                    <div style="grid-column: ${startPos} / span ${span}; background: rgba(var(--ctp-rosewater), 0.1); border: 1px solid rgba(var(--ctp-rosewater), 0.15); border-radius: 2px; height: 6px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
+                        <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); opacity: 0.5;"></div>
                     </div>
                 </div>
              </div>`;
@@ -400,7 +401,7 @@ timelineData.forEach(proj => {
 
 html += `</div>`;
 dv.el("div", html);
-
+```
 ---
 
 ```dataviewjs

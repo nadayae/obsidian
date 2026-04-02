@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Templates/T-Project.md",
+                "file": "00. Dashboard/Second Brain.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "T-Project"
+              "title": "Second Brain"
             }
           }
         ]
@@ -190,11 +190,11 @@
   "active": "052925657130d2ce",
   "lastOpenFiles": [
     "04. Projects/안녕하세요.md",
+    "00. Dashboard/Second Brain.md",
     "04. Projects/노션을 옵시디언으로 이사하기.md",
     "Templates/T-Project.md",
     "04. Projects/대시보드 이쁘게 구현하기.md",
     "05. Tasks/Task_1775127360365.md",
-    "00. Dashboard/Second Brain.md",
     "05. Tasks/Task_1775119908585.md",
     "05. Tasks/Task_1775120010165.md",
     "05. Tasks/Task_1775119890707.md",
@@ -215,7 +215,6 @@
     "05. Tasks/일단 캘린더는 완성.md",
     "00. Dashboard/image.png",
     "2026-04-02.md",
-    "2026-03-31.md",
     "00. Dashboard/🏠m Hoe.md.tmp.13372.1775110777508",
     "05. Tasks/무제",
     "_fileClasses"
