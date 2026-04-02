@@ -69,25 +69,26 @@ const dayNames = ["월","화","수","목","금","토","일"];
 const allTasks = dv.pages('"05. Tasks"');
 const allResources = dv.pages('"06. Resources"');
 
+// [변경] 이모지를 세련된 모노톤 기호로 교체
 const taskTabs = [
-  { id: "thisweek", icon: "", label: "이번 주", filter: t => true, isDefault: true },
-  { id: "total", icon: "", label: "전체(월간)", isMonth: true },
-  { id: "done", icon: "", label: "이번 주 완료", filter: t => t.완료여부 === true },
-  { id: "recent", icon: "", label: "최근 자료", isResource: true }
+  { id: "thisweek", icon: "⊙", label: "이번 주", filter: t => true, isDefault: true },
+  { id: "total", icon: "▤", label: "전체(월간)", isMonth: true },
+  { id: "done", icon: "▣", label: "이번 주 완료", filter: t => t.완료여부 === true },
+  { id: "recent", icon: "▧", label: "최근 자료", isResource: true }
 ];
 
 const uid = "mega-cal-" + Math.random().toString(36).substring(2, 7);
 
 let html = `<div id="${uid}-container">`;
 html += `<details open style="background: transparent !important; border: none !important; padding: 0;">`;
-html += `<summary style="font-weight: 800; cursor: pointer; margin-bottom: 16px; color: rgb(var(--ctp-rosewater)); font-size: 1.1rem; list-style: none;">▤ 캘린더</summary>`;
+html += `<summary style="font-weight: 800; cursor: pointer; margin-bottom: 16px; color: rgb(var(--ctp-rosewater)); font-size: 1.1rem; list-style: none; opacity: 0.8;">캘린더</summary>`;
 
-html += `<div class="sb-tabs" style="margin-bottom: 16px; display: flex; gap: 12px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); padding-bottom: 8px;">`;
+html += `<div class="sb-tabs" style="margin-bottom: 16px; display: flex; gap: 14px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); padding-bottom: 8px;">`;
 taskTabs.forEach((tab) => {
     const isActive = tab.isDefault;
     const color = isActive ? "rgb(var(--ctp-rosewater))" : "var(--text-muted)";
     const border = isActive ? `2px solid rgb(var(--ctp-rosewater))` : "none";
-    html += `<div class="tab-btn" data-target="${tab.id}" style="font-size: 0.8rem; cursor: pointer; font-weight: 600; color: ${color}; border-bottom: ${border}; padding-bottom: 8px;">${tab.icon} ${tab.label}</div>`;
+    html += `<div class="tab-btn" data-target="${tab.id}" style="font-size: 0.75rem; cursor: pointer; font-weight: 700; color: ${color}; border-bottom: ${border}; padding-bottom: 8px; letter-spacing: 0.02em;">${tab.icon} ${tab.label}</div>`;
 });
 html += `</div>`;
 
@@ -97,16 +98,16 @@ taskTabs.forEach((tab) => {
     
     if (tab.isMonth) {
         html += `<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px;">`;
-        dayNames.forEach(n => html += `<div style="text-align:center; font-size:0.6rem; color:var(--text-muted);">${n}</div>`);
+        dayNames.forEach(n => html += `<div style="text-align:center; font-size:0.6rem; color:var(--text-muted); opacity: 0.7;">${n}</div>`);
         monthDays.forEach(d => {
             const isToday = d.hasSame(today, "day");
-            const opacity = d.month === today.month ? "1" : "0.3";
+            const opacity = d.month === today.month ? "1" : "0.2";
             const bg = isToday ? "background: rgba(var(--ctp-rosewater), 0.15);" : "background: rgba(var(--ctp-surface0), 0.2);";
             const dayTasks = allTasks.filter(t => t.날짜 && dv.date(t.날짜).hasSame(d, "day"));
-            html += `<div style="min-height: 60px; padding: 4px; ${bg} border-radius: 6px; opacity: ${opacity}; border: 1px solid rgba(var(--ctp-rosewater), ${isToday?0.5:0.05});">`;
-            html += `<div style="font-size: 0.55rem; color: ${isToday?'rgb(var(--ctp-rosewater))':'gray'};">${d.day}</div>`;
-            dayTasks.slice(0, 2).forEach(t => {
-                html += `<div style="font-size: 0.4rem; border-left: 2px solid rgb(var(--ctp-rosewater)); padding-left: 2px; margin-bottom: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(var(--ctp-surface1), 0.4);">${t.제목 || t.file.name}</div>`;
+            html += `<div style="min-height: 80px; max-height: 120px; overflow-y: auto; padding: 4px; ${bg} border-radius: 6px; opacity: ${opacity}; border: 1px solid rgba(var(--ctp-rosewater), ${isToday?0.5:0.05}); scrollbar-width: none;">`;
+            html += `<div style="font-size: 0.6rem; color: ${isToday?'rgb(var(--ctp-rosewater))':'gray'}; font-weight: ${isToday?800:400}; margin-bottom: 4px;">${d.day}</div>`;
+            dayTasks.forEach(t => {
+                html += `<div style="font-size: 0.5rem; border-left: 2px solid rgb(var(--ctp-rosewater)); padding: 2px 4px; margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; background: rgba(var(--ctp-surface1), 0.4); border-radius: 2px;">${t.제목 || t.file.name}</div>`;
             });
             html += `</div>`;
         });
@@ -116,9 +117,9 @@ taskTabs.forEach((tab) => {
         const recentRes = allResources.sort(r => r.file.mtime, "desc").slice(0, 7);
         html += `<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">`;
         recentRes.forEach(r => {
-            html += `<div style="padding: 10px; border: 1px solid rgba(var(--ctp-rosewater), 0.3); border-radius: 12px; font-size: 0.65rem; min-height: 90px; background: rgba(var(--ctp-surface0), 0.5);">`;
-            html += `<div style="color: rgb(var(--ctp-rosewater)); font-weight: 700;">${dv.date(r.file.mtime).toFormat("MM/dd")}</div>`;
-            html += `<a class="internal-link" href="${r.file.path}">${r.file.name}</a></div>`;
+            html += `<div style="padding: 10px; border: 1px solid rgba(var(--ctp-rosewater), 0.3); border-radius: 12px; font-size: 0.65rem; min-height: 95px; background: rgba(var(--ctp-surface0), 0.5);">`;
+            html += `<div style="color: rgb(var(--ctp-rosewater)); font-weight: 700; margin-bottom: 6px; opacity: 0.8;">${dv.date(r.file.mtime).toFormat("MM/dd")}</div>`;
+            html += `<a class="internal-link" href="${r.file.path}" style="color: var(--text-normal); text-decoration: none;">${r.file.name}</a></div>`;
         });
         html += `</div>`;
     } 
@@ -126,34 +127,24 @@ taskTabs.forEach((tab) => {
         html += `<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">`;
         dayNames.forEach((n, idx) => {
             const isToday = weekDays[idx].hasSame(today, "day");
-            html += `<div style="text-align: center; font-size: 0.75rem; color: ${isToday?'rgb(var(--ctp-rosewater))':'var(--text-muted)'};">${weekDays[idx].month}/${weekDays[idx].day} ${n}</div>`;
+            html += `<div style="text-align: center; font-size: 0.75rem; color: ${isToday?'rgb(var(--ctp-rosewater))':'var(--text-muted)'}; font-weight: ${isToday?800:400}; margin-bottom: 6px;">${weekDays[idx].month}/${weekDays[idx].day} ${n}</div>`;
         });
-
         const filteredTasks = allTasks.filter(t => {
             const d = dv.date(t.날짜);
             return d && d >= startOfWeek && d <= endOfWeek && tab.filter(t);
         });
-
         weekDays.forEach(d => {
             const dayTasks = filteredTasks.filter(t => dv.date(t.날짜).hasSame(d, "day"));
             const isToday = d.hasSame(today, "day");
             const bg = isToday ? "background: rgba(var(--ctp-rosewater), 0.12);" : "background: rgba(var(--ctp-surface0), 0.3);";
             html += `<div style="min-height: 120px; padding: 8px; ${bg} border: 1px solid rgba(var(--ctp-rosewater), ${isToday?0.6:0.15}); border-radius: 12px;">`;
-            
             dayTasks.forEach(t => {
                 const isDone = t.완료여부 === true;
-                
-                // --- 핵심 수정 구간 ---
-                // [변경] 완료 탭(done)에서는 취소선(line-through)을 'none'으로 강제 설정
                 const isDoneTab = tab.id === "done";
                 const textDecoration = (isDone && !isDoneTab) ? "line-through" : "none"; 
                 const opacityValue = isDoneTab ? "1" : (isDone ? "0.5" : "1");
                 const filterValue = (isDone && !isDoneTab) ? "grayscale(0.8)" : "none";
-                
-                const styleStr = `text-decoration: ${textDecoration}; opacity: ${opacityValue}; filter: ${filterValue};`;
-                // --------------------
-
-                html += `<div style="font-size: 0.65rem; padding: 4px 6px; margin-bottom: 5px; border-left: 3px solid rgb(var(--ctp-rosewater)); background: rgba(var(--ctp-surface1), 0.6); border-radius: 4px; ${styleStr}">`;
+                html += `<div style="font-size: 0.65rem; padding: 4px 6px; margin-bottom: 5px; border-left: 3px solid rgb(var(--ctp-rosewater)); background: rgba(var(--ctp-surface1), 0.6); border-radius: 4px; text-decoration: ${textDecoration}; opacity: ${opacityValue}; filter: ${filterValue};">`;
                 html += `<a class="internal-link" href="${t.file.path}" style="color: var(--text-normal) !important; text-decoration: inherit;">${t.제목 || t.file.name}</a></div>`;
             });
             html += `</div>`;
@@ -166,7 +157,6 @@ html += `</details></div>`;
 
 dv.el("div", html);
 
-// 이벤트 리스너 로직 (생략 없이 그대로 유지)
 setTimeout(() => {
     const container = document.getElementById(`${uid}-container`);
     if (!container) return;
@@ -183,7 +173,7 @@ setTimeout(() => {
             if (targetPanel) targetPanel.style.display = 'block';
         });
     });
-}, 100);
+}, 180);
 ```
 ### 오늘
 
