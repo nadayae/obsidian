@@ -177,7 +177,7 @@ setTimeout(() => {
 ```
 
 ```dataviewjs
-// 1. 데이터 로드 및 정렬 가중치 설정
+// 1. 데이터 로드 및 정렬 가중치 설정 (변함 없음)
 const today = dv.date("today");
 const todayStr = today.toFormat("yyyy-MM-dd");
 const templatePath = "Templates/Tasks.md";
@@ -214,19 +214,19 @@ const sections = [
     { id: "delay",     icon: "▤", label: "지연",      filter: t => t.구분 === "지연" }
 ];
 
-const uid = "today-final-fixed-" + Math.random().toString(36).substring(2, 7);
+const uid = "today-rose-gradient-" + Math.random().toString(36).substring(2, 7);
 
 // 2. UI 생성
 let html = `<div id="${uid}-container" class="dataviewjs-today-view">`;
 html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="font-weight: 800; font-size: 1rem; color: var(--text-accent); letter-spacing: 0.02em;">DAILY MISSION CONTROL</div>
-            <button class="add-btn-top" style="background: var(--interactive-accent); cursor: pointer; font-size: 0.65rem; color: var(--text-on-accent); border: none; padding: 6px 14px; border-radius: 4px; font-weight: 700;">+ ADD TASK</button>
+            <div style="font-weight: 800; font-size: 1rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.02em;">DAILY MISSION CONTROL</div>
+            <button class="add-btn-top" style="background: rgba(var(--ctp-rosewater), 0.2); cursor: pointer; font-size: 0.65rem; color: rgb(var(--ctp-rosewater)); border: 1px solid rgba(var(--ctp-rosewater), 0.4); padding: 6px 14px; border-radius: 4px; font-weight: 700;">+ ADD TASK</button>
          </div>`;
 
-html += `<div style="display: flex; gap: 18px; margin-bottom: 15px; border-bottom: 1px solid var(--background-modifier-border); padding-bottom: 10px;">`;
+html += `<div style="display: flex; gap: 18px; margin-bottom: 15px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); padding-bottom: 10px;">`;
 sections.forEach((sec, i) => {
     const isActive = i === 0;
-    html += `<div class="sec-tab" data-target="${sec.id}" style="cursor: pointer; font-size: 0.8rem; color: ${isActive ? "var(--text-accent)" : "var(--text-muted)"}; font-weight: ${isActive ? "800" : "400"}; transition: 0.2s;">${sec.icon} ${sec.label}</div>`;
+    html += `<div class="sec-tab" data-target="${sec.id}" style="cursor: pointer; font-size: 0.8rem; color: ${isActive ? "rgb(var(--ctp-rosewater))" : "var(--text-muted)"}; font-weight: ${isActive ? "800" : "400"}; transition: 0.2s;">${sec.icon} ${sec.label}</div>`;
 });
 html += `</div>`;
 
@@ -243,11 +243,15 @@ sections.forEach((sec, i) => {
             const isDone = t.완료여부 === true;
             const prioText = String(t.중요긴급 || "-");
             
-            // [오류 수정 구간] 변수명 prioStyle로 통일
-            let prioStyle = "color: var(--text-muted); opacity: 0.8;"; 
-            if (prioText.includes("중요O + 긴급O")) prioStyle = "color: #f38ba8; font-weight: 800;";
-            else if (prioText.includes("중요X + 긴급O")) prioStyle = "color: #fab387; font-weight: 600;";
-            else if (prioText.includes("중요O + 긴급X")) prioStyle = "color: #f9e2af; font-weight: 600;";
+            // [로즈 계열 고대비 그라데이션 설정]
+            let prioStyle = "color: var(--text-muted); opacity: 0.7;"; 
+            if (prioText.includes("중요O + 긴급O")) {
+                prioStyle = "color: #ea3242; font-weight: 800; text-shadow: 0 0 5px rgba(230, 69, 83, 0.2);"; // Maroon (진한 로즈)
+            } else if (prioText.includes("중요X + 긴급O")) {
+                prioStyle = "color: #ef5469; font-weight: 700;"; // Pink/Mauve
+            } else if (prioText.includes("중요O + 긴급X")) {
+                prioStyle = "color: #ad282d; font-weight: 600;"; // Deep Purple (모브 계열)
+            }
             
             html += `<tr class="table-view-tr" style="${isDone ? 'opacity: 0.4; text-decoration: line-through;' : ''}">
                         <td class="table-view-td" style="font-family: var(--font-monospace); color: var(--text-normal);">${t.계획 || "--:--"}</td>
@@ -265,6 +269,7 @@ sections.forEach((sec, i) => {
 html += `</div>`;
 dv.el("div", html);
 
+// JS 로직 (생략 없이 동일 유지)
 setTimeout(() => {
     const container = document.getElementById(`${uid}-container`);
     if (!container) return;
@@ -273,7 +278,7 @@ setTimeout(() => {
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             tabs.forEach(t => { t.style.color = 'var(--text-muted)'; t.style.fontWeight = '400'; });
-            tab.style.color = 'var(--text-accent)'; tab.style.fontWeight = '800';
+            tab.style.color = 'rgb(var(--ctp-rosewater))'; tab.style.fontWeight = '800';
             panels.forEach(p => p.style.display = 'none');
             const targetPanel = container.querySelector(`#${uid}-${tab.getAttribute('data-target')}`);
             if (targetPanel) targetPanel.style.display = 'block';
@@ -281,7 +286,7 @@ setTimeout(() => {
     });
     const addBtn = container.querySelector('.add-btn-top');
     addBtn.addEventListener('click', async () => {
-        const activeTab = container.querySelector('.sec-tab[style*="var(--text-accent)"]');
+        const activeTab = container.querySelector('.sec-tab[style*="rgb(var(--ctp-rosewater))"]');
         const activeLabel = activeTab ? activeTab.innerText.split(' ').pop() : "일반";
         const fileName = `05. Tasks/Task_${Date.now()}.md`;
         let fileContent = `---\n날짜: ${todayStr}\n계획: 09:00\n구분: ${activeLabel}\n중요긴급: 중요X + 긴급X\n완료여부: false\n---\n`;
