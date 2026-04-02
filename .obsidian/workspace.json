@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "03. Goals/나만의 세컨드 브레인 구축하기.md",
+                "file": "00. Dashboard/🏠m Hoe.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "나만의 세컨드 브레인 구축하기"
+              "title": "🏠m Hoe"
             }
           }
         ]
@@ -74,7 +74,8 @@
               "title": "북마크"
             }
           }
-        ]
+        ],
+        "currentTab": 2
       }
     ],
     "direction": "horizontal",
@@ -189,16 +190,16 @@
   },
   "active": "052925657130d2ce",
   "lastOpenFiles": [
+    "00. Dashboard/01. Captures.md",
+    "03. Goals/나만의 세컨드 브레인 구축하기.md",
     "Untitled Kanban.md",
     "2026-04-02.md",
-    "00. Dashboard/🏠 Home.md",
+    "00. Dashboard/🏠m Hoe.md",
     "05. Tasks/대시보드 및 각 템플릿 구조 만들기.md",
     "04. Projects/노션을 옵시디언으로 이사하기.md",
     "06. Resources/노션에서 옵시디언으로 (경험담).md",
     "00. Dashboard/Untitled Kanban.md",
-    "00. Dashboard/01. Captures.md",
     "2026-03-31.md",
-    "03. Goals/나만의 세컨드 브레인 구축하기.md",
     "Templates/T-Resource.md",
     "Templates/T-Task.md",
     "Templates/T-Monthly.md",
