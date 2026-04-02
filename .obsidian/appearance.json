@@ -1,9 +1,10 @@
 {
-  "theme": "AnuPpuccin",
   "enabledCssSnippets": [
     "second-brain"
   ],
   "baseFontSize": 16,
   "textFontFamily": "",
-  "monospaceFontFamily": ""
+  "monospaceFontFamily": "",
+  "theme": "moonstone",
+  "cssTheme": "AnuPpuccin"
 }
