@@ -188,8 +188,8 @@ const allTasks = dv.pages('"05. Tasks"').filter(t => {
     return d && d.year === today.year && d.month === today.month && d.day === today.day;
 }).sort(t => {
     const planTime = t.계획 || "99:99";
-    const priorityMap = { "중요긴급": 1, "중요": 2, "긴급": 3, "일반": 4 };
-    const priority = priorityMap[t["중요/긴급"]] || 5;
+    const priorityMap = { "중요긴급": 1, "중요O + 긴급O": 2, "중요X + 긴급O": 3, "4. 중요X + 긴급X": 4 };
+    const priority = priorityMap[t["중요긴급"]] || 5;
     const categoryMap = { "집중": 1, "일반": 2, "쉬운": 3, "쉬움": 3 };
     const category = categoryMap[t.구분] || 4;
     return `${planTime}-${priority}-${category}`;
