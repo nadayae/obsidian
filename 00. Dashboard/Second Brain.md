@@ -177,7 +177,7 @@ setTimeout(() => {
 ```
 
 ```dataviewjs
-// 1. 데이터 로드 및 정렬 가중치 설정 (변함 없음)
+// 1. 데이터 로드 및 정렬 가중치 설정
 const today = dv.date("today");
 const todayStr = today.toFormat("yyyy-MM-dd");
 const templatePath = "Templates/Tasks.md";
@@ -210,80 +210,95 @@ const sections = [
     { id: "easy",      icon: "○", label: "쉬운",      filter: t => t.구분 === "쉬운" || t.구분 === "쉬움" },
     { id: "sched",     icon: "⊙", label: "일정",      filter: t => t.구분 === "일정" },
     { id: "delegate",  icon: "◇", label: "위임",      filter: t => t.구분 === "위임" },
-    { id: "proj",      icon: "▣", label: "프로젝트별", filter: t => t.프로젝트 },
     { id: "delay",     icon: "▤", label: "지연",      filter: t => t.구분 === "지연" }
 ];
 
-const uid = "today-rose-gradient-" + Math.random().toString(36).substring(2, 7);
+const uid = "today-proj-final-" + Math.random().toString(36).substring(2, 7);
 
 // 2. UI 생성
 let html = `<div id="${uid}-container" class="dataviewjs-today-view">`;
+
+// 헤더
 html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div style="font-weight: 800; font-size: 1rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.02em;">DAILY MISSION CONTROL</div>
             <button class="add-btn-top" style="background: rgba(var(--ctp-rosewater), 0.2); cursor: pointer; font-size: 0.65rem; color: rgb(var(--ctp-rosewater)); border: 1px solid rgba(var(--ctp-rosewater), 0.4); padding: 6px 14px; border-radius: 4px; font-weight: 700;">+ ADD TASK</button>
          </div>`;
 
-html += `<div style="display: flex; gap: 18px; margin-bottom: 15px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); padding-bottom: 10px;">`;
+// 탭 버튼
+html += `<div style="display: flex; gap: 18px; margin-bottom: 20px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); padding-bottom: 10px;">`;
 sections.forEach((sec, i) => {
     const isActive = i === 0;
     html += `<div class="sec-tab" data-target="${sec.id}" style="cursor: pointer; font-size: 0.8rem; color: ${isActive ? "rgb(var(--ctp-rosewater))" : "var(--text-muted)"}; font-weight: ${isActive ? "800" : "400"}; transition: 0.2s;">${sec.icon} ${sec.label}</div>`;
 });
 html += `</div>`;
 
+// 패널
 sections.forEach((sec, i) => {
     const tasks = allTasks.filter(sec.filter);
     html += `<div class="sec-panel" id="${uid}-${sec.id}" style="display: ${i === 0 ? "block" : "none"};">`;
+    
     if (tasks.length > 0) {
-        html += `<table class="dataview table-view-table" style="width: 100%;">
-                    <thead class="table-view-thead"><tr class="table-view-tr">
-                        <th class="table-view-th">계획</th><th class="table-view-th">이름</th><th class="table-view-th">구분</th><th class="table-view-th">중요긴급</th>
-                    </tr></thead>
-                    <tbody class="table-view-tbody">`;
-        tasks.forEach(t => {
-            const isDone = t.완료여부 === true;
-            const prioText = String(t.중요긴급 || "-");
+        const grouped = tasks.groupBy(t => t.프로젝트 || "기타 업무");
+        
+        html += `<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px;">`;
+        
+        grouped.forEach(group => {
+            html += `<div style="background: rgba(var(--ctp-surface0), 0.5); border: 1px solid rgba(var(--ctp-rosewater), 0.15); border-radius: 10px; padding: 12px; display: flex; flex-direction: column;">
+                        <div style="font-weight: 800; font-size: 0.75rem; color: rgb(var(--ctp-rosewater)); margin-bottom: 10px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.1); padding-bottom: 6px; display: flex; justify-content: space-between;">
+                            <span>📦 ${group.key}</span>
+                            <span style="opacity: 0.5; font-size: 0.65rem;">${group.rows.length}</span>
+                        </div>
+                        <div style="display: flex; flex-direction: column; gap: 10px;">`;
             
-            // [로즈 계열 고대비 그라데이션 설정]
-            let prioStyle = "color: var(--text-muted); opacity: 0.7;"; 
-            if (prioText.includes("중요O + 긴급O")) {
-                prioStyle = "color: #ea3242; font-weight: 800; text-shadow: 0 0 5px rgba(230, 69, 83, 0.2);"; // Maroon (진한 로즈)
-            } else if (prioText.includes("중요X + 긴급O")) {
-                prioStyle = "color: #ef5469; font-weight: 700;"; // Pink/Mauve
-            } else if (prioText.includes("중요O + 긴급X")) {
-                prioStyle = "color: #ad282d; font-weight: 600;"; // Deep Purple (모브 계열)
-            }
-            
-            html += `<tr class="table-view-tr" style="${isDone ? 'opacity: 0.4; text-decoration: line-through;' : ''}">
-                        <td class="table-view-td" style="font-family: var(--font-monospace); color: var(--text-normal);">${t.계획 || "--:--"}</td>
-                        <td class="table-view-td"><a class="internal-link" href="${t.file.path}" style="font-weight: 600;">${t.제목 || t.file.name}</a></td>
-                        <td class="table-view-td" style="color: var(--text-muted);">${t.구분 || "-"}</td>
-                        <td class="table-view-td" style="${prioStyle}">${prioText}</td>
-                    </tr>`;
+            group.rows.forEach(t => {
+                const isDone = t.완료여부 === true;
+                const currentPrio = String(t.중요긴급 || ""); // prioText 대신 명확히 선언
+                
+                let prioStyle = "color: var(--text-muted); opacity: 0.6;"; 
+                if (currentPrio.includes("중요O + 긴급O")) prioStyle = "color: #e64553; font-weight: 800;";
+                else if (currentPrio.includes("중요X + 긴급O")) prioStyle = "color: #f2cdcd; font-weight: 700;";
+                else if (currentPrio.includes("중요O + 긴급X")) prioStyle = "color: #f5e0dc; font-weight: 600;";
+
+                html += `<div style="display: flex; flex-direction: column; ${isDone ? 'opacity: 0.3; text-decoration: line-through;' : ''}">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.6rem; margin-bottom: 2px;">
+                                <span style="font-family: var(--font-monospace); color: var(--text-normal);">${t.계획 || "--:--"}</span>
+                                <span style="${prioStyle}">${currentPrio}</span>
+                            </div>
+                            <div style="font-size: 0.7rem; font-weight: 600;">
+                                <a class="internal-link" href="${t.file.path}" style="color: var(--text-normal); text-decoration: none;">${t.제목 || t.file.name}</a>
+                            </div>
+                         </div>`;
+            });
+            html += `</div></div>`;
         });
-        html += `</tbody></table>`;
+        html += `</div>`;
     } else {
-        html += `<div style="padding: 40px; text-align: center; font-size: 0.8rem; color: var(--text-faint);">NO ACTIVE MISSIONS</div>`;
+        html += `<div style="padding: 40px; text-align: center; font-size: 0.8rem; color: var(--text-faint);">NO MISSIONS ASSIGNED</div>`;
     }
     html += `</div>`;
 });
+
 html += `</div>`;
 dv.el("div", html);
 
-// JS 로직 (생략 없이 동일 유지)
+// 3. JS 로직
 setTimeout(() => {
     const container = document.getElementById(`${uid}-container`);
     if (!container) return;
     const tabs = container.querySelectorAll('.sec-tab');
     const panels = container.querySelectorAll('.sec-panel');
+    
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
+            const target = tab.getAttribute('data-target');
             tabs.forEach(t => { t.style.color = 'var(--text-muted)'; t.style.fontWeight = '400'; });
             tab.style.color = 'rgb(var(--ctp-rosewater))'; tab.style.fontWeight = '800';
             panels.forEach(p => p.style.display = 'none');
-            const targetPanel = container.querySelector(`#${uid}-${tab.getAttribute('data-target')}`);
+            const targetPanel = container.querySelector(`#${uid}-${target}`);
             if (targetPanel) targetPanel.style.display = 'block';
         });
     });
+
     const addBtn = container.querySelector('.add-btn-top');
     addBtn.addEventListener('click', async () => {
         const activeTab = container.querySelector('.sec-tab[style*="rgb(var(--ctp-rosewater))"]');
@@ -291,9 +306,14 @@ setTimeout(() => {
         const fileName = `05. Tasks/Task_${Date.now()}.md`;
         let fileContent = `---\n날짜: ${todayStr}\n계획: 09:00\n구분: ${activeLabel}\n중요긴급: 중요X + 긴급X\n완료여부: false\n---\n`;
         const templateFile = app.vault.getAbstractFileByPath(templatePath);
-        if (templateFile) { fileContent += "\n" + (await app.vault.read(templateFile)).replace(/---[\s\S]*?---/, '').trim(); }
-        const newFile = await app.vault.create(fileName, fileContent);
-        app.workspace.getLeaf(false).openFile(newFile);
+        if (templateFile) {
+            const templateText = await app.vault.read(templateFile);
+            fileContent += "\n" + templateText.replace(/---[\s\S]*?---/, '').trim();
+        }
+        try {
+            const newFile = await app.vault.create(fileName, fileContent);
+            app.workspace.getLeaf(false).openFile(newFile);
+        } catch (e) { new Notice("ERR: " + e.message); }
     });
 }, 250);
 ```
