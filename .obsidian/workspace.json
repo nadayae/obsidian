@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "00. Dashboard/🏠m Hoe.md",
+                "file": "00. Dashboard/Second Brain.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "🏠m Hoe"
+              "title": "Second Brain"
             }
           }
         ]
@@ -78,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "745189a8707a5fcd",
@@ -191,7 +192,7 @@
   "lastOpenFiles": [
     "00. Dashboard/🏠m Hoe.md.tmp.13372.1775110777508",
     "02. Boxes/자기관리.md",
-    "00. Dashboard/🏠m Hoe.md",
+    "00. Dashboard/Second Brain.md",
     "00. Dashboard/01. Captures.md",
     "03. Goals/나만의 세컨드 브레인 구축하기.md",
     "Untitled Kanban.md",
