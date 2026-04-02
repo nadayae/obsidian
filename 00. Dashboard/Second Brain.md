@@ -52,26 +52,21 @@ for (const b of buttons) {
 ```
 ---
 ```dataviewjs
-// 1. 기본 설정
 const today = dv.date("today");
 const startOfWeek = today.startOf("week");
-const days = [];
-for (let i = 0; i < 7; i++) { days.push(startOfWeek.plus({days: i})); }
+const days = Array.from({length: 7}, (_, i) => startOfWeek.plus({days: i}));
 const dayNames = ["월","화","수","목","금","토","일"];
 
-// 2. 데이터 수집
 const allTasks = dv.pages('"05. Tasks"');
 const allResources = dv.pages('"06. Resources"');
 
-// [핵심] 날짜 비교 로직 보정 (시간 정보 제거)
 const isSameDay = (d1, d2) => {
     if (!d1 || !d2) return false;
     const date1 = dv.date(d1);
     const date2 = dv.date(d2);
-    return date1.year === date2.year && date1.month === date2.month && date1.day === date2.day;
+    return date1.hasSame(date2, "day");
 };
 
-// 3. 탭 필터 정의 (사용자님의 속성 이름 '완료여부', '구분' 반영)
 const taskTabs = [
   { id: "all",   icon: "📅", label: "전체",     filter: t => !t.완료여부 },
   { id: "sched", icon: "⏰", label: "일정",     filter: t => !t.완료여부 && t.구분 === "일정" },
@@ -79,59 +74,53 @@ const taskTabs = [
   { id: "recent",icon: "📚", label: "최근 자료",   isResource: true }
 ];
 
-const uid = "final-fixed-cal-" + Math.random().toString(36).substring(2, 8);
+const uid = "cal-" + Math.random().toString(36).substring(2, 7);
 
-// 4. HTML 생성
 let html = `<details open style="background:rgba(var(--ctp-surface0),0.3); border:1px solid rgba(var(--ctp-surface1),0.5); border-radius:12px; padding:12px;">`;
-html += `<summary style="font-weight:700; cursor:pointer; margin-bottom:10px;">📅 주간 캘린더 (날짜 매칭 보정됨)</summary>`;
+html += `<summary style="font-weight:700; cursor:pointer; margin-bottom:10px;">📅 주간 캘린더</summary>`;
 
-// 탭 바
 html += `<div class="sb-tabs" id="${uid}-bar" style="margin-bottom:12px; display:flex; gap:8px;">`;
 taskTabs.forEach((tab, i) => {
-  const activeClass = (i === 0) ? 'active' : '';
-  html += `<div class="sb-tab ${activeClass}" data-tab="${tab.id}" style="font-size:0.75rem; cursor:pointer;" onclick="const r=this.closest('details'); r.querySelectorAll('.sb-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active'); r.querySelectorAll('.sb-tab-panel').forEach(p=>p.style.display='none'); r.querySelector('#${uid}-'+this.dataset.tab).style.display='block';">${tab.icon} ${tab.label}</div>`;
+    const active = i === 0 ? "active" : "";
+    html += `<div class="sb-tab ${active}" data-tab="${tab.id}" style="font-size:0.75rem; cursor:pointer;" onclick="const r=this.closest('details'); r.querySelectorAll('.sb-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active'); r.querySelectorAll('.sb-tab-panel').forEach(p=>p.style.display='none'); r.querySelector('#${uid}-'+this.dataset.tab).style.display='block';">${tab.icon} ${tab.label}</div>`;
 });
 html += `</div>`;
 
-// 패널 생성
 taskTabs.forEach((tab, i) => {
-  const display = (i === 0) ? 'block' : 'none';
-  html += `<div class="sb-tab-panel" id="${uid}-${tab.id}" style="display:${display};">`;
-
-  if (tab.isResource) {
-    const recentRes = allResources.sort(r => r.file.mtime, "desc").slice(0, 7);
-    html += `<div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px;">`;
-    recentRes.forEach(r => {
-      html += `<div style="padding:6px; border:1px solid rgba(0,0,0,0.1); border-radius:6px; font-size:0.6rem; min-height:80px; background:rgba(var(--ctp-surface1),0.2);">`;
-      html += `<div style="color:gray; margin-bottom:4px;">${dv.date(r.file.mtime).toFormat("MM/dd")}</div>`;
-      html += `<a class="internal-link" href="${r.file.path}">${r.file.name}</a></div>`;
-    });
+    const display = i === 0 ? "block" : "none";
+    html += `<div class="sb-tab-panel" id="${uid}-${tab.id}" style="display:${display};">`;
+    
+    if (tab.isResource) {
+        const recentRes = allResources.sort(r => r.file.mtime, "desc").slice(0, 7);
+        html += `<div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;">`;
+        recentRes.forEach(r => {
+            html += `<div style="padding:6px; border:1px solid rgba(var(--ctp-surface2),0.4); border-radius:6px; font-size:0.6rem; min-height:85px; background:rgba(var(--ctp-surface1),0.2);">`;
+            html += `<div style="color:gray; margin-bottom:4px;">${dv.date(r.file.mtime).toFormat("MM/dd")}</div>`;
+            html += `<a class="internal-link" href="${r.file.path}">${r.file.name}</a></div>`;
+        });
+        html += `</div>`;
+    } else {
+        html += `<div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;">`;
+        days.forEach((d, idx) => {
+            const style = d.hasSame(today, "day") ? "color:#007aff; font-weight:700;" : "color:gray;";
+            html += `<div style="text-align:center; font-size:0.65rem; padding-bottom:4px; ${style}">${d.month}/${d.day} ${dayNames[idx]}</div>`;
+        });
+        
+        const filtered = allTasks.where(tab.filter);
+        days.forEach(d => {
+            const dayTasks = filtered.filter(t => isSameDay(t.날짜, d));
+            const bg = d.hasSame(today, "day") ? "background:rgba(0,122,255,0.08);" : "";
+            html += `<div style="min-height:95px; padding:4px; ${bg} border:1px solid rgba(var(--ctp-surface2),0.5); border-radius:8px;">`;
+            dayTasks.slice(0, 4).forEach(t => {
+                const color = t.구분 === "집중" ? "#ff9500" : t.구분 === "일정" ? "#007aff" : "#34c759";
+                html += `<div style="font-size:0.6rem; padding:2px 4px; margin-bottom:2px; border-left:2px solid ${color}; background:rgba(var(--ctp-surface0),0.8); border-radius:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">`;
+                html += `<a class="internal-link" href="${t.file.path}">${t.제목 || t.file.name}</a></div>`;
+            });
+            html += `</div>`;
+        });
+        html += `</div>`;
+    }
     html += `</div>`;
-  } else {
-    html += `<div style="display:grid; grid-template-columns: repeat(7, 1fr); gap:6px;">`;
-    // 요일 헤더
-    days.forEach((d, idx) => {
-      const style = d.equals(today) ? "color:#007aff; font-weight:700;" : "color:gray;";
-      html += `<div style="text-align:center; font-size:0.65rem; padding-bottom:4px; ${style}">${d.month}/${d.day} ${dayNames[idx]}</div>`;
-    });
-    // 데이터 배치
-    const filtered = allTasks.where(tab.filter);
-    days.forEach(d => {
-      // 날짜와 생성일 중 하나라도 오늘 날짜와 일치하는지 확인
-      const dayTasks = filtered.where(t => isSameDay(t.날짜, d) || isSameDay(t.생성일, d));
-      const bg = d.equals(today) ? "background:rgba(0,122,255,0.08);" : "";
-      
-      html += `<div style="min-height:90px; padding:4px; ${bg} border:1px solid rgba(var(--ctp-surface2),0.4); border-radius:6px;">`;
-      dayTasks.slice(0, 4).forEach(t => {
-        const color = t.구분 === "집중" ? "#ff9500" : t.구분 === "일정" ? "#007aff" : "#34c759";
-        html += `<div style="font-size:0.6rem; padding:2px; margin-bottom:2px; border-left:2px solid ${color}; background:rgba(var(--ctp-surface0),0.5); border-radius:2px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">`;
-        html += `<a class="internal-link" href="${t.file.path}">${t.제목 || t.file.name}</a></div>`;
-      });
-      html += `</div>`;
-    });
-    html += `</div>`;
-  }
-  html += `</div>`;
 });
 
 html += `</details>`;

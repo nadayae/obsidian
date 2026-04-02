@@ -25,6 +25,7 @@
     "TQ_show_toolbar": "checkbox",
     "TQ_show_tree": "checkbox",
     "TQ_show_urgency": "checkbox",
-    "상태": "text"
+    "상태": "text",
+    "날짜": "date"
   }
 }
