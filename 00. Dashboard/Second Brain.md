@@ -187,24 +187,20 @@ const allTasks = dv.pages('"05. Tasks"').filter(t => {
     const d = dv.date(t.날짜);
     return d && d.year === today.year && d.month === today.month && d.day === today.day;
 }).sort(t => {
-    // [1순위] 계획 시간 정규화 (1000 -> 10:00 형태로 인식하게 함)
     let timeRaw = String(t.계획 || "99:99").replace(":", "");
-    if (timeRaw.length === 3) timeRaw = "0" + timeRaw; // 900 -> 0900 처리
+    if (timeRaw.length === 3) timeRaw = "0" + timeRaw; 
     const timeVal = timeRaw;
 
-    // [2순위] 중요긴급 가중치 (문자열 포함 여부로 체크해서 더 확실하게)
     let prioWeight = 5;
-    if (String(t.중요긴급).includes("중요O + 긴급O")) prioWeight = 1;
-    else if (String(t.중요긴급).includes("중요X + 긴급O")) prioWeight = 2;
-    else if (String(t.중요긴급).includes("중요O + 긴급X")) prioWeight = 3;
-    else if (String(t.중요긴급).includes("중요X + 긴급X")) prioWeight = 4;
+    const pStr = String(t.중요긴급 || "");
+    if (pStr.includes("중요O + 긴급O")) prioWeight = 1;
+    else if (pStr.includes("중요X + 긴급O")) prioWeight = 2;
+    else if (pStr.includes("중요O + 긴급X")) prioWeight = 3;
+    else if (pStr.includes("중요X + 긴급X")) prioWeight = 4;
 
-    // [3순위] 구분 가중치 (집중이 가장 위)
-    let catWeight = 7;
     const catMap = { "집중": 1, "일반": 2, "쉬운": 3, "위임": 4, "일정": 5, "나중에": 6 };
-    catWeight = catMap[t.구분] || 7;
+    const catWeight = catMap[t.구분] || 7;
 
-    // 모든 가중치를 하나의 문자열로 합쳐서 비교 (시간-중요도-구분)
     return `${timeVal}-${prioWeight}-${catWeight}`;
 }, 'asc');
 
@@ -218,9 +214,9 @@ const sections = [
     { id: "delay",     icon: "▤", label: "지연",      filter: t => t.구분 === "지연" }
 ];
 
-const uid = "today-sort-fix-" + Math.random().toString(36).substring(2, 7);
+const uid = "today-final-fixed-" + Math.random().toString(36).substring(2, 7);
 
-// 2. UI 생성 (네이티브 스타일)
+// 2. UI 생성
 let html = `<div id="${uid}-container" class="dataviewjs-today-view">`;
 html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div style="font-weight: 800; font-size: 1rem; color: var(--text-accent); letter-spacing: 0.02em;">DAILY MISSION CONTROL</div>
@@ -246,9 +242,15 @@ sections.forEach((sec, i) => {
         tasks.forEach(t => {
             const isDone = t.완료여부 === true;
             const prioText = String(t.중요긴급 || "-");
-            const prioStyle = prioText.includes("중요O + 긴급O") ? "color: var(--text-error); font-weight: 800;" : "color: var(--text-muted);";
+            
+            // [오류 수정 구간] 변수명 prioStyle로 통일
+            let prioStyle = "color: var(--text-muted); opacity: 0.8;"; 
+            if (prioText.includes("중요O + 긴급O")) prioStyle = "color: #f38ba8; font-weight: 800;";
+            else if (prioText.includes("중요X + 긴급O")) prioStyle = "color: #fab387; font-weight: 600;";
+            else if (prioText.includes("중요O + 긴급X")) prioStyle = "color: #f9e2af; font-weight: 600;";
+            
             html += `<tr class="table-view-tr" style="${isDone ? 'opacity: 0.4; text-decoration: line-through;' : ''}">
-                        <td class="table-view-td" style="font-family: var(--font-monospace); color: var(--text-accent);">${t.계획 || "--:--"}</td>
+                        <td class="table-view-td" style="font-family: var(--font-monospace); color: var(--text-normal);">${t.계획 || "--:--"}</td>
                         <td class="table-view-td"><a class="internal-link" href="${t.file.path}" style="font-weight: 600;">${t.제목 || t.file.name}</a></td>
                         <td class="table-view-td" style="color: var(--text-muted);">${t.구분 || "-"}</td>
                         <td class="table-view-td" style="${prioStyle}">${prioText}</td>
@@ -263,7 +265,6 @@ sections.forEach((sec, i) => {
 html += `</div>`;
 dv.el("div", html);
 
-// 3. JS 로직 (탭 & 템플릿)
 setTimeout(() => {
     const container = document.getElementById(`${uid}-container`);
     if (!container) return;
@@ -274,7 +275,8 @@ setTimeout(() => {
             tabs.forEach(t => { t.style.color = 'var(--text-muted)'; t.style.fontWeight = '400'; });
             tab.style.color = 'var(--text-accent)'; tab.style.fontWeight = '800';
             panels.forEach(p => p.style.display = 'none');
-            container.querySelector(`#${uid}-${tab.getAttribute('data-target')}`).style.display = 'block';
+            const targetPanel = container.querySelector(`#${uid}-${tab.getAttribute('data-target')}`);
+            if (targetPanel) targetPanel.style.display = 'block';
         });
     });
     const addBtn = container.querySelector('.add-btn-top');
