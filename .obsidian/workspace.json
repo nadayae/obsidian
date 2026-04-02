@@ -197,9 +197,11 @@
       "templater-obsidian:Templater": false
     }
   },
-  "active": "f8b2f8b78482caa1",
+  "active": "d8411454daa42e08",
   "lastOpenFiles": [
     "00. Dashboard/🏠 Home.md",
+    "00. Dashboard/Untitled Kanban.md",
+    "06. Resources/노션에서 옵시디언으로 (경험담).md",
     "00. Dashboard/01. Captures.md",
     "2026-03-31.md",
     "2026-04-02.md",
@@ -216,7 +218,6 @@
     "conflict-files-obsidian-git.md",
     "04. Projects/노션을 옵시디언으로 이사하기.md",
     "_fileClasses/project.md",
-    "06. Resources/노션에서 옵시디언으로 (경험담).md",
     "04. Projects/대시보드 이쁘게 구현하기.md",
     "02. Boxes/자기관리.md",
     "_fileClasses/goal.md",
@@ -224,7 +225,6 @@
     "_fileClasses/box.md",
     "_fileClasses/book.md",
     "03. Goals/Untitled.md",
-    "_fileClasses/resource.md",
     "05. Tasks/무제",
     "_fileClasses"
   ]
