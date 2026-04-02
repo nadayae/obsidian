@@ -455,97 +455,118 @@ dv.el("div", html);
 ---
 
 ```dataviewjs
-// 1. 데이터 수집 및 초기 설정
+// 1. 설정 및 데이터 로드
 const projects = dv.pages('"04. Projects"').filter(p => p.type === "project").array();
 const today = dv.date("today");
 const statuses = ["계획 전", "계획", "진행중", "집중"];
-const ROSEWATER = "#f2cdcd";
-const containerId = "kanban-container-" + Date.now();
+const ROSEWATER = "#e6aba9"; 
+const TEXT_MUTED = "#8a81a3";
+const containerId = "notion-tab-kanban-" + Date.now();
 
-// 2. 탭 메뉴 및 컨테이너 생성
+// 2. UI 구조 생성
 let html = `
-<div id="${containerId}" style="font-family: var(--font-interface); background: transparent; padding: 10px; border-radius: 12px;">
-    <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px;">
-        <button class="kanban-tab active" data-target="today" style="background: none; border: none; font-weight: 800; font-size: 0.8rem; cursor: pointer; color: ${ROSEWATER}; padding: 5px 10px;">오늘 📅</button>
-        <button class="kanban-tab" data-target="all" style="background: none; border: none; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: var(--text-faint); padding: 5px 10px;">전체 📁</button>
-        <button class="kanban-tab" data-target="overdue" style="background: none; border: none; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: var(--text-faint); padding: 5px 10px;">지연 ⚠️</button>
-        <button class="kanban-tab" data-target="by-goal" style="background: none; border: none; font-weight: 600; font-size: 0.8rem; cursor: pointer; color: var(--text-faint); padding: 5px 10px;">목표별 🎯</button>
+<div id="${containerId}" style="font-family: var(--font-interface); padding: 10px 0;">
+    <div style="display: flex; gap: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0px; margin-bottom: 25px;">
+        <div class="ntab active" data-target="today" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative;">
+            <span style="font-size: 0.85rem;">⊙</span><span style="font-size: 0.85rem; font-weight: 500;">오늘</span>
+        </div>
+        <div class="ntab" data-target="all" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${TEXT_MUTED};">
+            <span style="font-size: 0.85rem;">目</span><span style="font-size: 0.85rem; font-weight: 500;">전체</span>
+        </div>
+        <div class="ntab" data-target="overdue" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${TEXT_MUTED};">
+            <span style="font-size: 0.85rem;">⚠️</span><span style="font-size: 0.85rem; font-weight: 500;">지연</span>
+        </div>
+        <div class="ntab" data-target="by-goal" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${TEXT_MUTED};">
+            <span style="font-size: 0.85rem;">🎯</span><span style="font-size: 0.85rem; font-weight: 500;">목표별</span>
+        </div>
     </div>
-
-    <div id="kanban-display" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;">
+    <div id="k-display-${containerId}" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; min-width: 900px; overflow-x: auto; padding-bottom: 15px;">
         </div>
 </div>
 
 <style>
-    .kanban-tab.active { color: ${ROSEWATER} !important; border-bottom: 2px solid ${ROSEWATER} !important; }
-    .kanban-card:hover { transform: translateY(-2px); transition: 0.2s; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+    .ntab.active { color: ${ROSEWATER} !important; font-weight: 700 !important; }
+    .ntab.active::after {
+        content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background-color: ${ROSEWATER};
+    }
+    .k-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); transition: all 0.2s ease; }
 </style>
 `;
 
 dv.el("div", html);
 
-// 3. 렌더링 함수 (섹션별 필터링)
-function renderKanban(target) {
-    const display = document.getElementById("kanban-display");
-    let filtered = [];
+// 3. 렌더링 함수 (데이터를 HTML로 그려주는 역할)
+const renderK = (target) => {
+    const display = document.getElementById(`k-display-${containerId}`);
+    if (!display) return;
 
+    let filtered = [];
     if (target === "today") {
-        filtered = projects.filter(p => p.시작일 && dv.date(p.시작일) <= today && p.목표일 && dv.date(p.목표일) >= today);
+        filtered = projects.filter(p => {
+            const s = p.시작일 ? dv.date(p.시작일) : null;
+            const e = (p.목표일 || p.종료일) ? dv.date(p.목표일 || p.종료일) : null;
+            return s && e && s <= today && e >= today;
+        });
     } else if (target === "all") {
         filtered = projects;
     } else if (target === "overdue") {
-        filtered = projects.filter(p => p.목표일 && dv.date(p.목표일) < today && p.상태 !== "완료");
+        filtered = projects.filter(p => {
+            const e = (p.목표일 || p.종료일) ? dv.date(p.목표일 || p.종료일) : null;
+            return e && e < today && p.상태 !== "완료";
+        });
     } else if (target === "by-goal") {
-        // 목표별은 그룹화해서 보여주거나, 가장 큰 목표 위주로 정렬
-        filtered = projects.sort((a, b) => (a.목표 || "").localeCompare(b.목표 || ""));
+        filtered = [...projects].sort((a, b) => String(a.목표 || "").localeCompare(String(b.목표 || "")));
     }
 
-    let boardContent = "";
+    let columns = "";
     statuses.forEach(status => {
         const cards = filtered.filter(p => p.상태 === status);
-        boardContent += `
-            <div style="background: rgba(var(--ctp-surface0), 0.3); border-radius: 10px; padding: 12px; min-height: 200px;">
-                <div style="font-size: 0.65rem; font-weight: 900; color: var(--text-muted); text-align: center; text-transform: uppercase; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 5px;">${status}</div>
-        `;
+        columns += `<div style="background: rgba(245, 234, 224, 0.4); border-radius: 10px; padding: 15px; border: 1px solid rgba(0,0,0,0.02);">
+            <div style="font-size: 0.6rem; font-weight: 800; color: #8a81a3; text-transform: uppercase; margin-bottom: 20px; display: flex; justify-content: space-between;">
+                <span>${status}</span><span style="background: rgba(0,0,0,0.04); padding: 1px 6px; border-radius: 4px;">${cards.length}</span>
+            </div>`;
 
         cards.forEach(p => {
-            const isOverdue = p.목표일 && dv.date(p.목표일) < today;
-            boardContent += `
-                <div class="kanban-card" style="background: var(--background-primary); border: 1px solid ${isOverdue ? '#e64553' : 'rgba(var(--ctp-rosewater), 0.2)'}; border-radius: 8px; padding: 10px; margin-bottom: 10px; position: relative;">
-                    <div style="font-size: 0.7rem; font-weight: 700; margin-bottom: 5px;">
-                        <a class="internal-link" href="${p.file.path}" style="color: var(--text-normal); text-decoration: none;">${p.file.name}</a>
-                    </div>
-                    <div style="font-size: 0.55rem; color: var(--text-faint); display: flex; justify-content: space-between; align-items: center;">
-                        <span style="background: rgba(var(--ctp-rosewater), 0.1); padding: 2px 5px; border-radius: 4px;">${p.목표 || '기타'}</span>
-                        <span style="font-weight: 600; color: ${isOverdue ? '#e64553' : 'inherit'};">${p.목표일 ? dv.date(p.목표일).toFormat('MM/dd') : ''}</span>
+            const e = (p.목표일 || p.종료일) ? dv.date(p.목표일 || p.종료일) : null;
+            const isLate = e && e < today && p.상태 !== "완료";
+            columns += `<div class="k-card" style="background: var(--background-primary); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid ${isLate ? '#e64553' : 'rgba(0,0,0,0.05)'}; cursor: pointer;">
+                <div style="font-size: 0.75rem; font-weight: 600; margin-bottom: 8px;">
+                    <a class="internal-link" href="${p.file.path}" style="color: var(--text-normal); text-decoration: none;">${p.file.name}</a>
+                </div>
+                <div style="font-size: 0.55rem; color: #8a81a3; display: flex; flex-direction: column; gap: 4px;">
+                    <div style="display: flex; align-items: center; gap: 4px;">🎯 <span>${p.목표 || '기타'}</span></div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 4px;">
+                        <span style="color: ${isLate ? '#e64553' : 'inherit'}; font-weight: ${isLate ? '700' : '400'};">${e ? e.toFormat('MM월 dd일') : ''}</span>
+                        ${p.달성률 ? `<span style="color: ${ROSEWATER};">${p.달성률}%</span>` : ''}
                     </div>
                 </div>
-            `;
+            </div>`;
         });
-        boardContent += `</div>`;
+        columns += `</div>`;
     });
-    display.innerHTML = boardContent;
-}
+    display.innerHTML = columns;
+};
 
-// 4. 이벤트 리스너 등록
+// 4. 실행 및 이벤트 바인딩
+// DOM이 확실히 그려진 후 실행되도록 보장
 setTimeout(() => {
-    const tabs = document.querySelectorAll(".kanban-tab");
-    tabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-            tabs.forEach(t => {
-                t.classList.remove("active");
-                t.style.fontWeight = "600";
-                t.style.color = "var(--text-faint)";
+    const root = document.getElementById(containerId);
+    if (root) {
+        const tabs = root.querySelectorAll(".ntab");
+        tabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+                tabs.forEach(t => {
+                    t.classList.remove("active");
+                    t.style.color = TEXT_MUTED;
+                });
+                tab.classList.add("active");
+                tab.style.color = ROSEWATER;
+                renderK(tab.dataset.target);
             });
-            tab.classList.add("active");
-            tab.style.fontWeight = "800";
-            tab.style.color = ROSEWATER;
-            renderKanban(tab.dataset.target);
         });
-    });
-    // 초기 렌더링 (오늘 섹션)
-    renderKanban("today");
-}, 100);
+    }
+    renderK("today"); // 초기 렌더링
+}, 50);
 ```
 
 ---
