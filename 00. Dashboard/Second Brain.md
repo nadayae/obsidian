@@ -175,117 +175,110 @@ setTimeout(() => {
     });
 }, 180);
 ```
-### 오늘
 
 ```dataviewjs
-const today = dv.date("today");
-const tomorrow = today.plus({days: 1});
-const allTasks = dv.pages('"05. Tasks"').where(t => t.완료여부 !== true);
+// 1. 데이터 준비
+const today = dv.date("today").toFormat("yyyy-MM-dd");
+const allTasks = dv.pages('"05. Tasks"').filter(t => t.날짜 == today);
 
-// 탭 정의
-const tabs = [
-  {id: "today",   icon: "🕐", label: "오늘",       filter: t => t.날짜 && dv.date(t.날짜).equals(today)},
-  {id: "tomorrow", icon: "🕐", label: "내일",       filter: t => t.날짜 && dv.date(t.날짜).equals(tomorrow)},
-  {id: "focus",   icon: "🔥", label: "집중",       filter: t => t.구분 === "집중"},
-  {id: "easy",    icon: "✏️", label: "쉬운",       filter: t => t.구분 === "쉬운"},
-  {id: "sched",   icon: "🗓", label: "일정",       filter: t => t.구분 === "일정"},
-  {id: "deleg",   icon: "👥", label: "위임",       filter: t => t.구분 === "위임"},
-  {id: "proj",    icon: "🚀", label: "프로젝트별",  filter: t => true, grouped: true},
-  {id: "late",    icon: "⏰", label: "지연",       filter: t => t.날짜 && dv.date(t.날짜) < today},
-  {id: "urgent",  icon: "🔴", label: "긴급+중요",   filter: t => t.중요긴급 === "1. 중요O + 긴급O"},
+// 2. 섹션 및 기호 정의 (완벽 모노톤)
+const sections = [
+    { id: "urgent", icon: "◈", label: "중요+긴급", filter: t => t.구분 === "중요긴급" },
+    { id: "focus",  icon: "◎", label: "오늘 집중", filter: t => t.구분 === "집중" },
+    { id: "easy",   icon: "○", label: "쉬운 일정", filter: t => t.구분 === "쉬움" },
+    { id: "delegate", icon: "◇", label: "위임",     filter: t => t.구분 === "위임" },
+    { id: "delay",  icon: "▤", label: "프로젝트 지연", filter: t => t.구분 === "지연" }
 ];
 
-// 고유 ID
-const uid = "sb-task-tabs-" + Math.random().toString(36).slice(2,8);
+const uid = "today-ctrl-" + Math.random().toString(36).substring(2, 7);
 
-// 탭 바
-let html = `<div class="sb-tabs" id="${uid}-bar">`;
-tabs.forEach((tab, i) => {
-  const cls = i === 0 ? "sb-tab active" : "sb-tab";
-  html += `<div class="${cls}" data-tab="${tab.id}" onclick="
-    this.parentElement.querySelectorAll('.sb-tab').forEach(t=>t.classList.remove('active'));
-    this.classList.add('active');
-    this.closest('.block-language-dataviewjs').querySelectorAll('.sb-tab-panel').forEach(p=>p.style.display='none');
-    this.closest('.block-language-dataviewjs').querySelector('#${uid}-'+this.dataset.tab).style.display='block';
-  ">${tab.icon} ${tab.label}</div>`;
+// 3. UI 생성
+let html = `<div id="${uid}-container" style="background: transparent; border: 1px solid rgba(var(--ctp-rosewater), 0.2); border-radius: 12px; padding: 15px;">`;
+
+// 상단 헤더
+html += `<div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.1); padding-bottom: 10px;">
+            <span style="color: rgb(var(--ctp-rosewater)); font-weight: 800; font-size: 0.9rem; letter-spacing: 0.05em;">할일</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.7;">${today}</span>
+         </div>`;
+
+// 탭 버튼 영역
+html += `<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 20px;">`;
+sections.forEach((sec, i) => {
+    const isActive = i === 0;
+    const border = isActive ? `1.5px solid rgb(var(--ctp-rosewater))` : `1px solid rgba(var(--ctp-rosewater), 0.1)`;
+    const opacity = isActive ? `1` : `0.5`;
+    
+    html += `<div class="sec-tab" data-target="${sec.id}" style="cursor: pointer; text-align: center; padding: 10px 5px; border-radius: 8px; ${border}; opacity: ${opacity}; transition: all 0.2s;">
+                <div style="font-size: 1rem; margin-bottom: 4px; color: rgb(var(--ctp-rosewater));">${sec.icon}</div>
+                <div style="font-size: 0.65rem; font-weight: 700; color: var(--text-normal); white-space: nowrap;">${sec.label}</div>
+             </div>`;
 });
 html += `</div>`;
 
-// 탭 패널들
-tabs.forEach((tab, i) => {
-  const display = i === 0 ? "block" : "none";
-  const filtered = allTasks.where(tab.filter);
+// 패널 영역 (할 일 목록)
+sections.forEach((sec, i) => {
+    const display = i === 0 ? "block" : "none";
+    const tasks = allTasks.filter(sec.filter);
+    
+    html += `<div class="sec-panel" id="${uid}-${sec.id}" style="display: ${display};">`;
+    
+    // 추가 버튼
+    html += `<div style="text-align: right; margin-bottom: 10px;">
+                <a href="obsidian://new?path=05.%20Tasks/NewTask&content=---%0A날짜:%20${today}%0A구분:%20${sec.id}%0A완료여부:%20false%0A---" 
+                   style="font-size: 0.65rem; color: rgb(var(--ctp-rosewater)); text-decoration: none; border: 1px solid rgba(var(--ctp-rosewater), 0.3); padding: 2px 8px; border-radius: 4px;">+ ADD NEW</a>
+             </div>`;
 
-  html += `<div class="sb-tab-panel" id="${uid}-${tab.id}" style="display:${display}; margin-top:8px;">`;
-
-  if (tab.grouped) {
-    // 프로젝트별 그룹
-    const projects = {};
-    filtered.forEach(t => {
-      const pName = t.프로젝트 ? String(t.프로젝트) : "미배정";
-      if (!projects[pName]) projects[pName] = [];
-      projects[pName].push(t);
-    });
-
-    for (let [proj, tasks] of Object.entries(projects)) {
-      html += `<div style="margin-bottom:12px;">`;
-      html += `<div style="font-size:0.7rem; font-weight:700; color:#636366; text-transform:uppercase; letter-spacing:0.04em; margin-bottom:4px;">🚀 ${proj} (${tasks.length})</div>`;
-      html += `<table style="width:100%; border-collapse:collapse; font-size:0.8rem;">`;
-      tasks.forEach(t => {
-        const name = t.제목 || t.file.name;
-        const date = t.날짜 ? dv.date(t.날짜).toFormat("MM/dd") : "-";
-        html += `<tr style="border-bottom:1px solid rgba(0,0,0,0.06);">`;
-        html += `<td style="padding:6px 8px;"><a class="internal-link" href="${t.file.name}">${name}</a></td>`;
-        html += `<td style="padding:6px 8px; color:#636366; font-size:0.7rem;">${t.구분 || ""}</td>`;
-        html += `<td style="padding:6px 8px; color:#636366; font-size:0.7rem; text-align:right;">${date}</td>`;
-        html += `</tr>`;
-      });
-      html += `</table></div>`;
-    }
-  } else {
-    // 일반 테이블
-    if (filtered.length === 0) {
-      html += `<div style="color:#8e8e93; font-size:0.8rem; padding:20px; text-align:center;">해당 항목이 없습니다</div>`;
+    if (tasks.length > 0) {
+        html += `<div style="display: flex; flex-direction: column; gap: 6px;">`;
+        tasks.forEach(t => {
+            const isDone = t.완료여부 === true;
+            const statusIcon = isDone ? "▣" : "□";
+            const textStyle = isDone ? "opacity: 0.4; text-decoration: line-through;" : "";
+            
+            html += `<div style="display: flex; align-items: center; padding: 10px; background: rgba(var(--ctp-surface0), 0.3); border-radius: 6px; border-left: 3px solid rgb(var(--ctp-rosewater)); ${textStyle}">
+                        <span style="margin-right: 10px; color: rgb(var(--ctp-rosewater)); font-size: 0.9rem;">${statusIcon}</span>
+                        <span style="flex-grow: 1; font-size: 0.75rem; font-weight: 500;">${t.제목 || t.file.name}</span>
+                        <a class="internal-link" href="${t.file.path}" style="text-decoration: none; font-size: 0.8rem; opacity: 0.6;">↗</a>
+                     </div>`;
+        });
+        html += `</div>`;
     } else {
-      html += `<table style="width:100%; border-collapse:collapse; font-size:0.8rem;">`;
-      html += `<thead><tr>`;
-      html += `<th style="text-align:left; padding:5px 8px; font-size:0.62rem; font-weight:600; text-transform:uppercase; color:#636366; border-bottom:1px solid rgba(0,0,0,0.1); letter-spacing:0.06em;">할 일</th>`;
-      if (tab.id === "deleg") {
-        html += `<th style="text-align:left; padding:5px 8px; font-size:0.62rem; font-weight:600; text-transform:uppercase; color:#636366; border-bottom:1px solid rgba(0,0,0,0.1);">수임자</th>`;
-      } else {
-        html += `<th style="text-align:left; padding:5px 8px; font-size:0.62rem; font-weight:600; text-transform:uppercase; color:#636366; border-bottom:1px solid rgba(0,0,0,0.1);">프로젝트</th>`;
-      }
-      html += `<th style="text-align:right; padding:5px 8px; font-size:0.62rem; font-weight:600; text-transform:uppercase; color:#636366; border-bottom:1px solid rgba(0,0,0,0.1);">날짜</th>`;
-      html += `</tr></thead><tbody>`;
-
-      for (let t of filtered.slice(0, 20)) {
-        const name = t.제목 || t.file.name;
-        const date = t.날짜 ? dv.date(t.날짜).toFormat("MM/dd") : "-";
-        const col2 = tab.id === "deleg" ? (t.수임자 || "-") : (t.프로젝트 ? String(t.프로젝트) : "-");
-
-        // 지연 표시
-        let lateTag = "";
-        if (tab.id === "late" && t.날짜) {
-          const diff = Math.abs(Math.round(today.diff(dv.date(t.날짜), "days").days));
-          lateTag = `<span style="font-size:0.6rem; background:#fce4e4; color:#c0392b; padding:1px 5px; border-radius:3px; margin-left:4px;">${diff}일 지남</span>`;
-        }
-
-        html += `<tr style="border-bottom:1px solid rgba(0,0,0,0.06);">`;
-        html += `<td style="padding:6px 8px;"><a class="internal-link" href="${t.file.name}">${name}</a>${lateTag}</td>`;
-        html += `<td style="padding:6px 8px; color:#636366; font-size:0.75rem;">${col2}</td>`;
-        html += `<td style="padding:6px 8px; color:#636366; font-size:0.75rem; text-align:right;">${date}</td>`;
-        html += `</tr>`;
-      }
-      html += `</tbody></table>`;
-      if (filtered.length > 20) {
-        html += `<div style="font-size:0.65rem; color:#8e8e93; text-align:center; padding:6px;">+${filtered.length - 20}개 더</div>`;
-      }
+        html += `<div style="padding: 30px; text-align: center; font-size: 0.7rem; color: var(--text-faint); border: 1px dotted rgba(var(--ctp-rosewater), 0.1); border-radius: 8px;">일정이 없습니다.</div>`;
     }
-  }
-  html += `</div>`;
+    html += `</div>`;
 });
 
+html += `</div>`;
 dv.el("div", html);
+
+// 4. 클릭 이벤트 바인딩
+setTimeout(() => {
+    const container = document.getElementById(`${uid}-container`);
+    if (!container) return;
+    
+    const tabs = container.querySelectorAll('.sec-tab');
+    const panels = container.querySelectorAll('.sec-panel');
+    
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const target = tab.getAttribute('data-target');
+            
+            // 탭 스타일 초기화
+            tabs.forEach(t => {
+                t.style.border = '1px solid rgba(var(--ctp-rosewater), 0.1)';
+                t.style.opacity = '0.5';
+            });
+            
+            // 활성 탭 스타일
+            tab.style.border = '1.5px solid rgb(var(--ctp-rosewater))';
+            tab.style.opacity = '1';
+            
+            // 패널 전환
+            panels.forEach(p => p.style.display = 'none');
+            container.querySelector(`#${uid}-${target}`).style.display = 'block';
+        });
+    });
+}, 150);
 ```
 
 ---
