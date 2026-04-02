@@ -328,13 +328,19 @@ setTimeout(() => {
 ```dataviewjs
 const today = dv.date("today");
 
+// [색상 정의] image_0.png 배경 및 AnuPpuccin 톤 반영
+const BG_COLOR = "#f5eae0"; // 아주 연한 아이보리 베이지
+const ROSEWATER_BAR_BG = "#e4a6a3"; // 막대기 레일 (조금 더 진한 베이지)
+const ROSEWATER_FILLED = "#9d1d1d"; // [핵심] 선명한 로즈워터 (진행률)
+const ROSEWATER_ACCENT = "#D6817D"; // 월 표시/오늘 강조색 (조금 더 진한 로즈워터)
+
 // 1. 데이터 수집: 04. Projects 폴더 기준
 const projectPages = dv.pages('"04. Projects"').filter(p => 
     (p.type === "project" || p.file.path.toLowerCase().includes("project")) &&
     p.file.name !== "Project Dashboard"
 ).array();
 
-// 타임라인 범위 설정
+// 타임라인 범위 설정 (AnuPpuccin 톤에 맞춰 4월~5월 고정)
 let minDate = today.startOf("month");
 let maxDate = today.endOf("month").plus({ months: 1 });
 
@@ -346,51 +352,50 @@ const timelineData = projectPages.map(p => {
     };
     const sDate = parse(p.시작일);
     const eDate = parse(p.목표일) || parse(p.종료일);
-    
     if (!sDate || !eDate) return null;
+
     if (sDate < minDate) minDate = sDate.startOf("month");
     if (eDate > maxDate) maxDate = eDate.endOf("month");
 
     return {
         name: p.file.name, link: p.file.path,
         start: sDate, end: eDate,
-        progress: p.달성률 || 0, goal: p.목표 || "기타/미지정"
+        progress: p.달성률 || p.진행률 || 0,
+        goal: p.목표 || "기타/미지정"
     };
 }).filter(p => p !== null);
 
 const totalDays = Math.ceil(maxDate.diff(minDate, 'days').days) + 1;
-const dayWidth = 35;
-const labelWidth = 180;
+const dayWidth = 35; // 그리드 너비 축소 (슬림 디자인 어울림)
+const labelWidth = 160; 
 const fullTimelineWidth = labelWidth + (totalDays * dayWidth);
 
 // 2. UI 생성
 const containerId = "timeline-" + Date.now();
-let html = `<div id="${containerId}" style="background: transparent; border-radius: 8px; font-family: var(--font-interface); color: var(--text-normal);">`;
+let html = `<div id="${containerId}" style="background: ${BG_COLOR}; border-radius: 8px; font-family: var(--font-interface); color: var(--text-normal); overflow: hidden;">`;
 
 // 상단 헤더
-html += `<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 25px; padding: 0 10px;">
-            <div style="font-weight: 900; font-size: 1.1rem; color: rgb(var(--ctp-rosewater)); letter-spacing: -0.02em;">TIMELINE <span style="font-weight: 300; font-size: 0.7rem; color: var(--text-muted); margin-left: 10px;">${today.year}.${today.toFormat('LL')}</span></div>
-            <div style="font-size: 0.55rem; color: var(--text-faint); text-transform: uppercase; letter-spacing: 0.1em;">Shift + Scroll to Navigate</div>
+html += `<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; padding: 15px 15px 0;">
+            <div style="font-weight: 900; font-size: 1rem; color: ${ROSEWATER_ACCENT}; letter-spacing: -0.01em;">TIMELINE <span style="font-weight: 300; font-size: 0.65rem; color: var(--text-faint); margin-left: 10px;">${today.year}.${today.toFormat('LL')}</span></div>
+            <div style="font-size: 0.55rem; color: var(--text-faint); text-transform: uppercase;">Shift + Scroll to Navigate</div>
          </div>`;
 
 // 가로 스크롤 영역
-html += `<div style="overflow-x: auto; position: relative; border-radius: 4px;">`;
+html += `<div style="overflow-x: auto; position: relative;">`;
 html += `<div style="position: relative; min-width: ${fullTimelineWidth}px;">`;
 
-// [배경 그리드]
+// [배경 그리드] ◈ AnuPpuccin 톤에 맞춰 아주 연한 베이지색 라인
 html += `<div style="position: absolute; top: 50px; left: ${labelWidth}px; right: 0; bottom: 0; display: flex; z-index: 0; pointer-events: none;">`;
 for (let d = 0; d < totalDays; d++) {
-    const curr = minDate.plus({ days: d });
-    const isToday = curr.hasSame(today, "day");
-    html += `<div style="width: ${dayWidth}px; border-right: 1px solid rgba(var(--ctp-rosewater), 0.12); height: 100%; background: ${isToday ? 'rgba(var(--ctp-rosewater), 0.03)' : 'transparent'};"></div>`;
+    html += `<div style="width: ${dayWidth}px; border-right: 1px solid rgba(232, 216, 201, 0.5); height: 100%;"></div>`;
 }
 html += `</div>`;
 
-// [날짜 헤더]
-html += `<div style="display: flex; margin-bottom: 0px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.3); padding-bottom: 12px; position: sticky; top: 0; z-index: 30; background: var(--background-primary);">
-            <div style="width: ${labelWidth}px; font-size: 0.6rem; font-weight: 900; color: var(--text-faint); align-self: flex-end; padding-left: 10px;">PROJECTS</div>
+// [날짜 헤더] ◈ AnuPpuccin 톤에 맞춰 로즈워터 딥 테두리
+html += `<div style="display: flex; border-bottom: 2px solid ${ROSEWATER_ACCENT}; padding-bottom: 10px; position: sticky; top: 0; z-index: 30; background: ${BG_COLOR};">
+            <div style="width: ${labelWidth}px; font-size: 0.6rem; font-weight: 900; color: var(--text-faint); align-self: flex-end; padding-left: 15px;">PROJECTS</div>
             <div style="display: flex; flex-direction: column;">
-                <div style="display: flex; height: 20px; position: relative;">`;
+                <div style="display: flex; height: 18px; position: relative;">`;
 
 // 월 표시
 let currentMonth = -1;
@@ -398,7 +403,7 @@ for (let d = 0; d < totalDays; d++) {
     const curr = minDate.plus({ days: d });
     if (curr.month !== currentMonth) {
         currentMonth = curr.month;
-        html += `<div style="position: absolute; left: ${d * dayWidth}px; font-weight: 800; color: rgb(var(--ctp-rosewater)); font-size: 0.7rem;">${curr.month}M</div>`;
+        html += `<div style="position: absolute; left: ${d * dayWidth}px; font-weight: 800; color: ${ROSEWATER_ACCENT}; font-size: 0.7rem; padding-left: 5px;">${curr.month}M</div>`;
     }
 }
 html += `</div><div style="display: flex;">`;
@@ -407,7 +412,7 @@ html += `</div><div style="display: flex;">`;
 for (let d = 0; d < totalDays; d++) {
     const curr = minDate.plus({ days: d });
     const isToday = curr.hasSame(today, "day");
-    html += `<div style="width: ${dayWidth}px; text-align: center; font-size: 0.55rem; color: ${isToday ? 'rgb(var(--ctp-rosewater))' : 'var(--text-muted)'}; font-weight: ${isToday ? '900' : '400'};">${curr.day}</div>`;
+    html += `<div style="width: ${dayWidth}px; text-align: center; font-size: 0.5rem; color: ${isToday ? 'white' : 'var(--text-muted)'}; background: ${isToday ? ROSEWATER_ACCENT : 'transparent'}; border-radius: 4px; font-weight: ${isToday ? '900' : '400'}; line-height: 16px;">${curr.day}</div>`;
 }
 html += `</div></div></div>`;
 
@@ -419,25 +424,24 @@ const groups = timelineData.reduce((acc, cur) => {
 }, {});
 
 Object.keys(groups).forEach(goalName => {
-    // 목표 바: 불투명하지만 차분한 배경
     html += `<details open style="margin-bottom: 0px; position: relative; z-index: 10;">
-                <summary style="padding: 12px 10px; font-size: 0.7rem; font-weight: 800; color: var(--text-normal); cursor: pointer; list-style: none; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.15); background: var(--background-secondary); width: 100%; display: flex; align-items: center; position: sticky; left: 0;">
-                    <span style="color: rgb(var(--ctp-rosewater)); margin-right: 8px;">◈</span> ${goalName.toUpperCase()} 
+                <summary style="padding: 10px; font-size: 0.7rem; font-weight: 800; color: var(--text-normal); cursor: pointer; list-style: none; border-bottom: 1px solid rgba(232, 216, 201, 0.4); background: ${BG_COLOR}; width: 100%; display: flex; align-items: center; position: sticky; left: 0;">
+                    <span style="color: ${ROSEWATER_ACCENT}; margin-right: 8px;">◈</span> ${goalName.toUpperCase()} 
                     <span style="font-size: 0.55rem; color: var(--text-faint); margin-left: 10px; font-weight: 400;">/ ${groups[goalName].length} projects</span>
                 </summary>
-                <div style="padding-top: 5px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.1);">`;
+                <div style="padding-top: 5px; border-bottom: 1px solid rgba(232, 216, 201, 0.2);">`;
     
     groups[goalName].forEach(proj => {
         const startDiff = Math.ceil(proj.start.diff(minDate, 'days').days);
         const duration = Math.ceil(proj.end.diff(proj.start, 'days').days) + 1;
         
-        html += `<div style="display: flex; align-items: center; padding: 8px 0;">
-                    <div style="width: ${labelWidth}px; padding-left: 20px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: sticky; left: 0; z-index: 5; background: var(--background-primary);">
+        html += `<div style="display: flex; align-items: center; padding: 6px 0;">
+                    <div style="width: ${labelWidth}px; padding-left: 20px; flex-shrink: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; position: sticky; left: 0; z-index: 5; background: ${BG_COLOR};">
                         <a class="internal-link" href="${proj.link}" style="font-size: 0.65rem; font-weight: 500; color: var(--text-muted); text-decoration: none;">${proj.name}</a>
                     </div>
-                    <div style="display: flex; height: 14px; position: relative; flex-grow: 1;">
-                        <div style="margin-left: ${startDiff * dayWidth}px; width: ${duration * dayWidth}px; background: var(--background-secondary-alt); border-radius: 100px; height: 7px; align-self: center; position: relative; z-index: 2; overflow: hidden; border: 1px solid rgba(var(--ctp-rosewater), 0.1);">
-                            <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); border-radius: 100px;"></div>
+                    <div style="display: flex; height: 16px; position: relative; flex-grow: 1;">
+                        <div style="margin-left: ${startDiff * dayWidth}px; width: ${duration * dayWidth}px; background: ${ROSEWATER_BAR_BG}; border-radius: 100px; height: 8px; align-self: center; position: relative; z-index: 2; overflow: hidden; border: 1px solid rgba(232, 216, 201, 0.5);">
+                            <div style="width: ${proj.progress}%; height: 100%; background: ${ROSEWATER_FILLED}; border-radius: 100px;"></div>
                         </div>
                     </div>
                  </div>`;
