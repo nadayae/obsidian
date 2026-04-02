@@ -177,26 +177,21 @@ setTimeout(() => {
 ```
 
 ```dataviewjs
-// 1. 설정 및 데이터 로드
+// 1. 데이터 및 3단계 정렬 로직
 const today = dv.date("today");
 const todayStr = today.toFormat("yyyy-MM-dd");
 const templatePath = "Templates/Tasks.md";
 
-// 05. Tasks 폴더에서 오늘 일정을 가져와 정렬 로직 적용
 const allTasks = dv.pages('"05. Tasks"').filter(t => {
     if (!t.날짜) return false;
     const d = dv.date(t.날짜);
     return d && d.year === today.year && d.month === today.month && d.day === today.day;
 }).sort(t => {
-    // [정렬 1순위] 계획 시간 (가까운 순)
     const planTime = t.계획 || "99:99";
-    // [정렬 2순위] 중요/긴급 (중요긴급 > 중요 > 긴급 > 일반 순으로 가중치 부여)
     const priorityMap = { "중요긴급": 1, "중요": 2, "긴급": 3, "일반": 4 };
     const priority = priorityMap[t["중요/긴급"]] || 5;
-    // [정렬 3순위] 구분 (집중 > 일반 > 쉬운 순)
     const categoryMap = { "집중": 1, "일반": 2, "쉬운": 3, "쉬움": 3 };
     const category = categoryMap[t.구분] || 4;
-
     return `${planTime}-${priority}-${category}`;
 }, 'asc');
 
@@ -210,61 +205,63 @@ const sections = [
     { id: "delay",     icon: "▤", label: "지연",      filter: t => t.구분 === "지연" }
 ];
 
-const uid = "today-matrix-" + Math.random().toString(36).substring(2, 7);
+const uid = "today-native-" + Math.random().toString(36).substring(2, 7);
 
-// 2. UI 생성
-let html = `<div id="${uid}-container" style="border: 1px solid rgba(var(--ctp-rosewater), 0.2); border-radius: 12px; padding: 15px;">`;
+// 2. UI 생성 (옵시디언 네이티브 클래스 주입)
+let html = `<div id="${uid}-container" class="dataviewjs-today-view">`;
 
-// 헤더: 추가 버튼 포함
-html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.1); padding-bottom: 10px;">
-            <span style="color: rgb(var(--ctp-rosewater)); font-weight: 800; font-size: 0.85rem; letter-spacing: 0.05em;">DAILY MISSION CONTROL</span>
-            <button class="add-btn-top" style="background: transparent; cursor: pointer; font-size: 0.6rem; color: rgb(var(--ctp-rosewater)); border: 1px solid rgba(var(--ctp-rosewater), 0.5); padding: 3px 10px; border-radius: 4px; font-weight: 800;">+ ADD TASK</button>
+// 헤더 섹션
+html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="font-weight: 800; font-size: 1rem; color: var(--text-accent); letter-spacing: 0.02em;">DAILY MISSION CONTROL</div>
+            <button class="add-btn-top" style="background: var(--interactive-accent); cursor: pointer; font-size: 0.65rem; color: var(--text-on-accent); border: none; padding: 6px 14px; border-radius: 4px; font-weight: 700;">+ ADD TASK</button>
          </div>`;
 
-// 탭 버튼
-html += `<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 20px;">`;
+// 탭 버튼 (네이티브 텍스트 스타일)
+html += `<div style="display: flex; gap: 18px; margin-bottom: 15px; border-bottom: 1px solid var(--background-modifier-border); padding-bottom: 10px;">`;
 sections.forEach((sec, i) => {
-    const active = i === 0 ? "1" : "0.4";
-    const bColor = i === 0 ? "rgb(var(--ctp-rosewater))" : "rgba(var(--ctp-rosewater), 0.1)";
-    html += `<div class="sec-tab" data-target="${sec.id}" style="cursor: pointer; text-align: center; padding: 8px 2px; border-radius: 6px; border: 1.5px solid ${bColor}; opacity: ${active}; transition: 0.2s;">
-                <div style="font-size: 0.9rem; color: rgb(var(--ctp-rosewater)); margin-bottom: 3px;">${sec.icon}</div>
-                <div style="font-size: 0.55rem; font-weight: 700; color: var(--text-normal);">${sec.label}</div>
-             </div>`;
+    const isActive = i === 0;
+    const color = isActive ? "var(--text-accent)" : "var(--text-muted)";
+    const weight = isActive ? "800" : "400";
+    html += `<div class="sec-tab" data-target="${sec.id}" style="cursor: pointer; font-size: 0.8rem; color: ${color}; font-weight: ${weight}; transition: 0.2s;">${sec.icon} ${sec.label}</div>`;
 });
 html += `</div>`;
 
-// 패널 생성 (표 형식)
+// 패널 (네이티브 테이블 스타일 입히기)
 sections.forEach((sec, i) => {
     const display = i === 0 ? "block" : "none";
     const tasks = allTasks.filter(sec.filter);
     html += `<div class="sec-panel" id="${uid}-${sec.id}" style="display: ${display};">`;
     
     if (tasks.length > 0) {
-        html += `<table style="width: 100%; border-collapse: collapse; font-size: 0.7rem; color: var(--text-normal);">
-                    <tr style="border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); color: var(--text-muted); text-align: left;">
-                        <th style="padding: 8px 4px; width: 15%;">계획</th>
-                        <th style="padding: 8px 4px; width: 45%;">할 일 이름</th>
-                        <th style="padding: 8px 4px; width: 15%;">구분</th>
-                        <th style="padding: 8px 4px; width: 25%;">중요/긴급</th>
-                    </tr>`;
+        // 옵시디언 기본 테이블 클래스들을 사용하여 테마와 동기화
+        html += `<table class="dataview table-view-table" style="width: 100%;">
+                    <thead class="table-view-thead">
+                        <tr class="table-view-tr">
+                            <th class="table-view-th">계획</th>
+                            <th class="table-view-th">이름</th>
+                            <th class="table-view-th">분류</th>
+                            <th class="table-view-th">중요도</th>
+                        </tr>
+                    </thead>
+                    <tbody class="table-view-tbody">`;
         
         tasks.forEach(t => {
             const isDone = t.완료여부 === true;
-            const opacity = isDone ? "opacity: 0.4; text-decoration: line-through;" : "";
-            const prioColor = t["중요/긴급"] === "중요긴급" ? "color: rgb(var(--ctp-maroon)); font-weight: 800;" : "";
+            const rowClass = isDone ? "is-done" : "";
+            const prio = t["중요/긴급"] || "일반";
             
-            html += `<tr style="${opacity} border-bottom: 1px solid rgba(var(--ctp-surface1), 0.3);">
-                        <td style="padding: 10px 4px; font-family: monospace;">${t.계획 || "--:--"}</td>
-                        <td style="padding: 10px 4px; font-weight: 600;">
-                            <a class="internal-link" href="${t.file.path}" style="color: inherit; text-decoration: none;">${t.제목 || t.file.name}</a>
+            html += `<tr class="table-view-tr ${rowClass}" style="${isDone ? 'opacity: 0.4;' : ''}">
+                        <td class="table-view-td" style="font-family: var(--font-monospace); color: var(--text-accent);">${t.계획 || "--:--"}</td>
+                        <td class="table-view-td">
+                            <a class="internal-link" href="${t.file.path}" style="font-weight: 600;">${t.제목 || t.file.name}</a>
                         </td>
-                        <td style="padding: 10px 4px; color: var(--text-muted);">${t.구분 || "-"}</td>
-                        <td style="padding: 10px 4px; ${prioColor}">${t["중요/긴급"] || "일반"}</td>
+                        <td class="table-view-td" style="color: var(--text-muted);">${t.구분 || "-"}</td>
+                        <td class="table-view-td" style="font-weight: 700; ${prio === '중요긴급' ? 'color: var(--text-error);' : ''}">${prio}</td>
                     </tr>`;
         });
-        html += `</table>`;
+        html += `</tbody></table>`;
     } else {
-        html += `<div style="padding: 30px; text-align: center; font-size: 0.7rem; color: var(--text-faint); border: 1px dotted rgba(var(--ctp-rosewater), 0.15); border-radius: 8px;">NO MISSIONS FOUND</div>`;
+        html += `<div style="padding: 40px; text-align: center; font-size: 0.8rem; color: var(--text-faint);">NO ACTIVE MISSIONS</div>`;
     }
     html += `</div>`;
 });
@@ -272,7 +269,7 @@ sections.forEach((sec, i) => {
 html += `</div>`;
 dv.el("div", html);
 
-// 3. 자바스크립트 바인딩 (탭 & 템플릿 추가)
+// 3. 자바스크립트 바인딩 (탭 전환 및 파일 생성)
 setTimeout(() => {
     const container = document.getElementById(`${uid}-container`);
     if (!container) return;
@@ -282,8 +279,8 @@ setTimeout(() => {
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const target = tab.getAttribute('data-target');
-            tabs.forEach(t => { t.style.opacity = '0.4'; t.style.borderColor = 'rgba(var(--ctp-rosewater), 0.1)'; });
-            tab.style.opacity = '1'; tab.style.borderColor = 'rgb(var(--ctp-rosewater))';
+            tabs.forEach(t => { t.style.color = 'var(--text-muted)'; t.style.fontWeight = '400'; });
+            tab.style.color = 'var(--text-accent)'; tab.style.fontWeight = '800';
             panels.forEach(p => p.style.display = 'none');
             container.querySelector(`#${uid}-${target}`).style.display = 'block';
         });
@@ -291,8 +288,8 @@ setTimeout(() => {
 
     const addBtn = container.querySelector('.add-btn-top');
     addBtn.addEventListener('click', async () => {
-        const activeTab = container.querySelector('.sec-tab[style*="opacity: 1"]');
-        const activeLabel = activeTab ? activeTab.querySelector('div:last-child').innerText : "오늘";
+        const activeTab = container.querySelector('.sec-tab[style*="var(--text-accent)"]');
+        const activeLabel = activeTab ? activeTab.innerText.split(' ').pop() : "오늘";
         const fileName = `05. Tasks/Task_${Date.now()}.md`;
         let fileContent = `---
 날짜: ${todayStr}
@@ -309,7 +306,7 @@ setTimeout(() => {
         try {
             const newFile = await app.vault.create(fileName, fileContent);
             app.workspace.getLeaf(false).openFile(newFile);
-        } catch (e) { new Notice("파일 생성 실패: " + e.message); }
+        } catch (e) { new Notice("ERR: " + e.message); }
     });
 }, 250);
 ```
