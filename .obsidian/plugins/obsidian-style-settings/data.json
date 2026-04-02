@@ -52,5 +52,10 @@
   "anuppuccin-theme-settings@@anp-kanban-hide-archive-btn": true,
   "anuppuccin-theme-settings@@anp-kanban-hide-card-border": false,
   "anuppuccin-theme-settings@@anp-kanban-lanes": true,
-  "anuppuccin-theme-settings@@anp-kanban-hide-lane-border": false
+  "anuppuccin-theme-settings@@anp-kanban-hide-lane-border": false,
+
+  "anuppuccin-theme-settings@@anp-custom-font-toggle": true,
+  "anuppuccin-theme-settings@@anp-header-font": "Noto Serif",
+  "anuppuccin-theme-settings@@anp-text-font": "Rubik",
+  "anuppuccin-theme-settings@@anp-ui-font": "Overpass"
 }

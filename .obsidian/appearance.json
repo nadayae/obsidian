@@ -3,8 +3,8 @@
     "second-brain"
   ],
   "baseFontSize": 16,
-  "textFontFamily": "",
-  "monospaceFontFamily": "",
-  "theme": "moonstone",
+  "textFontFamily": "Rubik",
+  "monospaceFontFamily": "Overpass",
+  "theme": "obsidian",
   "cssTheme": "AnuPpuccin"
 }

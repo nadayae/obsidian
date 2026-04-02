@@ -19,7 +19,17 @@
       "Bash(curl -s \"https://raw.githubusercontent.com/AnubisNekhet/AnuPpuccin/main/manifest.json\")",
       "Bash(curl -s \"https://raw.githubusercontent.com/AnubisNekhet/AnuPpuccin/main/theme.css\")",
       "Bash(curl -L -o \"C:/Users/HOME/Desktop/nadayae/.obsidian/themes/AnuPpuccin/theme.css\" \"https://raw.githubusercontent.com/AnubisNekhet/AnuPpuccin/main/theme.css\")",
-      "Bash(curl -L -o \"C:/Users/HOME/Desktop/nadayae/.obsidian/themes/AnuPpuccin/manifest.json\" \"https://raw.githubusercontent.com/AnubisNekhet/AnuPpuccin/main/manifest.json\")"
+      "Bash(curl -L -o \"C:/Users/HOME/Desktop/nadayae/.obsidian/themes/AnuPpuccin/manifest.json\" \"https://raw.githubusercontent.com/AnubisNekhet/AnuPpuccin/main/manifest.json\")",
+      "Bash(mkdir -p \"C:/Users/HOME/Desktop/fonts_temp\")",
+      "Read(//c/Users/HOME/Desktop/**)",
+      "Bash(curl -L -o overpass.zip \"https://fonts.google.com/download?family=Overpass\")",
+      "Bash(curl -L -o rubik.zip \"https://fonts.google.com/download?family=Rubik\")",
+      "Bash(curl -L -o notoserif.zip \"https://fonts.google.com/download?family=Noto+Serif\")",
+      "Bash(unzip -o overpass.zip -d overpass)",
+      "Bash(unzip -o rubik.zip -d rubik)",
+      "Bash(unzip -o notoserif.zip -d notoserif)",
+      "Bash(powershell -Command \":*)",
+      "Bash(powershell -Command \"Get-Item ''C:/Users/HOME/Desktop/fonts_temp/*.zip'' | Select-Object Name, Length\")"
     ]
   }
 }
