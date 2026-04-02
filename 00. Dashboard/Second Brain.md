@@ -405,22 +405,49 @@ dv.el("div", html);
 ---
 
 ```dataviewjs
-// 1. 데이터 로드 및 설정
+// 1. 설정 및 오늘 날짜
 const today = dv.date("today");
-const daysInMonth = today.daysInMonth; 
-// "Projects" 폴더 내 파일 중 시작일/목표일이 있는 것들
-const projectPages = dv.pages('"Projects"').filter(p => p.시작일 && p.목표일);
+const daysInMonth = today.daysInMonth;
 
-// 데이터 가공 및 '목표' 기준 그룹화
-const timelineData = projectPages.map(p => {
-    const start = dv.date(p.시작일);
-    const end = dv.date(p.목표일);
+// [디버깅] 폴더 경로 확인 (Projects 또는 projects 포함된 모든 폴더)
+const allPages = dv.pages().filter(p => p.file.path.toLowerCase().includes("04. Project"));
+
+// 2. UI 생성 시작
+let html = `<div style="background: rgba(var(--ctp-surface0), 0.2); border: 1px solid rgba(var(--ctp-rosewater), 0.1); border-radius: 12px; padding: 15px; font-family: var(--font-interface);">`;
+
+// 상단 헤더
+html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="font-weight: 800; font-size: 0.9rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">PROJECT TIMELINE</div>
+            <div style="font-size: 0.6rem; color: var(--text-faint); font-family: var(--font-monospace);">${today.year}.${today.toFormat('LL')}</div>
+         </div>`;
+
+// [검증 로직] 페이지가 하나도 안 찾아진 경우
+if (allPages.length === 0) {
+    html += `<div style="padding: 20px; color: #e64553; font-size: 0.7rem; border: 1px dashed #e64553; border-radius: 8px;">
+                <b>[ERROR]</b> 'Project'가 포함된 폴더나 파일을 찾을 수 없습니다.<br>
+                현재 폴더 구조를 다시 확인해 주세요.
+             </div></div>`;
+    dv.el("div", html);
+    return;
+}
+
+// 데이터 파싱
+const timelineData = allPages.map(p => {
+    // 시작일, 목표일 속성 추출 (이름이 다를 수 있으니 유연하게 대응)
+    const startDate = p.시작일 || p["시작 날짜"] || p.start;
+    const endDate = p.목표일 || p.종료일 || p["목표 날짜"] || p.end;
+    
+    const start = dv.date(startDate);
+    const end = dv.date(endDate);
+    
+    // 날짜가 하나라도 없으면 무시
     if (!start || !end) return null;
 
-    // 이번 달 포함 여부
+    // 이번 달(4월) 범위 체크
     const isVisible = (start.month === today.month && start.year === today.year) || 
                       (end.month === today.month && end.year === today.year) ||
                       (start < today && end > today);
+    
     if (!isVisible) return null;
 
     let dStart = (start.year < today.year || (start.year === today.year && start.month < today.month)) ? 1 : start.day;
@@ -432,23 +459,18 @@ const timelineData = projectPages.map(p => {
         start: dStart,
         end: dEnd,
         progress: p.진행률 || 0,
-        goal: p.목표 || "기타/미지정" // '목표' 속성이 없으면 분류함
+        goal: p.목표 || "기타/미지정"
     };
 }).filter(p => p !== null);
 
-// 2. UI 생성
-let html = `<div style="background: rgba(var(--ctp-surface0), 0.2); border: 1px solid rgba(var(--ctp-rosewater), 0.1); border-radius: 12px; padding: 15px; font-family: var(--font-interface);">`;
-
-// 상단 헤더
-html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <div style="font-weight: 800; font-size: 0.9rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">GOAL-BASED TIMELINE</div>
-            <div style="font-size: 0.6rem; color: var(--text-faint); font-family: var(--font-monospace);">${today.year}.${today.toFormat('LL')}</div>
-         </div>`;
-
+// [검증 로직] 날짜 파싱 후 결과가 0개인 경우
 if (timelineData.length === 0) {
-    html += `<div style="padding: 30px; text-align: center; font-size: 0.75rem; color: var(--text-faint);">표시할 프로젝트가 없습니다.</div>`;
+    html += `<div style="padding: 20px; color: #fab387; font-size: 0.7rem; border: 1px dashed #fab387; border-radius: 8px;">
+                <b>[NOTICE]</b> 파일을 찾았으나 '시작일' 또는 '목표일' 형식이 맞지 않습니다.<br>
+                노트 상단에 <b>시작일: 2026-04-01</b> 형식으로 되어 있는지 확인해 주세요.
+             </div></div>`;
 } else {
-    // 날짜 헤더
+    // 날짜 그리드 및 타임라인 렌더링 (진한 로즈워터 적용)
     html += `<div style="display: grid; grid-template-columns: 140px 1fr; margin-bottom: 10px; border-bottom: 2px solid rgba(var(--ctp-rosewater), 0.1); padding-bottom: 8px;">
                 <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); padding-left: 5px;">PROJECT / GOAL</div>
                 <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); text-align: center; font-size: 0.5rem; color: var(--text-faint); font-weight: 700;">`;
@@ -457,7 +479,6 @@ if (timelineData.length === 0) {
     }
     html += `</div></div>`;
 
-    // 목표별로 그룹화하여 출력
     const groups = timelineData.reduce((acc, cur) => {
         if (!acc[cur.goal]) acc[cur.goal] = [];
         acc[cur.goal].push(cur);
@@ -465,37 +486,26 @@ if (timelineData.length === 0) {
     }, {});
 
     Object.keys(groups).forEach(goalName => {
-        // 목표 헤더 (구분선 역할)
-        html += `<div style="padding: 8px 5px 4px; font-size: 0.65rem; font-weight: 800; color: rgb(var(--ctp-rosewater)); opacity: 0.9; display: flex; align-items: center; gap: 5px;">
-                    <span>📌</span> ${goalName}
-                 </div>`;
-
+        html += `<div style="padding: 8px 5px 4px; font-size: 0.65rem; font-weight: 800; color: rgb(var(--ctp-rosewater));">📌 ${goalName}</div>`;
         groups[goalName].forEach(proj => {
-            const startPos = proj.start;
-            const span = proj.end - proj.start + 1;
-            
             html += `<div style="display: grid; grid-template-columns: 140px 1fr; align-items: center; padding: 4px 0;">
                         <div style="overflow: hidden; padding-left: 15px; padding-right: 10px;">
                             <div style="font-size: 0.65rem; font-weight: 600; color: var(--text-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                                 <a class="internal-link" href="${proj.link}" style="text-decoration: none; color: inherit;">${proj.name}</a>
                             </div>
                         </div>
-                        
                         <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); height: 16px; position: relative;">
                             <div style="position: absolute; left: calc(${(today.day - 1) / daysInMonth * 100}%); width: 2px; height: 100%; background: rgba(var(--ctp-rosewater), 0.25); z-index: 1;"></div>
-                            
-                            <div style="grid-column: ${startPos} / span ${span}; background: rgba(var(--ctp-rosewater), 0.15); border: 1px solid rgba(var(--ctp-rosewater), 0.3); border-radius: 4px; height: 8px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
+                            <div style="grid-column: ${proj.start} / span ${proj.end - proj.start + 1}; background: rgba(var(--ctp-rosewater), 0.15); border: 1px solid rgba(var(--ctp-rosewater), 0.3); border-radius: 4px; height: 8px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
                                 <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); opacity: 0.8;"></div>
                             </div>
                         </div>
                      </div>`;
         });
-        // 그룹 사이 간격
-        html += `<div style="height: 10px;"></div>`;
     });
+    html += `</div>`;
 }
 
-html += `</div>`;
 dv.el("div", html);
 ```
 
