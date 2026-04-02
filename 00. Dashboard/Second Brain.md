@@ -382,12 +382,12 @@ html += `<div style="position: absolute; top: 50px; left: ${labelWidth}px; right
 for (let d = 0; d < totalDays; d++) {
     const curr = minDate.plus({ days: d });
     const isToday = curr.hasSame(today, "day");
-    html += `<div style="width: ${dayWidth}px; border-right: 1px solid rgba(var(--ctp-rosewater), 0.08); height: 100%; background: ${isToday ? 'rgba(var(--ctp-rosewater), 0.03)' : 'transparent'};"></div>`;
+    html += `<div style="width: ${dayWidth}px; border-right: 1px solid rgba(var(--ctp-rosewater), 0.12); height: 100%; background: ${isToday ? 'rgba(var(--ctp-rosewater), 0.03)' : 'transparent'};"></div>`;
 }
 html += `</div>`;
 
 // [날짜 헤더]
-html += `<div style="display: flex; margin-bottom: 0px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); padding-bottom: 12px; position: sticky; top: 0; z-index: 30; background: var(--background-primary);">
+html += `<div style="display: flex; margin-bottom: 0px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.3); padding-bottom: 12px; position: sticky; top: 0; z-index: 30; background: var(--background-primary);">
             <div style="width: ${labelWidth}px; font-size: 0.6rem; font-weight: 900; color: var(--text-faint); align-self: flex-end; padding-left: 10px;">PROJECTS</div>
             <div style="display: flex; flex-direction: column;">
                 <div style="display: flex; height: 20px; position: relative;">`;
@@ -419,13 +419,13 @@ const groups = timelineData.reduce((acc, cur) => {
 }, {});
 
 Object.keys(groups).forEach(goalName => {
-    // 목표 바 디자인: 배경색을 타임라인 끝까지 연결 (Full Width)
+    // 목표 바: 불투명하지만 차분한 배경
     html += `<details open style="margin-bottom: 0px; position: relative; z-index: 10;">
-                <summary style="padding: 12px 10px; font-size: 0.7rem; font-weight: 800; color: var(--text-normal); cursor: pointer; list-style: none; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.1); background: rgba(var(--ctp-rosewater), 0.05); width: 100%; display: flex; align-items: center; position: sticky; left: 0;">
+                <summary style="padding: 12px 10px; font-size: 0.7rem; font-weight: 800; color: var(--text-normal); cursor: pointer; list-style: none; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.15); background: var(--background-secondary); width: 100%; display: flex; align-items: center; position: sticky; left: 0;">
                     <span style="color: rgb(var(--ctp-rosewater)); margin-right: 8px;">◈</span> ${goalName.toUpperCase()} 
                     <span style="font-size: 0.55rem; color: var(--text-faint); margin-left: 10px; font-weight: 400;">/ ${groups[goalName].length} projects</span>
                 </summary>
-                <div style="padding-top: 5px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.05);">`;
+                <div style="padding-top: 5px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.1);">`;
     
     groups[goalName].forEach(proj => {
         const startDiff = Math.ceil(proj.start.diff(minDate, 'days').days);
@@ -436,8 +436,8 @@ Object.keys(groups).forEach(goalName => {
                         <a class="internal-link" href="${proj.link}" style="font-size: 0.65rem; font-weight: 500; color: var(--text-muted); text-decoration: none;">${proj.name}</a>
                     </div>
                     <div style="display: flex; height: 14px; position: relative; flex-grow: 1;">
-                        <div style="margin-left: ${startDiff * dayWidth}px; width: ${duration * dayWidth}px; background: rgba(var(--ctp-rosewater), 0.1); border-radius: 100px; height: 6px; align-self: center; position: relative; z-index: 2; overflow: hidden; border: 1px solid rgba(var(--ctp-rosewater), 0.2);">
-                            <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); border-radius: 100px; opacity: 0.9;"></div>
+                        <div style="margin-left: ${startDiff * dayWidth}px; width: ${duration * dayWidth}px; background: var(--background-secondary-alt); border-radius: 100px; height: 7px; align-self: center; position: relative; z-index: 2; overflow: hidden; border: 1px solid rgba(var(--ctp-rosewater), 0.1);">
+                            <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); border-radius: 100px;"></div>
                         </div>
                     </div>
                  </div>`;
