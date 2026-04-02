@@ -177,7 +177,6 @@ setTimeout(() => {
 ```
 
 ```dataviewjs
-```dataviewjs
 // 1. 오늘 날짜 및 데이터 로드
 const today = dv.date("today");
 const todayStr = today.toFormat("yyyy-MM-dd");

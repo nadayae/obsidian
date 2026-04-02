@@ -25,6 +25,14 @@
     {
       "folder": "04. Projects",
       "template": "Templates/T-Project.md"
+    },
+    {
+      "folder": "05. Tasks",
+      "template": "Templates/T-Task.md"
+    },
+    {
+      "folder": "",
+      "template": ""
     }
   ],
   "enable_file_templates": false,
