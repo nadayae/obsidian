@@ -177,7 +177,7 @@ setTimeout(() => {
 ```
 
 ```dataviewjs
-// 1. 데이터 및 3단계 정렬 로직
+// 1. 데이터 로드 및 정렬 가중치 설정
 const today = dv.date("today");
 const todayStr = today.toFormat("yyyy-MM-dd");
 const templatePath = "Templates/Tasks.md";
@@ -187,76 +187,71 @@ const allTasks = dv.pages('"05. Tasks"').filter(t => {
     const d = dv.date(t.날짜);
     return d && d.year === today.year && d.month === today.month && d.day === today.day;
 }).sort(t => {
-    const planTime = t.계획 || "99:99";
-    const priorityMap = { "중요긴급": 1, "중요O + 긴급O": 2, "중요X + 긴급O": 3, "4. 중요X + 긴급X": 4 };
-    const priority = priorityMap[t["중요긴급"]] || 5;
-    const categoryMap = { "집중": 1, "일반": 2, "쉬운": 3, "쉬움": 3 };
-    const category = categoryMap[t.구분] || 4;
-    return `${planTime}-${priority}-${category}`;
+    // [1순위] 계획 시간 정규화 (1000 -> 10:00 형태로 인식하게 함)
+    let timeRaw = String(t.계획 || "99:99").replace(":", "");
+    if (timeRaw.length === 3) timeRaw = "0" + timeRaw; // 900 -> 0900 처리
+    const timeVal = timeRaw;
+
+    // [2순위] 중요긴급 가중치 (문자열 포함 여부로 체크해서 더 확실하게)
+    let prioWeight = 5;
+    if (String(t.중요긴급).includes("중요O + 긴급O")) prioWeight = 1;
+    else if (String(t.중요긴급).includes("중요X + 긴급O")) prioWeight = 2;
+    else if (String(t.중요긴급).includes("중요O + 긴급X")) prioWeight = 3;
+    else if (String(t.중요긴급).includes("중요X + 긴급X")) prioWeight = 4;
+
+    // [3순위] 구분 가중치 (집중이 가장 위)
+    let catWeight = 7;
+    const catMap = { "집중": 1, "일반": 2, "쉬운": 3, "위임": 4, "일정": 5, "나중에": 6 };
+    catWeight = catMap[t.구분] || 7;
+
+    // 모든 가중치를 하나의 문자열로 합쳐서 비교 (시간-중요도-구분)
+    return `${timeVal}-${prioWeight}-${catWeight}`;
 }, 'asc');
 
 const sections = [
     { id: "today_all", icon: "◈", label: "오늘",      filter: t => true },
     { id: "focus",     icon: "◎", label: "집중",      filter: t => t.구분 === "집중" },
-    { id: "easy",      icon: "○", label: "쉬운",      filter: t => t.구분 === "쉬움" || t.구분 === "쉬운" },
+    { id: "easy",      icon: "○", label: "쉬운",      filter: t => t.구분 === "쉬운" || t.구분 === "쉬움" },
     { id: "sched",     icon: "⊙", label: "일정",      filter: t => t.구분 === "일정" },
     { id: "delegate",  icon: "◇", label: "위임",      filter: t => t.구분 === "위임" },
     { id: "proj",      icon: "▣", label: "프로젝트별", filter: t => t.프로젝트 },
     { id: "delay",     icon: "▤", label: "지연",      filter: t => t.구분 === "지연" }
 ];
 
-const uid = "today-native-" + Math.random().toString(36).substring(2, 7);
+const uid = "today-sort-fix-" + Math.random().toString(36).substring(2, 7);
 
-// 2. UI 생성 (옵시디언 네이티브 클래스 주입)
+// 2. UI 생성 (네이티브 스타일)
 let html = `<div id="${uid}-container" class="dataviewjs-today-view">`;
-
-// 헤더 섹션
 html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
             <div style="font-weight: 800; font-size: 1rem; color: var(--text-accent); letter-spacing: 0.02em;">DAILY MISSION CONTROL</div>
             <button class="add-btn-top" style="background: var(--interactive-accent); cursor: pointer; font-size: 0.65rem; color: var(--text-on-accent); border: none; padding: 6px 14px; border-radius: 4px; font-weight: 700;">+ ADD TASK</button>
          </div>`;
 
-// 탭 버튼 (네이티브 텍스트 스타일)
 html += `<div style="display: flex; gap: 18px; margin-bottom: 15px; border-bottom: 1px solid var(--background-modifier-border); padding-bottom: 10px;">`;
 sections.forEach((sec, i) => {
     const isActive = i === 0;
-    const color = isActive ? "var(--text-accent)" : "var(--text-muted)";
-    const weight = isActive ? "800" : "400";
-    html += `<div class="sec-tab" data-target="${sec.id}" style="cursor: pointer; font-size: 0.8rem; color: ${color}; font-weight: ${weight}; transition: 0.2s;">${sec.icon} ${sec.label}</div>`;
+    html += `<div class="sec-tab" data-target="${sec.id}" style="cursor: pointer; font-size: 0.8rem; color: ${isActive ? "var(--text-accent)" : "var(--text-muted)"}; font-weight: ${isActive ? "800" : "400"}; transition: 0.2s;">${sec.icon} ${sec.label}</div>`;
 });
 html += `</div>`;
 
-// 패널 (네이티브 테이블 스타일 입히기)
 sections.forEach((sec, i) => {
-    const display = i === 0 ? "block" : "none";
     const tasks = allTasks.filter(sec.filter);
-    html += `<div class="sec-panel" id="${uid}-${sec.id}" style="display: ${display};">`;
-    
+    html += `<div class="sec-panel" id="${uid}-${sec.id}" style="display: ${i === 0 ? "block" : "none"};">`;
     if (tasks.length > 0) {
-        // 옵시디언 기본 테이블 클래스들을 사용하여 테마와 동기화
         html += `<table class="dataview table-view-table" style="width: 100%;">
-                    <thead class="table-view-thead">
-                        <tr class="table-view-tr">
-                            <th class="table-view-th">계획</th>
-                            <th class="table-view-th">이름</th>
-                            <th class="table-view-th">분류</th>
-                            <th class="table-view-th">중요도</th>
-                        </tr>
-                    </thead>
+                    <thead class="table-view-thead"><tr class="table-view-tr">
+                        <th class="table-view-th">계획</th><th class="table-view-th">이름</th><th class="table-view-th">구분</th><th class="table-view-th">중요긴급</th>
+                    </tr></thead>
                     <tbody class="table-view-tbody">`;
-        
         tasks.forEach(t => {
             const isDone = t.완료여부 === true;
-            const rowClass = isDone ? "is-done" : "";
-            const prio = t["중요/긴급"] || "일반";
-            
-            html += `<tr class="table-view-tr ${rowClass}" style="${isDone ? 'opacity: 0.4;' : ''}">
+            const prioText = String(t.중요긴급 || "-");
+            const prioStyle = prioText.includes("중요O + 긴급O") ? "color: var(--text-error); font-weight: 800;" : "color: var(--text-muted);";
+            html += `<tr class="table-view-tr" style="${isDone ? 'opacity: 0.4; text-decoration: line-through;' : ''}">
                         <td class="table-view-td" style="font-family: var(--font-monospace); color: var(--text-accent);">${t.계획 || "--:--"}</td>
-                        <td class="table-view-td">
-                            <a class="internal-link" href="${t.file.path}" style="font-weight: 600;">${t.제목 || t.file.name}</a>
-                        </td>
+                        <td class="table-view-td"><a class="internal-link" href="${t.file.path}" style="font-weight: 600;">${t.제목 || t.file.name}</a></td>
                         <td class="table-view-td" style="color: var(--text-muted);">${t.구분 || "-"}</td>
-                        <td class="table-view-td" style="font-weight: 700; ${prio === '중요긴급' ? 'color: var(--text-error);' : ''}">${prio}</td>
+                        <td class="table-view-td" style="${prioStyle}">${prioText}</td>
                     </tr>`;
         });
         html += `</tbody></table>`;
@@ -265,48 +260,33 @@ sections.forEach((sec, i) => {
     }
     html += `</div>`;
 });
-
 html += `</div>`;
 dv.el("div", html);
 
-// 3. 자바스크립트 바인딩 (탭 전환 및 파일 생성)
+// 3. JS 로직 (탭 & 템플릿)
 setTimeout(() => {
     const container = document.getElementById(`${uid}-container`);
     if (!container) return;
-
     const tabs = container.querySelectorAll('.sec-tab');
     const panels = container.querySelectorAll('.sec-panel');
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
-            const target = tab.getAttribute('data-target');
             tabs.forEach(t => { t.style.color = 'var(--text-muted)'; t.style.fontWeight = '400'; });
             tab.style.color = 'var(--text-accent)'; tab.style.fontWeight = '800';
             panels.forEach(p => p.style.display = 'none');
-            container.querySelector(`#${uid}-${target}`).style.display = 'block';
+            container.querySelector(`#${uid}-${tab.getAttribute('data-target')}`).style.display = 'block';
         });
     });
-
     const addBtn = container.querySelector('.add-btn-top');
     addBtn.addEventListener('click', async () => {
         const activeTab = container.querySelector('.sec-tab[style*="var(--text-accent)"]');
-        const activeLabel = activeTab ? activeTab.innerText.split(' ').pop() : "오늘";
+        const activeLabel = activeTab ? activeTab.innerText.split(' ').pop() : "일반";
         const fileName = `05. Tasks/Task_${Date.now()}.md`;
-        let fileContent = `---
-날짜: ${todayStr}
-계획: 09:00
-구분: ${activeLabel}
-중요/긴급: 일반
-완료여부: false
----`;
+        let fileContent = `---\n날짜: ${todayStr}\n계획: 09:00\n구분: ${activeLabel}\n중요긴급: 중요X + 긴급X\n완료여부: false\n---\n`;
         const templateFile = app.vault.getAbstractFileByPath(templatePath);
-        if (templateFile) {
-            const templateContent = await app.vault.read(templateFile);
-            fileContent += "\n" + templateContent.replace(/---[\s\S]*?---/, '').trim();
-        }
-        try {
-            const newFile = await app.vault.create(fileName, fileContent);
-            app.workspace.getLeaf(false).openFile(newFile);
-        } catch (e) { new Notice("ERR: " + e.message); }
+        if (templateFile) { fileContent += "\n" + (await app.vault.read(templateFile)).replace(/---[\s\S]*?---/, '').trim(); }
+        const newFile = await app.vault.create(fileName, fileContent);
+        app.workspace.getLeaf(false).openFile(newFile);
     });
 }, 250);
 ```
