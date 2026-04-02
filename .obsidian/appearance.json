@@ -1,8 +1,9 @@
 {
+  "theme": "AnuPpuccin",
   "enabledCssSnippets": [
     "second-brain"
   ],
-  "baseFontSize": 19,
-  "textFontFamily": "GmarketSans",
+  "baseFontSize": 16,
+  "textFontFamily": "",
   "monospaceFontFamily": ""
 }

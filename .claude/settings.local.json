@@ -15,7 +15,11 @@
       "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/sections/ProjectKanbanSection.tsx)",
       "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/sections/BoxesSection.tsx)",
       "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/ui/card.tsx)",
-      "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/ui/badge.tsx)"
+      "Bash(curl -s https://raw.githubusercontent.com/nadayae/Obsidiandashboard/main/src/app/components/ui/badge.tsx)",
+      "Bash(curl -s \"https://raw.githubusercontent.com/AnubisNekhet/AnuPpuccin/main/manifest.json\")",
+      "Bash(curl -s \"https://raw.githubusercontent.com/AnubisNekhet/AnuPpuccin/main/theme.css\")",
+      "Bash(curl -L -o \"C:/Users/HOME/Desktop/nadayae/.obsidian/themes/AnuPpuccin/theme.css\" \"https://raw.githubusercontent.com/AnubisNekhet/AnuPpuccin/main/theme.css\")",
+      "Bash(curl -L -o \"C:/Users/HOME/Desktop/nadayae/.obsidian/themes/AnuPpuccin/manifest.json\" \"https://raw.githubusercontent.com/AnubisNekhet/AnuPpuccin/main/manifest.json\")"
     ]
   }
 }
