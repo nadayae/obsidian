@@ -10,12 +10,12 @@
   "anuppuccin-theme-settings@@anuppuccin-theme-accents": "ctp-accent-rosewater",
   "anuppuccin-theme-settings@@anuppuccin-accent-toggle": true,
   "anuppuccin-theme-settings@@anp-active-line": "anp-current-line-highlight",
-  "anuppuccin-theme-settings@@anp-cursor": "block",
+  "anuppuccin-theme-settings@@anp-cursor": "pointer",
   "anuppuccin-theme-settings@@anp-toggle-metadata": false,
-  "anuppuccin-theme-settings@@anp-toggle-scrollbars": false,
-  "anuppuccin-theme-settings@@anp-hide-status-bar": false,
+  "anuppuccin-theme-settings@@anp-toggle-scrollbars": true,
+  "anuppuccin-theme-settings@@anp-hide-status-bar": true,
   "anuppuccin-theme-settings@@anp-status-bar-select": "anp-fixed-status-bar",
-  "anuppuccin-theme-settings@@anp-tooltip-toggle": true,
+  "anuppuccin-theme-settings@@anp-tooltip-toggle": false,
   "anuppuccin-theme-settings@@anp-hide-external-link-icon": true,
   "anuppuccin-theme-settings@@anp-colorful-frame": true,
   "anuppuccin-theme-settings@@anp-colorful-frame-icon-toggle-light": true,
@@ -53,9 +53,9 @@
   "anuppuccin-theme-settings@@anp-kanban-hide-card-border": false,
   "anuppuccin-theme-settings@@anp-kanban-lanes": true,
   "anuppuccin-theme-settings@@anp-kanban-hide-lane-border": false,
-
-  "anuppuccin-theme-settings@@anp-custom-font-toggle": true,
-  "anuppuccin-theme-settings@@anp-header-font": "Noto Serif",
-  "anuppuccin-theme-settings@@anp-text-font": "Rubik",
-  "anuppuccin-theme-settings@@anp-ui-font": "Overpass"
+  "anuppuccin-theme-settings@@anp-header-color-toggle": true,
+  "anuppuccin-theme-settings@@anp-header-margin-toggle": true,
+  "anuppuccin-theme-settings@@anp-header-divider-color-toggle": true,
+  "anuppuccin-theme-settings@@anp-alt-tab-style": "anp-alternate-tab-toggle",
+  "anuppuccin-theme-settings@@anp-layout-select": "anp-border-layout"
 }

@@ -5,6 +5,7 @@
   "baseFontSize": 16,
   "textFontFamily": "Rubik",
   "monospaceFontFamily": "Overpass",
-  "theme": "obsidian",
-  "cssTheme": "AnuPpuccin"
+  "theme": "moonstone",
+  "cssTheme": "AnuPpuccin",
+  "accentColor": "#c89185"
 }
