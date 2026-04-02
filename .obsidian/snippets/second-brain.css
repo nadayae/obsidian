@@ -1,47 +1,50 @@
 /* ============================================================
-   SECOND BRAIN — shadcn Style
-   Clean · Precise · Mono
+   SECOND BRAIN — shadcn / Obsidiandashboard Style
+   White · Gray · Structured
    ============================================================ */
 
 @import url('https://fonts.googleapis.com/css2?family=Gmarket+Sans:wght@300;400;500;700&display=swap');
 
 /* ============================================================
-   TOKENS — shadcn 팔레트
+   TOKENS
    ============================================================ */
 :root {
-  /* shadcn system colors */
-  --sb-bg:          #ffffff;
+  --sb-bg:          #f9fafb;
   --sb-card:        #ffffff;
-  --sb-card-2:      #ececf0;
-  --sb-hover:       #e9ebef;
+  --sb-card-2:      #f3f4f6;
+  --sb-hover:       #f9fafb;
 
-  --sb-border:      rgba(0, 0, 0, 0.10);
-  --sb-border-mid:  rgba(0, 0, 0, 0.15);
-  --sb-border-dark: rgba(0, 0, 0, 0.22);
+  --sb-border:      rgba(0, 0, 0, 0.08);
+  --sb-border-mid:  #e5e7eb;
+  --sb-border-dark: #d1d5db;
 
-  --sb-shadow-sm:   0 1px 2px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04);
-  --sb-shadow:      0 2px 8px rgba(0,0,0,0.08), 0 0 0 1px rgba(0,0,0,0.04);
-  --sb-shadow-lg:   0 8px 24px rgba(0,0,0,0.12), 0 0 0 1px rgba(0,0,0,0.04);
+  --sb-shadow-sm:   0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.04);
+  --sb-shadow:      0 4px 6px rgba(0,0,0,0.07), 0 2px 4px rgba(0,0,0,0.05);
+  --sb-shadow-lg:   0 10px 15px rgba(0,0,0,0.10), 0 4px 6px rgba(0,0,0,0.05);
 
-  --sb-text-1:      #030213;
-  --sb-text-2:      #1a1a2e;
-  --sb-text-3:      #3a3a4e;
-  --sb-text-4:      #717182;
+  --sb-text-1:      #111827;
+  --sb-text-2:      #374151;
+  --sb-text-3:      #4b5563;
+  --sb-text-4:      #6b7280;
+  --sb-text-5:      #9ca3af;
 
-  --sb-radius:      10px;
+  --sb-accent:      #1f2937;
+  --sb-accent-text: #ffffff;
+
+  --sb-radius:      8px;
   --sb-radius-sm:   6px;
   --sb-radius-xs:   4px;
 
   /* Obsidian 오버라이드 */
-  --background-primary:         #ffffff;
-  --background-secondary:       #ececf0;
-  --background-modifier-border: rgba(0,0,0,0.08);
-  --text-normal:                #030213;
-  --text-muted:                 #717182;
+  --background-primary:         #f9fafb;
+  --background-secondary:       #f3f4f6;
+  --background-modifier-border: #e5e7eb;
+  --text-normal:                #111827;
+  --text-muted:                 #6b7280;
 }
 
 /* ============================================================
-   FONT — 맥 시스템 폰트 + 한국어
+   FONT
    ============================================================ */
 body,
 .markdown-preview-view,
@@ -51,7 +54,7 @@ body,
 .nav-folder-title {
   font-family: 'Apple SD Gothic Neo', -apple-system,
                BlinkMacSystemFont, 'GmarketSans', 'Noto Sans KR', sans-serif !important;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   word-break: keep-all;
   -webkit-font-smoothing: antialiased;
 }
@@ -61,73 +64,73 @@ body,
    ============================================================ */
 
 .markdown-preview-view h1 {
-  font-size: 1.45rem !important;
+  font-size: 1.5rem !important;
   font-weight: 700 !important;
-  letter-spacing: -0.04em;
+  letter-spacing: -0.03em;
   color: var(--sb-text-1);
-  margin-bottom: 1.6rem;
+  margin-bottom: 1.5rem;
   margin-top: 0;
   padding-bottom: 0;
   border-bottom: none;
 }
 
 .markdown-preview-view h2 {
-  font-size: 0.65rem !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--sb-text-4);
-  margin-top: 2.4rem;
-  margin-bottom: 0.6rem;
+  font-size: 1.05rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em;
+  color: var(--sb-text-1);
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
 }
 
 .markdown-preview-view h3 {
-  font-size: 0.88rem !important;
+  font-size: 0.875rem !important;
   font-weight: 600 !important;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.01em;
   color: var(--sb-text-2);
-  margin-top: 1.2rem;
-  margin-bottom: 0.3rem;
+  margin-top: 1rem;
+  margin-bottom: 0.25rem;
 }
 
 .markdown-preview-view p,
 .markdown-preview-view li {
-  font-size: 0.85rem !important;
-  line-height: 1.65;
+  font-size: 0.875rem !important;
+  line-height: 1.6;
   color: var(--sb-text-2);
 }
 
 /* ============================================================
-   CALLOUT CARDS — shadcn 카드 스타일
+   CALLOUT CARDS — shadcn 섹션 카드
    ============================================================ */
 
 .callout {
-  border: none !important;
+  border: 1px solid var(--sb-border-mid) !important;
   border-radius: var(--sb-radius) !important;
   background: var(--sb-card) !important;
-  box-shadow: var(--sb-shadow) !important;
+  box-shadow: var(--sb-shadow-sm) !important;
   margin: 0.5rem 0 !important;
   padding: 0 !important;
   overflow: hidden;
-  transition: box-shadow 0.2s ease;
+  transition: box-shadow 0.2s ease, border-color 0.2s ease;
 }
 
 .callout:hover {
-  box-shadow: var(--sb-shadow-lg) !important;
+  box-shadow: var(--sb-shadow) !important;
+  border-color: var(--sb-border-dark) !important;
 }
 
 .callout .callout-title {
-  background: var(--sb-card-2) !important;
-  border-bottom: 1px solid var(--sb-border) !important;
-  padding: 0.5rem 0.9rem !important;
+  background: var(--sb-card) !important;
+  border-bottom: 1px solid var(--sb-border-mid) !important;
+  padding: 0.75rem 1rem !important;
 }
 
 .callout .callout-title-inner {
-  font-size: 0.65rem !important;
-  font-weight: 600 !important;
-  letter-spacing: 0.06em !important;
-  text-transform: uppercase !important;
-  color: var(--sb-text-4) !important;
+  font-size: 0.9rem !important;
+  font-weight: 700 !important;
+  letter-spacing: -0.02em !important;
+  text-transform: none !important;
+  color: var(--sb-text-1) !important;
   font-family: 'GmarketSans', -apple-system, sans-serif !important;
 }
 
@@ -136,11 +139,10 @@ body,
 }
 
 .callout .callout-content {
-  padding: 0.75rem 0.9rem !important;
+  padding: 0.875rem 1rem !important;
   background: var(--sb-card) !important;
 }
 
-/* fold 화살표 색 */
 .callout .callout-fold svg {
   color: var(--sb-text-4) !important;
 }
@@ -165,14 +167,14 @@ body,
 .callout[data-callout="col"] > .callout-content {
   display: grid !important;
   grid-template-columns: 1fr 1fr !important;
-  gap: 10px !important;
+  gap: 12px !important;
   padding: 0 !important;
 }
 
 .callout[data-callout="col3"] > .callout-content {
   display: grid !important;
   grid-template-columns: 1fr 1fr 1fr !important;
-  gap: 10px !important;
+  gap: 12px !important;
   padding: 0 !important;
 }
 
@@ -182,10 +184,9 @@ body,
 }
 
 /* ============================================================
-   BUTTONS
+   BUTTONS — 필터 버튼 (비활성: gray-100, 활성: gray-800)
    ============================================================ */
 
-.callout[data-callout="card"] .callout-content,
 .callout[data-callout="card"] .callout-content {
   display: flex;
   flex-wrap: wrap;
@@ -206,25 +207,25 @@ body,
 .callout button,
 .callout button.mod-cta,
 .callout button.mod-warning {
-  background: var(--sb-card) !important;
-  border: 1px solid var(--sb-border-mid) !important;
+  background: #f3f4f6 !important;
+  border: 1px solid transparent !important;
   color: var(--sb-text-2) !important;
-  border-radius: 20px !important;
-  padding: 4px 13px !important;
+  border-radius: var(--sb-radius-sm) !important;
+  padding: 4px 10px !important;
   font-size: 0.72rem !important;
   font-family: 'GmarketSans', -apple-system, sans-serif !important;
   letter-spacing: -0.01em !important;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: var(--sb-shadow-sm) !important;
   font-weight: 500 !important;
+  box-shadow: none !important;
 }
 
-.callout button:hover {
-  background: var(--sb-text-1) !important;
-  border-color: var(--sb-text-1) !important;
+.callout button:hover,
+.callout button.mod-cta {
+  background: #1f2937 !important;
+  border-color: #1f2937 !important;
   color: white !important;
-  box-shadow: none !important;
 }
 
 /* ============================================================
@@ -233,14 +234,14 @@ body,
 
 a.tag {
   border-radius: var(--sb-radius-xs);
-  padding: 1px 7px;
+  padding: 1px 6px;
   font-size: 0.65rem;
-  font-weight: 600;
+  font-weight: 500;
   text-decoration: none;
   display: inline-block;
-  background: var(--sb-card-2);
+  background: #f3f4f6;
   color: var(--sb-text-3);
-  border: 1px solid var(--sb-border-mid);
+  border: 1px solid #e5e7eb;
 }
 
 /* ============================================================
@@ -255,20 +256,21 @@ a.tag {
 
 .dataview.table-view-table thead th {
   color: var(--sb-text-4);
-  font-size: 0.62rem;
+  font-size: 0.68rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.07em;
-  border-bottom: 1px solid var(--sb-border);
-  padding: 5px 10px;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid var(--sb-border-mid);
+  padding: 6px 10px;
   text-align: left;
   white-space: nowrap;
+  background: var(--sb-card-2);
 }
 
 .dataview.table-view-table tbody td {
   font-size: 0.8rem;
-  padding: 8px 10px;
-  border-bottom: 1px solid var(--sb-border);
+  padding: 9px 10px;
+  border-bottom: 1px solid var(--sb-border-mid);
   vertical-align: middle;
   color: var(--sb-text-2);
 }
@@ -278,7 +280,7 @@ a.tag {
 }
 
 .dataview.table-view-table tbody tr:hover td {
-  background: var(--sb-hover);
+  background: #f9fafb;
 }
 
 .dataview.list-view-ul {
@@ -288,8 +290,8 @@ a.tag {
 }
 
 .dataview.list-view-ul li {
-  padding: 6px 2px;
-  border-bottom: 1px solid var(--sb-border);
+  padding: 7px 2px;
+  border-bottom: 1px solid var(--sb-border-mid);
   font-size: 0.8rem;
   color: var(--sb-text-2);
 }
@@ -304,27 +306,27 @@ a.tag {
 
 progress {
   width: 100%;
-  height: 3px;
+  height: 4px;
   border-radius: 2px;
   border: none;
   appearance: none;
   -webkit-appearance: none;
-  background: var(--sb-border-mid);
+  background: #e5e7eb;
   display: block;
 }
 
-progress::-webkit-progress-bar   { background: var(--sb-border-mid); border-radius: 2px; }
-progress::-webkit-progress-value { background: var(--sb-text-2); border-radius: 2px; }
-progress::-moz-progress-bar      { background: var(--sb-text-2); border-radius: 2px; }
+progress::-webkit-progress-bar   { background: #e5e7eb; border-radius: 2px; }
+progress::-webkit-progress-value { background: #1f2937; border-radius: 2px; }
+progress::-moz-progress-bar      { background: #1f2937; border-radius: 2px; }
 
 /* ============================================================
    INLINE CODE
    ============================================================ */
 
 .markdown-preview-view :not(pre) > code {
-  background: var(--sb-card-2);
+  background: #f3f4f6;
   color: var(--sb-text-2);
-  border: 1px solid var(--sb-border-mid);
+  border: 1px solid #e5e7eb;
   border-radius: var(--sb-radius-xs);
   padding: 1px 6px;
   font-size: 0.72rem;
@@ -338,7 +340,7 @@ progress::-moz-progress-bar      { background: var(--sb-text-2); border-radius: 
 .markdown-preview-view a.internal-link {
   color: var(--sb-text-2);
   text-decoration: none;
-  border-bottom: 1px solid var(--sb-border-mid);
+  border-bottom: 1px solid #e5e7eb;
 }
 
 .markdown-preview-view a.internal-link:hover {
@@ -352,8 +354,8 @@ progress::-moz-progress-bar      { background: var(--sb-text-2); border-radius: 
 
 hr {
   border: none;
-  border-top: 1px solid var(--sb-border);
-  margin: 2rem 0;
+  border-top: 1px solid var(--sb-border-mid);
+  margin: 1.5rem 0;
 }
 
 /* ============================================================
@@ -365,7 +367,7 @@ hr {
 }
 
 /* ============================================================
-   TIMELINE — DataviewJS 간트 차트
+   TIMELINE
    ============================================================ */
 
 .sb-timeline {
@@ -377,7 +379,7 @@ hr {
 
 .sb-timeline-header {
   display: flex;
-  border-bottom: 1px solid var(--sb-border);
+  border-bottom: 1px solid var(--sb-border-mid);
   padding-bottom: 6px;
   margin-bottom: 8px;
   position: sticky;
@@ -398,7 +400,7 @@ hr {
 }
 
 .sb-timeline-header .sb-tl-date.today {
-  color: #007aff;
+  color: #2563eb;
   font-weight: 700;
 }
 
@@ -430,12 +432,12 @@ hr {
 
 .sb-tl-bar:hover { opacity: 0.85; }
 
-.sb-tl-bar.status-진행중  { background: #34c759; }
-.sb-tl-bar.status-집중    { background: #ff9500; }
-.sb-tl-bar.status-시작전  { background: #8e8e93; }
-.sb-tl-bar.status-완료    { background: #007aff; }
-.sb-tl-bar.status-중단    { background: #ff3b30; }
-.sb-tl-bar.default        { background: #5856d6; }
+.sb-tl-bar.status-진행중  { background: #16a34a; }
+.sb-tl-bar.status-집중    { background: #d97706; }
+.sb-tl-bar.status-시작전  { background: #6b7280; }
+.sb-tl-bar.status-완료    { background: #2563eb; }
+.sb-tl-bar.status-중단    { background: #dc2626; }
+.sb-tl-bar.default        { background: #4f46e5; }
 
 .sb-tl-dday {
   font-size: 0.6rem;
@@ -457,7 +459,7 @@ hr {
   top: 0;
   bottom: 0;
   width: 2px;
-  background: #ff3b30;
+  background: #dc2626;
   z-index: 3;
   pointer-events: none;
 }
@@ -469,11 +471,11 @@ hr {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ff3b30;
+  background: #dc2626;
 }
 
 /* ============================================================
-   KANBAN — 카드 보드 스타일
+   KANBAN — gray-100/200/300/50 컬럼 스타일
    ============================================================ */
 
 .sb-kanban {
@@ -487,38 +489,42 @@ hr {
   min-width: 220px;
   max-width: 280px;
   flex-shrink: 0;
-  background: var(--sb-card-2);
+  background: #f3f4f6;
   border-radius: var(--sb-radius);
   padding: 10px;
+  border: 1px solid #e5e7eb;
 }
 
 .sb-kanban-col-title {
-  font-size: 0.62rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--sb-text-4);
+  color: var(--sb-text-1);
   padding: 4px 6px 8px;
-  border-bottom: 1px solid var(--sb-border);
+  border-bottom: 1px solid #e5e7eb;
   margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .sb-kanban-card {
   background: var(--sb-card);
   border-radius: var(--sb-radius-sm);
   box-shadow: var(--sb-shadow-sm);
+  border: 1px solid #e5e7eb;
   padding: 10px 12px;
   margin-bottom: 6px;
   cursor: pointer;
-  transition: box-shadow 0.15s;
+  transition: box-shadow 0.15s, border-color 0.15s;
 }
 
 .sb-kanban-card:hover {
   box-shadow: var(--sb-shadow);
+  border-color: #d1d5db;
 }
 
 .sb-kanban-card-title {
-  font-size: 0.8rem;
+  font-size: 0.78rem;
   font-weight: 600;
   color: var(--sb-text-1);
   margin-bottom: 4px;
@@ -540,19 +546,24 @@ hr {
 .sb-kanban-badge {
   display: inline-block;
   padding: 1px 6px;
-  border-radius: 3px;
+  border-radius: 4px;
   font-size: 0.6rem;
   font-weight: 600;
+  border: 1px solid transparent;
 }
 
-.sb-kanban-badge.red     { background: #ffe5e5; color: #d00; }
-.sb-kanban-badge.orange  { background: #fff3e0; color: #e65100; }
-.sb-kanban-badge.green   { background: #e8f5e9; color: #2e7d32; }
-.sb-kanban-badge.blue    { background: #e3f2fd; color: #1565c0; }
-.sb-kanban-badge.gray    { background: #f0f0f0; color: #666; }
+/* 우선순위: gray 계열 */
+.sb-kanban-badge.high   { background: #1f2937; color: white; }
+.sb-kanban-badge.medium { background: #4b5563; color: white; }
+.sb-kanban-badge.low    { background: #d1d5db; color: #374151; }
+.sb-kanban-badge.red    { background: #fee2e2; color: #b91c1c; }
+.sb-kanban-badge.orange { background: #fef3c7; color: #b45309; }
+.sb-kanban-badge.green  { background: #dcfce7; color: #15803d; }
+.sb-kanban-badge.blue   { background: #dbeafe; color: #1d4ed8; }
+.sb-kanban-badge.gray   { background: #f3f4f6; color: #4b5563; }
 
 /* ============================================================
-   GALLERY — 박스 갤러리 카드
+   GALLERY — 박스 카드 (border + gradient 아이콘)
    ============================================================ */
 
 .sb-gallery {
@@ -565,25 +576,36 @@ hr {
 .sb-gallery-card {
   background: var(--sb-card);
   border-radius: var(--sb-radius);
+  border: 1px solid #e5e7eb;
   box-shadow: var(--sb-shadow-sm);
   padding: 16px;
   cursor: pointer;
-  transition: box-shadow 0.15s, transform 0.15s;
+  transition: box-shadow 0.15s, border-color 0.15s, transform 0.15s;
+  position: relative;
 }
 
 .sb-gallery-card:hover {
-  box-shadow: var(--sb-shadow);
+  box-shadow: var(--sb-shadow-lg);
+  border-color: #d1d5db;
   transform: translateY(-1px);
 }
 
 .sb-gallery-icon {
   font-size: 1.8rem;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  width: 48px;
+  height: 48px;
+  background: linear-gradient(135deg, #374151, #1f2937);
+  border-radius: var(--sb-radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 .sb-gallery-title {
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--sb-text-1);
   margin-bottom: 4px;
 }
@@ -594,32 +616,34 @@ hr {
 }
 
 .sb-gallery-desc {
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   color: var(--sb-text-4);
   line-height: 1.4;
-  margin-bottom: 6px;
+  margin-bottom: 10px;
 }
 
 .sb-gallery-stats {
-  font-size: 0.6rem;
+  font-size: 0.65rem;
   color: var(--sb-text-4);
   display: flex;
   gap: 8px;
+  padding-top: 10px;
+  border-top: 1px solid #f3f4f6;
 }
 
 /* ============================================================
-   SECTION HEADERS — 대시보드 섹션 제목
+   SECTION HEADERS
    ============================================================ */
 
 .sb-section-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .sb-section-title {
-  font-size: 0.9rem;
+  font-size: 1rem;
   font-weight: 700;
   color: var(--sb-text-1);
   letter-spacing: -0.02em;
@@ -635,37 +659,39 @@ hr {
 .sb-section-count {
   font-size: 0.65rem;
   color: var(--sb-text-4);
-  background: var(--sb-card-2);
+  background: #f3f4f6;
   padding: 2px 8px;
   border-radius: 10px;
+  border: 1px solid #e5e7eb;
 }
 
 /* ============================================================
-   STATUS TAGS (inline)
+   STATUS TAGS
    ============================================================ */
 
 .sb-status {
   display: inline-block;
-  padding: 1px 8px;
-  border-radius: 4px;
+  padding: 2px 8px;
+  border-radius: var(--sb-radius-xs);
   font-size: 0.62rem;
   font-weight: 600;
+  border: 1px solid transparent;
 }
 
-.sb-status.진행중  { background: #dcf8e6; color: #1b7a3d; }
-.sb-status.집중    { background: #fff3cd; color: #856404; }
-.sb-status.시작전  { background: #f0f0f0; color: #666; }
-.sb-status.완료    { background: #d4e5ff; color: #1a5276; }
-.sb-status.중단    { background: #fce4e4; color: #c0392b; }
+.sb-status.진행중  { background: #dcfce7; color: #15803d; border-color: #bbf7d0; }
+.sb-status.집중    { background: #fef9c3; color: #854d0e; border-color: #fef08a; }
+.sb-status.시작전  { background: #f3f4f6; color: #4b5563; border-color: #e5e7eb; }
+.sb-status.완료    { background: #dbeafe; color: #1d4ed8; border-color: #bfdbfe; }
+.sb-status.중단    { background: #fee2e2; color: #b91c1c; border-color: #fecaca; }
 
 /* ============================================================
-   NAV TABS — 탭 네비게이션
+   NAV TABS
    ============================================================ */
 
 .sb-tabs {
   display: flex;
   gap: 2px;
-  border-bottom: 1px solid var(--sb-border);
+  border-bottom: 1px solid var(--sb-border-mid);
   padding-bottom: 0;
   margin-bottom: 12px;
   overflow-x: auto;
@@ -673,29 +699,29 @@ hr {
 
 .sb-tab {
   padding: 6px 12px;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 500;
   color: var(--sb-text-4);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   white-space: nowrap;
   transition: all 0.15s;
+  border-radius: var(--sb-radius-xs) var(--sb-radius-xs) 0 0;
 }
 
 .sb-tab:hover {
   color: var(--sb-text-2);
-  background: var(--sb-hover);
-  border-radius: var(--sb-radius-xs) var(--sb-radius-xs) 0 0;
+  background: #f3f4f6;
 }
 
 .sb-tab.active {
   color: var(--sb-text-1);
-  font-weight: 600;
-  border-bottom-color: var(--sb-text-1);
+  font-weight: 700;
+  border-bottom-color: #1f2937;
 }
 
 /* ============================================================
-   QUICK ACTIONS BAR — 상단 빠른 추가
+   QUICK ACTIONS BAR
    ============================================================ */
 
 .sb-quick-actions {
@@ -706,7 +732,7 @@ hr {
 }
 
 /* ============================================================
-   CALENDAR MINI — 할 일 캘린더 미니
+   CALENDAR MINI
    ============================================================ */
 
 .sb-calendar-mini {
@@ -729,21 +755,30 @@ hr {
   padding: 6px 2px;
   border-radius: var(--sb-radius-xs);
   color: var(--sb-text-2);
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.sb-calendar-mini .sb-cal-day:hover {
+  background: #f3f4f6;
+  border-color: #e5e7eb;
 }
 
 .sb-calendar-mini .sb-cal-day.today {
-  background: #030213;
+  background: #1f2937;
   color: white;
   font-weight: 700;
+  border-color: #1f2937;
 }
 
 .sb-calendar-mini .sb-cal-day.has-tasks {
-  background: var(--sb-card-2);
+  background: #f3f4f6;
   font-weight: 600;
+  border-color: #e5e7eb;
 }
 
 /* ============================================================
-   MANAGEMENT GRID — 관리도구 그리드
+   MANAGEMENT GRID
    ============================================================ */
 
 .sb-mgmt-grid {
@@ -756,6 +791,7 @@ hr {
 .sb-mgmt-item {
   background: var(--sb-card);
   border-radius: var(--sb-radius-sm);
+  border: 1px solid #e5e7eb;
   box-shadow: var(--sb-shadow-sm);
   padding: 10px 12px;
   text-align: center;
@@ -766,6 +802,7 @@ hr {
 
 .sb-mgmt-item:hover {
   box-shadow: var(--sb-shadow);
+  border-color: #d1d5db;
   transform: translateY(-1px);
 }
 
@@ -778,6 +815,57 @@ hr {
   font-size: 0.7rem;
   font-weight: 500;
   color: var(--sb-text-2);
+}
+
+/* ============================================================
+   STATS BLOCKS — gray-100 배경
+   ============================================================ */
+
+.sb-stat {
+  background: #f3f4f6;
+  border-radius: var(--sb-radius-sm);
+  padding: 12px 14px;
+  border: 1px solid #e5e7eb;
+}
+
+.sb-stat-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--sb-text-4);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 4px;
+}
+
+.sb-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--sb-text-1);
+  line-height: 1;
+}
+
+/* ============================================================
+   ADD BUTTON
+   ============================================================ */
+
+.sb-add-btn {
+  font-size: 0.7rem !important;
+  padding: 4px 12px !important;
+  border-radius: var(--sb-radius-sm) !important;
+  background: #f3f4f6 !important;
+  border: 1px solid #e5e7eb !important;
+  color: var(--sb-text-3) !important;
+  cursor: pointer !important;
+  font-weight: 500 !important;
+  box-shadow: none !important;
+  transition: all 0.15s !important;
+  margin: 0 !important;
+}
+
+.sb-add-btn:hover {
+  background: #1f2937 !important;
+  color: white !important;
+  border-color: #1f2937 !important;
 }
 
 /* ============================================================
@@ -799,46 +887,28 @@ hr {
 }
 
 /* ============================================================
-   ADD BUTTON — 섹션 제목 옆 추가 버튼
-   ============================================================ */
-
-.sb-add-btn {
-  font-size: 0.65rem !important;
-  padding: 2px 10px !important;
-  border-radius: 12px !important;
-  background: var(--sb-card) !important;
-  border: 1px solid var(--sb-border-mid) !important;
-  color: var(--sb-text-4) !important;
-  cursor: pointer !important;
-  font-weight: 500 !important;
-  box-shadow: var(--sb-shadow-sm) !important;
-  transition: all 0.15s !important;
-  margin: 0 !important;
-}
-
-.sb-add-btn:hover {
-  background: var(--sb-text-1) !important;
-  color: white !important;
-  border-color: var(--sb-text-1) !important;
-}
-
-/* ============================================================
-   SIDEBAR — 스타일
+   SIDEBAR
    ============================================================ */
 
 .nav-file-title,
 .nav-folder-title {
   font-size: 0.78rem !important;
   border-radius: var(--sb-radius-sm) !important;
+  color: var(--sb-text-2) !important;
 }
 
 .nav-file-title:hover,
 .nav-folder-title:hover {
-  background: var(--sb-hover) !important;
+  background: #f3f4f6 !important;
+}
+
+.nav-file-title.is-active {
+  background: #dbeafe !important;
+  color: #1d4ed8 !important;
 }
 
 /* ============================================================
-   SCROLLBAR — 맥 스타일
+   SCROLLBAR
    ============================================================ */
 
 ::-webkit-scrollbar {
@@ -851,10 +921,10 @@ hr {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--sb-border-dark);
+  background: #d1d5db;
   border-radius: 3px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--sb-text-4);
+  background: #9ca3af;
 }
