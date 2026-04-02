@@ -455,28 +455,31 @@ dv.el("div", html);
 ---
 
 ```dataviewjs
-// 1. 설정 및 데이터 로드
-const projects = dv.pages('"04. Projects"').filter(p => p.type === "project").array();
+// 1. 설정 및 데이터 강제 수집 (필터링을 느슨하게 해서 무조건 잡히게 함)
+const projects = dv.pages('"04. Projects"').filter(p => 
+    p.file.name !== "Project Dashboard" // 자기 자신 제외 모든 파일 수집
+).array();
+
 const today = dv.date("today");
 const statuses = ["계획 전", "계획", "진행중", "집중"];
 const ROSEWATER = "#e6aba9"; 
-const TEXT_MUTED = "#8a81a3";
-const containerId = "notion-tab-kanban-" + Date.now();
+const BORDER_COLOR = "rgba(230, 171, 169, 0.5)"; 
+const containerId = "kanban-notion-" + Date.now();
 
-// 2. UI 구조 생성
+// 2. UI 구조 생성 (목표별 탭 포함)
 let html = `
 <div id="${containerId}" style="font-family: var(--font-interface); padding: 10px 0;">
-    <div style="display: flex; gap: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 0px; margin-bottom: 25px;">
-        <div class="ntab active" data-target="today" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative;">
+    <div style="display: flex; gap: 20px; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 0px; margin-bottom: 25px;">
+        <div class="ntab active" data-target="all" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${ROSEWATER};">
+            <span style="font-size: 0.85rem;">目</span><span style="font-size: 0.85rem; font-weight: 700;">전체</span>
+        </div>
+        <div class="ntab" data-target="today" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
             <span style="font-size: 0.85rem;">⊙</span><span style="font-size: 0.85rem; font-weight: 500;">오늘</span>
         </div>
-        <div class="ntab" data-target="all" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${TEXT_MUTED};">
-            <span style="font-size: 0.85rem;">目</span><span style="font-size: 0.85rem; font-weight: 500;">전체</span>
-        </div>
-        <div class="ntab" data-target="overdue" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${TEXT_MUTED};">
+        <div class="ntab" data-target="overdue" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
             <span style="font-size: 0.85rem;">⚠️</span><span style="font-size: 0.85rem; font-weight: 500;">지연</span>
         </div>
-        <div class="ntab" data-target="by-goal" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${TEXT_MUTED};">
+        <div class="ntab" data-target="goal" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
             <span style="font-size: 0.85rem;">🎯</span><span style="font-size: 0.85rem; font-weight: 500;">목표별</span>
         </div>
     </div>
@@ -489,55 +492,71 @@ let html = `
     .ntab.active::after {
         content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background-color: ${ROSEWATER};
     }
-    .k-card:hover { transform: translateY(-3px); box-shadow: 0 6px 12px rgba(0,0,0,0.05); transition: all 0.2s ease; }
+    .k-column { 
+        background: rgba(245, 234, 224, 0.4); 
+        border: 2px solid ${BORDER_COLOR}; 
+        border-radius: 12px; 
+        padding: 15px; 
+        min-height: 300px;
+    }
+    .k-card {
+        background: var(--background-primary); 
+        border: 1px solid rgba(0,0,0,0.1); 
+        border-radius: 8px; 
+        padding: 12px; 
+        margin-bottom: 12px; 
+    }
 </style>
 `;
 
 dv.el("div", html);
 
-// 3. 렌더링 함수 (데이터를 HTML로 그려주는 역할)
+// 3. 렌더링 함수
 const renderK = (target) => {
     const display = document.getElementById(`k-display-${containerId}`);
     if (!display) return;
 
-    let filtered = [];
+    let filtered = projects; // 기본 '전체'
+
     if (target === "today") {
         filtered = projects.filter(p => {
-            const s = p.시작일 ? dv.date(p.시작일) : null;
-            const e = (p.목표일 || p.종료일) ? dv.date(p.목표일 || p.종료일) : null;
+            const s = p.시작일 ? dv.date(String(p.시작일).replace(/[\[\]]/g, "")) : null;
+            const e = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
             return s && e && s <= today && e >= today;
         });
-    } else if (target === "all") {
-        filtered = projects;
     } else if (target === "overdue") {
         filtered = projects.filter(p => {
-            const e = (p.목표일 || p.종료일) ? dv.date(p.목표일 || p.종료일) : null;
-            return e && e < today && p.상태 !== "완료";
+            const e = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
+            return e && e < today && (p.상태 !== "완료" && p.상태 !== "집중");
         });
-    } else if (target === "by-goal") {
-        filtered = [...projects].sort((a, b) => String(a.목표 || "").localeCompare(String(b.목표 || "")));
+    } else if (target === "goal") {
+        // 목표별 정렬 로직 (목표 속성이 있는 것들 우선)
+        filtered = [...projects].sort((a, b) => String(a.목표 || "기타").localeCompare(String(b.목표 || "기타")));
     }
 
     let columns = "";
     statuses.forEach(status => {
-        const cards = filtered.filter(p => p.상태 === status);
-        columns += `<div style="background: rgba(245, 234, 224, 0.4); border-radius: 10px; padding: 15px; border: 1px solid rgba(0,0,0,0.02);">
-            <div style="font-size: 0.6rem; font-weight: 800; color: #8a81a3; text-transform: uppercase; margin-bottom: 20px; display: flex; justify-content: space-between;">
-                <span>${status}</span><span style="background: rgba(0,0,0,0.04); padding: 1px 6px; border-radius: 4px;">${cards.length}</span>
+        // 상태 속성이 없어도 '계획 전'으로 분류해서 무조건 보여줌
+        const cards = filtered.filter(p => {
+            const pStatus = (p.상태 || "계획 전").trim();
+            return pStatus === status;
+        });
+        
+        columns += `<div class="k-column">
+            <div style="font-size: 0.65rem; font-weight: 900; color: #8a81a3; text-transform: uppercase; margin-bottom: 20px; display: flex; justify-content: space-between;">
+                <span>${status}</span><span style="background: ${ROSEWATER}; color: white; padding: 1px 6px; border-radius: 4px;">${cards.length}</span>
             </div>`;
 
         cards.forEach(p => {
-            const e = (p.목표일 || p.종료일) ? dv.date(p.목표일 || p.종료일) : null;
-            const isLate = e && e < today && p.상태 !== "완료";
-            columns += `<div class="k-card" style="background: var(--background-primary); border-radius: 8px; padding: 12px; margin-bottom: 12px; border: 1px solid ${isLate ? '#e64553' : 'rgba(0,0,0,0.05)'}; cursor: pointer;">
+            columns += `<div class="k-card">
                 <div style="font-size: 0.75rem; font-weight: 600; margin-bottom: 8px;">
                     <a class="internal-link" href="${p.file.path}" style="color: var(--text-normal); text-decoration: none;">${p.file.name}</a>
                 </div>
                 <div style="font-size: 0.55rem; color: #8a81a3; display: flex; flex-direction: column; gap: 4px;">
-                    <div style="display: flex; align-items: center; gap: 4px;">🎯 <span>${p.목표 || '기타'}</span></div>
+                    <div>🎯 ${p.목표 || '미지정'}</div>
                     <div style="display: flex; justify-content: space-between; margin-top: 4px;">
-                        <span style="color: ${isLate ? '#e64553' : 'inherit'}; font-weight: ${isLate ? '700' : '400'};">${e ? e.toFormat('MM월 dd일') : ''}</span>
-                        ${p.달성률 ? `<span style="color: ${ROSEWATER};">${p.달성률}%</span>` : ''}
+                        <span>📅 ${p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")).toFormat('MM/dd') : 'No Date'}</span>
+                        ${p.달성률 ? `<span style="color: ${ROSEWATER}; font-weight: 800;">${p.달성률}%</span>` : ''}
                     </div>
                 </div>
             </div>`;
@@ -547,26 +566,22 @@ const renderK = (target) => {
     display.innerHTML = columns;
 };
 
-// 4. 실행 및 이벤트 바인딩
-// DOM이 확실히 그려진 후 실행되도록 보장
+// 4. 실행 및 클릭 이벤트
 setTimeout(() => {
     const root = document.getElementById(containerId);
     if (root) {
         const tabs = root.querySelectorAll(".ntab");
         tabs.forEach(tab => {
             tab.addEventListener("click", () => {
-                tabs.forEach(t => {
-                    t.classList.remove("active");
-                    t.style.color = TEXT_MUTED;
-                });
+                tabs.forEach(t => { t.classList.remove("active"); t.style.color = "#8a81a3"; });
                 tab.classList.add("active");
                 tab.style.color = ROSEWATER;
                 renderK(tab.dataset.target);
             });
         });
     }
-    renderK("today"); // 초기 렌더링
-}, 50);
+    renderK("all"); // 무조건 전체 탭으로 시작
+}, 100);
 ```
 
 ---
