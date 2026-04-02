@@ -80,7 +80,7 @@ const uid = "mega-cal-" + Math.random().toString(36).substring(2, 7);
 
 let html = `<div id="${uid}-container">`;
 html += `<details open style="background: transparent !important; border: none !important; padding: 0;">`;
-html += `<summary style="font-weight: 800; cursor: pointer; margin-bottom: 16px; color: rgb(var(--ctp-rosewater)); font-size: 1.1rem; list-style: none;">🌹 세컨드 브레인 대시보드</summary>`;
+html += `<summary style="font-weight: 800; cursor: pointer; margin-bottom: 16px; color: rgb(var(--ctp-rosewater)); font-size: 1.1rem; list-style: none;">▤ 캘린더</summary>`;
 
 html += `<div class="sb-tabs" style="margin-bottom: 16px; display: flex; gap: 12px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); padding-bottom: 8px;">`;
 taskTabs.forEach((tab) => {
