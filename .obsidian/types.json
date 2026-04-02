@@ -27,6 +27,8 @@
     "TQ_show_urgency": "checkbox",
     "상태": "text",
     "날짜": "date",
-    "계획": "number"
+    "계획": "number",
+    "종료일": "date",
+    "시작일": "date"
   }
 }
