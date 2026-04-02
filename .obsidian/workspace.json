@@ -11,14 +11,19 @@
             "id": "052925657130d2ce",
             "type": "leaf",
             "state": {
-              "type": "markdown",
+              "type": "kanban",
               "state": {
-                "file": "00. Dashboard/Second Brain.md",
-                "mode": "source",
-                "source": false
+                "file": "00. Dashboard/Untitled Kanban.md",
+                "kanbanViewState": {
+                  "kanban-plugin": "board",
+                  "list-collapse": [
+                    false,
+                    false
+                  ]
+                }
               },
-              "icon": "lucide-file",
-              "title": "Second Brain"
+              "icon": "lucide-trello",
+              "title": "Untitled Kanban"
             }
           }
         ]
@@ -78,8 +83,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "745189a8707a5fcd",
@@ -190,8 +194,11 @@
   },
   "active": "052925657130d2ce",
   "lastOpenFiles": [
-    "04. Projects/안녕하세요.md",
     "00. Dashboard/Second Brain.md",
+    "00. Dashboard/Untitled Kanban.md",
+    "04. Projects/Untitled Kanban.md",
+    "05. Tasks/Task_1775119890707.md",
+    "04. Projects/안녕하세요.md",
     "03. Goals/나만의 세컨드 브레인 구축하기.md",
     "2026-04-08.md",
     "02. Boxes/자기관리.md",
@@ -201,7 +208,6 @@
     "05. Tasks/Task_1775127360365.md",
     "05. Tasks/Task_1775119908585.md",
     "05. Tasks/Task_1775120010165.md",
-    "05. Tasks/Task_1775119890707.md",
     "05. Tasks/이쁘게 만들고 있는 중.md",
     "05. Tasks/애국가.md",
     "_fileClasses/task.md",
@@ -214,8 +220,6 @@
     "05. Tasks/대시보드 및 각 템플릿 구조 만들기.md",
     "05. Tasks/일단 캘린더는 완성 1.md",
     "05. Tasks/이쁘게 만들고 있는 중 1.md",
-    "05. Tasks/일단 캘린더는 완성 1 1.md",
-    "05. Tasks/일단 캘린더는 완성.md",
     "00. Dashboard/image.png",
     "00. Dashboard/🏠m Hoe.md.tmp.13372.1775110777508",
     "05. Tasks/무제",
