@@ -326,124 +326,145 @@ setTimeout(() => {
 
 ## 🗓️ 프로젝트 타임라인
 ```dataviewjs
-// 1. 데이터 및 시간 설정 (내장 dv.date 활용으로 ReferenceError 방지)
+// 1. 데이터 로드 및 환경 설정
 const today = dv.date("today");
-const daysInMonth = today.daysInMonth; 
-const projectPages = dv.pages('"04. Projects"').filter(p => p.시작일 && p.종료일);
+const projectPages = dv.pages('"Projects"').filter(p => 
+    (p.type === "project" || p.file.path.toLowerCase().includes("project")) &&
+    p.file.name !== "Project Dashboard"
+).array();
 
-// 타임라인 데이터 가공
+// 타임라인 범위 설정 (이번 달 기준 + 프로젝트 범위 확장)
+let minDate = today.startOf("month");
+let maxDate = today.endOf("month"); 
+
 const timelineData = projectPages.map(p => {
-    const start = dv.date(p.시작일);
-    const end = dv.date(p.종료일);
+    const forceParseDate = (val) => {
+        if (!val) return null;
+        let clean = String(val).replace(/[\[\]]/g, "").trim();
+        const match = clean.match(/\d{4}-\d{2}-\d{2}/);
+        if (match) return dv.date(match[0]);
+        return dv.date(clean);
+    };
+
+    const start = forceParseDate(p.시작일);
+    const end = forceParseDate(p.목표일) || forceParseDate(p.종료일);
     
     if (!start || !end) return null;
 
-    // 이번 달 표시 여부 체크
-    const isVisible = (start.month === today.month && start.year === today.year) || 
-                      (end.month === today.month && end.year === today.year) ||
-                      (start < today && end > today);
-    
-    if (!isVisible) return null;
+    // 타임라인 전체 범위를 프로젝트에 맞춰 확장
+    if (start < minDate) minDate = start.startOf("month");
+    if (end > maxDate) maxDate = end.endOf("month");
 
-    // 1~말일 사이 위치 계산
-    let displayStart = (start.year < today.year || (start.year === today.year && start.month < today.month)) ? 1 : start.day;
-    let displayEnd = (end.year > today.year || (end.year === today.year && end.month > today.month)) ? daysInMonth : end.day;
-    
     return {
         name: p.file.name,
         link: p.file.path,
-        start: displayStart,
-        end: displayEnd,
-        progress: p.진행률 || 0
+        start: start,
+        end: end,
+        progress: p.달성률 || p.진행률 || 0,
+        goal: p.목표 || "기타/미지정"
     };
 }).filter(p => p !== null);
 
-// 2. UI 생성 (초슬림 모드)
-let html = `<div style="background: rgba(var(--ctp-surface0), 0.2); border: 1px solid rgba(var(--ctp-rosewater), 0.1); border-radius: 10px; padding: 12px; font-family: var(--font-interface);">`;
+const totalDays = Math.ceil(maxDate.diff(minDate, 'days').days) + 1;
+const dayWidth = 35; // 한 칸 너비를 조금 더 넓혀서 가독성 확보
 
-// 상단 헤더
-html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <div style="font-weight: 800; font-size: 0.8rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">PROJECT TIMELINE</div>
-            <div style="font-size: 0.55rem; color: var(--text-faint); font-family: var(--font-monospace);">${today.year}.${today.toFormat('LL')}</div>
+// 2. UI 생성
+let html = `<div style="background: rgba(var(--ctp-surface0), 0.2); border: 1px solid rgba(var(--ctp-rosewater), 0.1); border-radius: 12px; padding: 15px; font-family: var(--font-interface); overflow: hidden;">`;
+
+// 헤더
+html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="font-weight: 800; font-size: 0.9rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">PROJECT GRID TIMELINE</div>
+            <div style="font-size: 0.6rem; color: var(--text-faint);">Shift + Scroll to navigate ➔</div>
          </div>`;
 
+// 가로 스크롤 영역
+html += `<div style="overflow-x: auto; padding-bottom: 10px;">`;
+html += `<div style="position: relative; min-width: ${160 + (totalDays * dayWidth)}px;">`;
+
+// [배경 그리드 레이어] 프로젝트 리스트 높이에 맞춰 수직선 그리기
+html += `<div style="position: absolute; top: 40px; left: 160px; right: 0; bottom: 0; display: flex; z-index: 0; pointer-events: none;">`;
+for (let d = 0; d < totalDays; d++) {
+    html += `<div style="width: ${dayWidth}px; border-right: 1px dashed rgba(var(--ctp-rosewater), 0.1); height: 100%;"></div>`;
+}
+html += `</div>`;
+
 // 날짜 헤더
-html += `<div style="display: grid; grid-template-columns: 130px 1fr; margin-bottom: 5px; border-bottom: 1px solid rgba(var(--ctp-surface1), 0.2); padding-bottom: 5px;">
-            <div style="font-size: 0.6rem; font-weight: 800; color: var(--text-muted); padding-left: 4px;">PROJECT</div>
-            <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); text-align: center; font-size: 0.45rem; color: var(--text-faint);">`;
-for (let i = 1; i <= daysInMonth; i++) {
-    const isToday = i === today.day;
-    html += `<div style="${isToday ? 'color: rgb(var(--ctp-rosewater)); font-weight: 900;' : ''}">${i}</div>`;
+html += `<div style="display: flex; margin-bottom: 15px; border-bottom: 2px solid rgba(var(--ctp-rosewater), 0.1); padding-bottom: 8px; position: relative; z-index: 2; background: transparent;">
+            <div style="width: 160px; font-size: 0.65rem; font-weight: 800; color: var(--text-muted); flex-shrink: 0;">PROJECT / GOAL</div>
+            <div style="display: flex;">`;
+            
+for (let d = 0; d < totalDays; d++) {
+    const current = minDate.plus({ days: d });
+    const isToday = current.hasSame(today, "day");
+    const isFirstDay = current.day === 1;
+    
+    html += `<div style="width: ${dayWidth}px; text-align: center; font-size: 0.5rem; color: ${isToday ? 'rgb(var(--ctp-rosewater))' : 'var(--text-faint)'}; position: relative;">
+                ${isFirstDay ? `<span style="position: absolute; top: -12px; left: 5px; font-weight: 800; color: var(--text-normal); white-space: nowrap;">${current.month}월</span>` : ''}
+                <div style="${isToday ? 'font-weight: 900; background: rgba(var(--ctp-rosewater), 0.1); border-radius: 4px;' : ''}">${current.day}</div>
+             </div>`;
 }
 html += `</div></div>`;
 
-// 프로젝트별 리스트
-timelineData.forEach(proj => {
-    const startPos = proj.start;
-    const span = proj.end - proj.start + 1;
+// 데이터 렌더링
+const groups = timelineData.reduce((acc, cur) => {
+    if (!acc[cur.goal]) acc[cur.goal] = [];
+    acc[cur.goal].push(cur);
+    return acc;
+}, {});
+
+Object.keys(groups).forEach(goalName => {
+    html += `<div style="padding: 10px 5px 5px; font-size: 0.65rem; font-weight: 800; color: rgb(var(--ctp-rosewater)); position: relative; z-index: 2;">📌 ${goalName}</div>`;
     
-    html += `<div style="display: grid; grid-template-columns: 130px 1fr; align-items: center; padding: 3px 0;">
-                <div style="overflow: hidden; padding-right: 8px;">
-                    <div style="font-size: 0.65rem; font-weight: 600; color: var(--text-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        <a class="internal-link" href="${proj.link}" style="text-decoration: none; color: inherit;">${proj.name}</a>
+    groups[goalName].forEach(proj => {
+        const startDiff = Math.ceil(proj.start.diff(minDate, 'days').days);
+        const duration = Math.ceil(proj.end.diff(proj.start, 'days').days) + 1;
+        const todayDiff = Math.ceil(today.diff(minDate, 'days').days);
+        
+        html += `<div style="display: flex; align-items: center; padding: 6px 0; position: relative; z-index: 2;">
+                    <div style="width: 160px; padding-left: 15px; padding-right: 10px; flex-shrink: 0;">
+                        <a class="internal-link" href="${proj.link}" style="font-size: 0.65rem; font-weight: 600; color: var(--text-normal); text-decoration: none;">${proj.name}</a>
                     </div>
-                </div>
-                
-                <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); height: 12px; position: relative;">
-                    <div style="position: absolute; left: calc(${(today.day - 1) / daysInMonth * 100}%); width: 1.5px; height: 100%; background: rgba(var(--ctp-rosewater), 0.2); z-index: 1;"></div>
-                    
-                    <div style="grid-column: ${startPos} / span ${span}; background: rgba(var(--ctp-rosewater), 0.1); border: 1px solid rgba(var(--ctp-rosewater), 0.15); border-radius: 2px; height: 6px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
-                        <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); opacity: 0.5;"></div>
+                    <div style="display: flex; height: 20px; position: relative; flex-grow: 1;">
+                        <div style="position: absolute; left: ${todayDiff * dayWidth + (dayWidth/2)}px; width: 2px; height: 30px; background: rgba(var(--ctp-rosewater), 0.4); z-index: 3; top: -5px; pointer-events: none;"></div>
+                        
+                        <div style="margin-left: ${startDiff * dayWidth}px; width: ${duration * dayWidth}px; background: rgba(var(--ctp-rosewater), 0.15); border: 1px solid rgba(var(--ctp-rosewater), 0.4); border-radius: 5px; height: 10px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
+                            <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); opacity: 0.85;"></div>
+                        </div>
                     </div>
-                </div>
-             </div>`;
+                 </div>`;
+    });
 });
 
-html += `</div>`;
+html += `</div></div></div>`;
 dv.el("div", html);
 ```
 ---
 
 ```dataviewjs
-// 1. 설정 및 오늘 날짜
 const today = dv.date("today");
-const daysInMonth = today.daysInMonth;
+const daysInMonth = today.daysInMonth; 
 
-// [디버깅] 폴더 경로 확인 (Projects 또는 projects 포함된 모든 폴더)
-const allPages = dv.pages().filter(p => p.file.path.toLowerCase().includes("04. Project"));
+// 1. 데이터 수집 (경로 및 메타데이터 필터링)
+const projectPages = dv.pages().filter(p => 
+    p.file.path.toLowerCase().includes("project") && 
+    p.file.name !== "Project Dashboard" &&
+    p.type === "project" // 속성에 type: project가 있는 것만
+);
 
-// 2. UI 생성 시작
-let html = `<div style="background: rgba(var(--ctp-surface0), 0.2); border: 1px solid rgba(var(--ctp-rosewater), 0.1); border-radius: 12px; padding: 15px; font-family: var(--font-interface);">`;
+const timelineData = projectPages.map(p => {
+    // [파싱 로직 수정] 날짜가 [[2026-04-01]] 처럼 링크일 경우를 대비해 문자열로 강제 변환 후 파싱
+    const getCleanDate = (dateField) => {
+        if (!dateField) return null;
+        let dStr = String(dateField).replace(/[\[\]]/g, ""); // 대괄호 제거
+        return dv.date(dStr);
+    };
 
-// 상단 헤더
-html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-            <div style="font-weight: 800; font-size: 0.9rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">PROJECT TIMELINE</div>
-            <div style="font-size: 0.6rem; color: var(--text-faint); font-family: var(--font-monospace);">${today.year}.${today.toFormat('LL')}</div>
-         </div>`;
-
-// [검증 로직] 페이지가 하나도 안 찾아진 경우
-if (allPages.length === 0) {
-    html += `<div style="padding: 20px; color: #e64553; font-size: 0.7rem; border: 1px dashed #e64553; border-radius: 8px;">
-                <b>[ERROR]</b> 'Project'가 포함된 폴더나 파일을 찾을 수 없습니다.<br>
-                현재 폴더 구조를 다시 확인해 주세요.
-             </div></div>`;
-    dv.el("div", html);
-    return;
-}
-
-// 데이터 파싱
-const timelineData = allPages.map(p => {
-    // 시작일, 목표일 속성 추출 (이름이 다를 수 있으니 유연하게 대응)
-    const startDate = p.시작일 || p["시작 날짜"] || p.start;
-    const endDate = p.목표일 || p.종료일 || p["목표 날짜"] || p.end;
+    const start = getCleanDate(p.시작일);
+    const end = getCleanDate(p.목표일);
     
-    const start = dv.date(startDate);
-    const end = dv.date(endDate);
-    
-    // 날짜가 하나라도 없으면 무시
     if (!start || !end) return null;
 
-    // 이번 달(4월) 범위 체크
+    // 가시성 체크
     const isVisible = (start.month === today.month && start.year === today.year) || 
                       (end.month === today.month && end.year === today.year) ||
                       (start < today && end > today);
@@ -458,19 +479,27 @@ const timelineData = allPages.map(p => {
         link: p.file.path,
         start: dStart,
         end: dEnd,
-        progress: p.진행률 || 0,
+        progress: p.달성률 || 0, // '진행률' 대신 '달성률' 매칭
         goal: p.목표 || "기타/미지정"
     };
 }).filter(p => p !== null);
 
-// [검증 로직] 날짜 파싱 후 결과가 0개인 경우
+// 2. UI 생성
+let html = `<div style="background: rgba(var(--ctp-surface0), 0.2); border: 1px solid rgba(var(--ctp-rosewater), 0.1); border-radius: 12px; padding: 15px; font-family: var(--font-interface);">`;
+
+// 상단 헤더
+html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="font-weight: 800; font-size: 0.9rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.05em;">GOAL-BASED TIMELINE</div>
+            <div style="font-size: 0.6rem; color: var(--text-faint); font-family: var(--font-monospace);">${today.year}.${today.toFormat('LL')}</div>
+         </div>`;
+
 if (timelineData.length === 0) {
-    html += `<div style="padding: 20px; color: #fab387; font-size: 0.7rem; border: 1px dashed #fab387; border-radius: 8px;">
-                <b>[NOTICE]</b> 파일을 찾았으나 '시작일' 또는 '목표일' 형식이 맞지 않습니다.<br>
-                노트 상단에 <b>시작일: 2026-04-01</b> 형식으로 되어 있는지 확인해 주세요.
-             </div></div>`;
+    html += `<div style="padding: 30px; text-align: center; font-size: 0.75rem; color: #fab387; border: 1px dashed rgba(var(--ctp-rosewater), 0.3); border-radius: 8px;">
+                표시할 프로젝트가 없습니다. <br>
+                <span style="font-size: 0.6rem; opacity: 0.8;">(시작일/목표일 속성이 채워져 있는지 확인해주세요)</span>
+             </div>`;
 } else {
-    // 날짜 그리드 및 타임라인 렌더링 (진한 로즈워터 적용)
+    // 날짜 그리드 헤더
     html += `<div style="display: grid; grid-template-columns: 140px 1fr; margin-bottom: 10px; border-bottom: 2px solid rgba(var(--ctp-rosewater), 0.1); padding-bottom: 8px;">
                 <div style="font-size: 0.65rem; font-weight: 800; color: var(--text-muted); padding-left: 5px;">PROJECT / GOAL</div>
                 <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); text-align: center; font-size: 0.5rem; color: var(--text-faint); font-weight: 700;">`;
@@ -479,6 +508,7 @@ if (timelineData.length === 0) {
     }
     html += `</div></div>`;
 
+    // 목표별 그룹화
     const groups = timelineData.reduce((acc, cur) => {
         if (!acc[cur.goal]) acc[cur.goal] = [];
         acc[cur.goal].push(cur);
@@ -488,6 +518,7 @@ if (timelineData.length === 0) {
     Object.keys(groups).forEach(goalName => {
         html += `<div style="padding: 8px 5px 4px; font-size: 0.65rem; font-weight: 800; color: rgb(var(--ctp-rosewater));">📌 ${goalName}</div>`;
         groups[goalName].forEach(proj => {
+            const span = proj.end - proj.start + 1;
             html += `<div style="display: grid; grid-template-columns: 140px 1fr; align-items: center; padding: 4px 0;">
                         <div style="overflow: hidden; padding-left: 15px; padding-right: 10px;">
                             <div style="font-size: 0.65rem; font-weight: 600; color: var(--text-normal); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
@@ -496,16 +527,16 @@ if (timelineData.length === 0) {
                         </div>
                         <div style="display: grid; grid-template-columns: repeat(${daysInMonth}, 1fr); height: 16px; position: relative;">
                             <div style="position: absolute; left: calc(${(today.day - 1) / daysInMonth * 100}%); width: 2px; height: 100%; background: rgba(var(--ctp-rosewater), 0.25); z-index: 1;"></div>
-                            <div style="grid-column: ${proj.start} / span ${proj.end - proj.start + 1}; background: rgba(var(--ctp-rosewater), 0.15); border: 1px solid rgba(var(--ctp-rosewater), 0.3); border-radius: 4px; height: 8px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
+                            <div style="grid-column: ${proj.start} / span ${span}; background: rgba(var(--ctp-rosewater), 0.15); border: 1px solid rgba(var(--ctp-rosewater), 0.3); border-radius: 4px; height: 8px; align-self: center; position: relative; z-index: 2; overflow: hidden;">
                                 <div style="width: ${proj.progress}%; height: 100%; background: rgb(var(--ctp-rosewater)); opacity: 0.8;"></div>
                             </div>
                         </div>
                      </div>`;
         });
+        html += `<div style="height: 8px;"></div>`;
     });
-    html += `</div>`;
 }
-
+html += `</div>`;
 dv.el("div", html);
 ```
 
