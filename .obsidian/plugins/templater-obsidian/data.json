@@ -15,8 +15,16 @@
   "enable_folder_templates": true,
   "folder_templates": [
     {
-      "folder": "",
-      "template": ""
+      "folder": "02. Boxes",
+      "template": "Templates/T-Box.md"
+    },
+    {
+      "folder": "03. Goals",
+      "template": "Templates/T-Goal.md"
+    },
+    {
+      "folder": "04. Projects",
+      "template": "Templates/T-Project.md"
     }
   ],
   "enable_file_templates": false,
