@@ -50,11 +50,11 @@ for (const b of buttons) {
   btn.addEventListener("click", () => app.commands.executeCommandById(b.cmd));
 }
 ```
+//캘린더뷰
 ---
 ```dataviewjs
 const today = dv.date("today");
 const startOfWeek = today.startOf("week");
-const endOfWeek = today.endOf("week");
 const days = Array.from({length: 7}, (_, i) => startOfWeek.plus({days: i}));
 const dayNames = ["월","화","수","목","금","토","일"];
 
@@ -62,43 +62,47 @@ const allTasks = dv.pages('"05. Tasks"');
 const allResources = dv.pages('"06. Resources"');
 
 const taskTabs = [
-  // [수정] 필터에서 '완료여부 !== true' 조건을 삭제하여 완료된 것도 포함시킴
   { id: "all",   icon: "📅", label: "전체",     filter: t => true }, 
   { id: "sched", icon: "⏰", label: "일정",     filter: t => t.구분 === "일정" },
   { id: "done",  icon: "✅", label: "이번주 완료", filter: t => t.완료여부 === true },
   { id: "recent",icon: "📚", label: "최근 자료",   isResource: true }
 ];
 
-const uid = "final-style-cal-" + Math.random().toString(36).substring(2, 7);
+const uid = "rose-inner-cal-" + Math.random().toString(36).substring(2, 7);
 
-let html = `<details open style="background:rgba(var(--ctp-surface0),0.3); border:1px solid rgba(var(--ctp-surface1),0.5); border-radius:12px; padding:12px;">`;
-html += `<summary style="font-weight:700; cursor:pointer; margin-bottom:10px;">📅 주간 대시보드 (완료 표시 적용)</summary>`;
+// 1. 외부 컨테이너 (배경 및 테두리 제거)
+let html = `<details open style="background: transparent !important; border: none !important; padding: 0;">`;
+html += `<summary style="font-weight: 800 !important; cursor: pointer; margin-bottom: 16px; color: rgb(var(--ctp-rosewater)) !important; font-size: 1.2rem; list-style: none;">📅 캘린더</summary>`;
 
-html += `<div class="sb-tabs" id="${uid}-bar" style="margin-bottom:12px; display:flex; gap:8px; flex-wrap:wrap;">`;
+// 탭 바 (깔끔한 로즈워터 하단 라인)
+html += `<div class="sb-tabs" id="${uid}-bar" style="margin-bottom: 16px; display: flex; gap: 10px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); padding-bottom: 8px;">`;
 taskTabs.forEach((tab, i) => {
     const active = i === 0 ? "active" : "";
-    html += `<div class="sb-tab ${active}" data-tab="${tab.id}" style="font-size:0.75rem; cursor:pointer;" onclick="const r=this.closest('details'); r.querySelectorAll('.sb-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active'); r.querySelectorAll('.sb-tab-panel').forEach(p=>p.style.display='none'); r.querySelector('#${uid}-'+this.dataset.tab).style.display='block';">${tab.icon} ${tab.label}</div>`;
+    html += `<div class="sb-tab ${active}" data-tab="${tab.id}" style="font-size: 0.8rem; cursor: pointer; color: var(--text-muted); font-weight: 600;" onclick="const r=this.closest('details'); r.querySelectorAll('.sb-tab').forEach(t=>t.classList.remove('active')); this.classList.add('active'); r.querySelectorAll('.sb-tab-panel').forEach(p=>p.style.display='none'); r.querySelector('#${uid}-'+this.dataset.tab).style.display='block';">${tab.icon} ${tab.label}</div>`;
 });
 html += `</div>`;
 
 taskTabs.forEach((tab, i) => {
     const display = i === 0 ? "block" : "none";
-    html += `<div class="sb-tab-panel" id="${uid}-${tab.id}" style="display:${display};">`;
+    html += `<div class="sb-tab-panel" id="${uid}-${tab.id}" style="display: ${display};">`;
     
     if (tab.isResource) {
         const recentRes = allResources.sort(r => r.file.mtime, "desc").slice(0, 7);
-        html += `<div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;">`;
+        html += `<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">`;
         recentRes.forEach(r => {
-            html += `<div style="padding:6px; border:1px solid rgba(var(--ctp-surface2),0.4); border-radius:6px; font-size:0.6rem; min-height:85px; background:rgba(var(--ctp-surface1),0.2);">`;
-            html += `<div style="color:gray; margin-bottom:4px;">${dv.date(r.file.mtime).toFormat("MM/dd")}</div>`;
-            html += `<a class="internal-link" href="${r.file.path}">${r.file.name}</a></div>`;
+            html += `<div style="padding: 10px; border: 1px solid rgba(var(--ctp-rosewater), 0.3) !important; border-radius: 12px; font-size: 0.65rem; min-height: 90px; background: rgba(var(--ctp-surface0), 0.5) !important;">`;
+            html += `<div style="color: rgb(var(--ctp-rosewater)) !important; font-weight: 700; margin-bottom: 6px;">${dv.date(r.file.mtime).toFormat("MM/dd")}</div>`;
+            html += `<a class="internal-link" href="${r.file.path}" style="color: var(--text-normal); text-decoration: none;">${r.file.name}</a></div>`;
         });
         html += `</div>`;
     } else {
-        html += `<div style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;">`;
+        html += `<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 8px;">`;
+        
+        // 요일 헤더 (로즈워터 포인트)
         days.forEach((d, idx) => {
-            const style = d.hasSame(today, "day") ? "color:#007aff; font-weight:700;" : "color:gray;";
-            html += `<div style="text-align:center; font-size:0.65rem; padding-bottom:4px; ${style}">${d.month}/${d.day} ${dayNames[idx]}</div>`;
+            const isToday = d.hasSame(today, "day");
+            const style = isToday ? "color: rgb(var(--ctp-rosewater)) !important; font-weight: 800;" : "color: var(--text-muted);";
+            html += `<div style="text-align: center; font-size: 0.75rem; padding-bottom: 6px; ${style}">${d.month}/${d.day} ${dayNames[idx]}</div>`;
         });
         
         const filteredTasks = allTasks.where(tab.filter);
@@ -107,22 +111,23 @@ taskTabs.forEach((tab, i) => {
             const dayTasks = filteredTasks.filter(t => {
                 if (!t.날짜) return false;
                 const taskDate = dv.date(t.날짜);
-                return taskDate && taskDate.year === d.year && taskDate.month === d.month && taskDate.day === d.day;
+                return taskDate && taskDate.hasSame(d, "day");
             });
 
-            const bg = d.hasSame(today, "day") ? "background:rgba(0,122,255,0.08);" : "background:rgba(var(--ctp-surface0),0.2);";
-            html += `<div style="min-height:110px; padding:4px; ${bg} border:1px solid rgba(var(--ctp-surface2),0.5); border-radius:8px;">`;
+            const isToday = d.hasSame(today, "day");
+            // 오늘 날짜만 로즈워터 배경 강조, 나머지는 투명/연한 배경
+            const bg = isToday ? "background: rgba(var(--ctp-rosewater), 0.12) !important;" : "background: rgba(var(--ctp-surface0), 0.3) !important;";
+            const border = isToday ? "border: 2px solid rgb(var(--ctp-rosewater)) !important;" : "border: 1px solid rgba(var(--ctp-rosewater), 0.15) !important;";
+            
+            html += `<div style="min-height: 120px; padding: 8px; ${bg} ${border} border-radius: 12px; transition: all 0.2s;">`;
             
             dayTasks.forEach(t => {
-                const color = t.구분 === "집중" ? "#ff9500" : t.구분 === "일정" ? "#007aff" : "#34c759";
-                
-                // [수정] 완료 여부에 따른 스타일 분기
+                const color = t.구분 === "집중" ? "rgb(var(--ctp-maroon))" : t.구분 === "일정" ? "rgb(var(--ctp-blue))" : "rgb(var(--ctp-rosewater))";
                 const isDone = t.완료여부 === true;
-                const textStyle = isDone ? "text-decoration: line-through; opacity: 0.5;" : "";
-                const boxStyle = isDone ? "filter: grayscale(0.5);" : "";
+                const textStyle = isDone ? "text-decoration: line-through !important; opacity: 0.4; filter: grayscale(1);" : "font-weight: 500;";
 
-                html += `<div style="font-size:0.6rem; padding:2px 4px; margin-bottom:2px; border-left:2px solid ${color}; background:rgba(var(--ctp-surface1),0.5); border-radius:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; ${textStyle} ${boxStyle}">`;
-                html += `<a class="internal-link" href="${t.file.path}" style="color:inherit; text-decoration:inherit;">${t.제목 || t.file.name}</a></div>`;
+                html += `<div style="font-size: 0.65rem; padding: 4px 6px; margin-bottom: 5px; border-left: 3px solid ${color} !important; background: rgba(var(--ctp-surface1), 0.6) !important; border-radius: 4px; ${textStyle}">`;
+                html += `<a class="internal-link" href="${t.file.path}" style="color: var(--text-normal) !important; text-decoration: inherit;">${t.제목 || t.file.name}</a></div>`;
             });
             html += `</div>`;
         });
