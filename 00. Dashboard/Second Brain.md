@@ -177,73 +177,79 @@ setTimeout(() => {
 ```
 
 ```dataviewjs
-// 1. 데이터 준비
-const today = dv.date("today").toFormat("yyyy-MM-dd");
-const allTasks = dv.pages('"05. Tasks"').filter(t => t.날짜 == today);
+```dataviewjs
+// 1. 오늘 날짜 및 데이터 로드
+const today = dv.date("today");
+const todayStr = today.toFormat("yyyy-MM-dd");
+// 05. Tasks 폴더에서 오늘 날짜인 모든 노트 로드
+const allTasks = dv.pages('"05. Tasks"').filter(t => {
+    if (!t.날짜) return false;
+    const d = dv.date(t.날짜);
+    return d && d.year === today.year && d.month === today.month && d.day === today.day;
+});
 
-// 2. 섹션 및 기호 정의 (완벽 모노톤)
+// 2. 사용자 요청 7개 섹션 정의 (완벽 모노톤 기호)
 const sections = [
-    { id: "urgent", icon: "◈", label: "중요+긴급", filter: t => t.구분 === "중요긴급" },
-    { id: "focus",  icon: "◎", label: "오늘 집중", filter: t => t.구분 === "집중" },
-    { id: "easy",   icon: "○", label: "쉬운 일정", filter: t => t.구분 === "쉬움" },
-    { id: "delegate", icon: "◇", label: "위임",     filter: t => t.구분 === "위임" },
-    { id: "delay",  icon: "▤", label: "프로젝트 지연", filter: t => t.구분 === "지연" }
+    { id: "today_all", icon: "◈", label: "오늘",      filter: t => true }, // 오늘 전체
+    { id: "focus",     icon: "◎", label: "집중",      filter: t => t.구분 === "집중" },
+    { id: "easy",      icon: "○", label: "쉬운",      filter: t => t.구분 === "쉬움" || t.구분 === "쉬운" },
+    { id: "sched",     icon: "⊙", label: "일정",      filter: t => t.구분 === "일정" },
+    { id: "delegate",  icon: "◇", label: "위임",      filter: t => t.구분 === "위임" },
+    { id: "proj",      icon: "▣", label: "프로젝트별", filter: t => t.프로젝트 }, // 프로젝트 속성이 있는 것
+    { id: "delay",     icon: "▤", label: "지연",      filter: t => t.구분 === "지연" }
 ];
 
-const uid = "today-ctrl-" + Math.random().toString(36).substring(2, 7);
+const uid = "today-final-" + Math.random().toString(36).substring(2, 7);
 
 // 3. UI 생성
-let html = `<div id="${uid}-container" style="background: transparent; border: 1px solid rgba(var(--ctp-rosewater), 0.2); border-radius: 12px; padding: 15px;">`;
+let html = `<div id="${uid}-container" style="border: 1px solid rgba(var(--ctp-rosewater), 0.2); border-radius: 12px; padding: 15px;">`;
 
-// 상단 헤더
+// 헤더
 html += `<div style="display: flex; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.1); padding-bottom: 10px;">
-            <span style="color: rgb(var(--ctp-rosewater)); font-weight: 800; font-size: 0.9rem; letter-spacing: 0.05em;">할일</span>
-            <span style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.7;">${today}</span>
+            <span style="color: rgb(var(--ctp-rosewater)); font-weight: 800; font-size: 0.8rem; letter-spacing: 0.1em;">DAILY MISSION CONTROL</span>
+            <span style="font-size: 0.7rem; color: var(--text-muted); opacity: 0.7;">${todayStr}</span>
          </div>`;
 
-// 탭 버튼 영역
-html += `<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 20px;">`;
+// 7개 탭 버튼 (그리드 조정)
+html += `<div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; margin-bottom: 20px;">`;
 sections.forEach((sec, i) => {
-    const isActive = i === 0;
-    const border = isActive ? `1.5px solid rgb(var(--ctp-rosewater))` : `1px solid rgba(var(--ctp-rosewater), 0.1)`;
-    const opacity = isActive ? `1` : `0.5`;
-    
-    html += `<div class="sec-tab" data-target="${sec.id}" style="cursor: pointer; text-align: center; padding: 10px 5px; border-radius: 8px; ${border}; opacity: ${opacity}; transition: all 0.2s;">
-                <div style="font-size: 1rem; margin-bottom: 4px; color: rgb(var(--ctp-rosewater));">${sec.icon}</div>
-                <div style="font-size: 0.65rem; font-weight: 700; color: var(--text-normal); white-space: nowrap;">${sec.label}</div>
+    const active = i === 0 ? "1" : "0.4";
+    const bColor = i === 0 ? "rgb(var(--ctp-rosewater))" : "rgba(var(--ctp-rosewater), 0.1)";
+    html += `<div class="sec-tab" data-target="${sec.id}" style="cursor: pointer; text-align: center; padding: 8px 2px; border-radius: 6px; border: 1.5px solid ${bColor}; opacity: ${active}; transition: 0.2s;">
+                <div style="font-size: 0.9rem; color: rgb(var(--ctp-rosewater)); margin-bottom: 3px;">${sec.icon}</div>
+                <div style="font-size: 0.55rem; font-weight: 700; color: var(--text-normal); white-space: nowrap;">${sec.label}</div>
              </div>`;
 });
 html += `</div>`;
 
-// 패널 영역 (할 일 목록)
+// 패널 생성
 sections.forEach((sec, i) => {
     const display = i === 0 ? "block" : "none";
     const tasks = allTasks.filter(sec.filter);
     
     html += `<div class="sec-panel" id="${uid}-${sec.id}" style="display: ${display};">`;
     
-    // 추가 버튼
-    html += `<div style="text-align: right; margin-bottom: 10px;">
-                <a href="obsidian://new?path=05.%20Tasks/NewTask&content=---%0A날짜:%20${today}%0A구분:%20${sec.id}%0A완료여부:%20false%0A---" 
-                   style="font-size: 0.65rem; color: rgb(var(--ctp-rosewater)); text-decoration: none; border: 1px solid rgba(var(--ctp-rosewater), 0.3); padding: 2px 8px; border-radius: 4px;">+ ADD NEW</a>
+    // ADD NEW 버튼 (API 직접 호출 방식)
+    html += `<div style="text-align: right; margin-bottom: 15px;">
+                <button class="add-btn" data-type="${sec.label}" style="background: transparent; cursor: pointer; font-size: 0.6rem; color: rgb(var(--ctp-rosewater)); border: 1px solid rgba(var(--ctp-rosewater), 0.4); padding: 4px 10px; border-radius: 4px; font-weight: 800;">+ ADD ${sec.label.toUpperCase()}</button>
              </div>`;
 
     if (tasks.length > 0) {
         html += `<div style="display: flex; flex-direction: column; gap: 6px;">`;
         tasks.forEach(t => {
             const isDone = t.완료여부 === true;
-            const statusIcon = isDone ? "▣" : "□";
-            const textStyle = isDone ? "opacity: 0.4; text-decoration: line-through;" : "";
-            
-            html += `<div style="display: flex; align-items: center; padding: 10px; background: rgba(var(--ctp-surface0), 0.3); border-radius: 6px; border-left: 3px solid rgb(var(--ctp-rosewater)); ${textStyle}">
-                        <span style="margin-right: 10px; color: rgb(var(--ctp-rosewater)); font-size: 0.9rem;">${statusIcon}</span>
-                        <span style="flex-grow: 1; font-size: 0.75rem; font-weight: 500;">${t.제목 || t.file.name}</span>
-                        <a class="internal-link" href="${t.file.path}" style="text-decoration: none; font-size: 0.8rem; opacity: 0.6;">↗</a>
+            html += `<div style="display: flex; align-items: center; padding: 10px; background: rgba(var(--ctp-surface0), 0.4); border-radius: 8px; border-left: 3px solid rgb(var(--ctp-rosewater)); ${isDone ? 'opacity: 0.4;' : ''}">
+                        <span style="margin-right: 12px; color: rgb(var(--ctp-rosewater)); font-size: 0.9rem;">${isDone ? "▣" : "□"}</span>
+                        <div style="flex-grow: 1;">
+                            <div style="font-size: 0.75rem; font-weight: 600;">${t.제목 || t.file.name}</div>
+                            ${t.프로젝트 ? `<div style="font-size: 0.6rem; color: var(--text-muted);">@${t.프로젝트}</div>` : ''}
+                        </div>
+                        <a class="internal-link" href="${t.file.path}" style="text-decoration: none; opacity: 0.6;">↗</a>
                      </div>`;
         });
         html += `</div>`;
     } else {
-        html += `<div style="padding: 30px; text-align: center; font-size: 0.7rem; color: var(--text-faint); border: 1px dotted rgba(var(--ctp-rosewater), 0.1); border-radius: 8px;">일정이 없습니다.</div>`;
+        html += `<div style="padding: 30px; text-align: center; font-size: 0.7rem; color: var(--text-faint); border: 1px dotted rgba(var(--ctp-rosewater), 0.15); border-radius: 8px;">해당 섹션에 할 일이 없습니다.</div>`;
     }
     html += `</div>`;
 });
@@ -251,34 +257,42 @@ sections.forEach((sec, i) => {
 html += `</div>`;
 dv.el("div", html);
 
-// 4. 클릭 이벤트 바인딩
+// 4. 자바스크립트 바인딩 (탭 전환 & 파일 생성)
 setTimeout(() => {
     const container = document.getElementById(`${uid}-container`);
     if (!container) return;
-    
+
     const tabs = container.querySelectorAll('.sec-tab');
     const panels = container.querySelectorAll('.sec-panel');
     
     tabs.forEach(tab => {
         tab.addEventListener('click', () => {
             const target = tab.getAttribute('data-target');
-            
-            // 탭 스타일 초기화
-            tabs.forEach(t => {
-                t.style.border = '1px solid rgba(var(--ctp-rosewater), 0.1)';
-                t.style.opacity = '0.5';
-            });
-            
-            // 활성 탭 스타일
-            tab.style.border = '1.5px solid rgb(var(--ctp-rosewater))';
-            tab.style.opacity = '1';
-            
-            // 패널 전환
+            tabs.forEach(t => { t.style.opacity = '0.4'; t.style.borderColor = 'rgba(var(--ctp-rosewater), 0.1)'; });
+            tab.style.opacity = '1'; tab.style.borderColor = 'rgb(var(--ctp-rosewater))';
             panels.forEach(p => p.style.display = 'none');
             container.querySelector(`#${uid}-${target}`).style.display = 'block';
         });
     });
-}, 150);
+
+    const addBtns = container.querySelectorAll('.add-btn');
+    addBtns.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const label = btn.getAttribute('data-type');
+            const fileName = `05. Tasks/Task_${Date.now()}.md`;
+            const content = `---
+날짜: ${todayStr}
+구분: ${label}
+완료여부: false
+---
+# New ${label} Task`;
+            try {
+                const newFile = await app.vault.create(fileName, content);
+                app.workspace.getLeaf(false).openFile(newFile);
+            } catch (e) { new Notice("오류: " + e.message); }
+        });
+    });
+}, 200);
 ```
 
 ---
