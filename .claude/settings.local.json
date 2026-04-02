@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:github.com)",
+      "Bash(ls -la /c/Users/HOME/Desktop/nadayae/.obsidian/*.json)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(find . -name *.css -type f)",
+      "WebSearch",
+      "WebFetch(domain:api.github.com)"
+    ]
+  }
+}
