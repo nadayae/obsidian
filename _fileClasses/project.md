@@ -10,12 +10,12 @@ fields:
     options:
       sourceType: ValuesList
       valuesList:
-        시작 전: 시작 전
-        진행 중: 진행 중
+        계획 전: 계획 전
+        계획: 계획
+        진행중: 진행중
         집중: 집중
         중단: 중단
         완료: 완료
-        아카이브: 아카이브
   - id: pj0002
     name: 달성률
     type: Number
