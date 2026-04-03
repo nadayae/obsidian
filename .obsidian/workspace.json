@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Templates/T-Project.md",
-                "mode": "source",
+                "file": "00. Dashboard/Second Brain.md",
+                "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "T-Project"
+              "title": "Second Brain"
             }
           }
         ]
@@ -189,14 +189,16 @@
   },
   "active": "052925657130d2ce",
   "lastOpenFiles": [
-    "00. Dashboard/Second Brain.md",
-    "02. Boxes/자기관리.md",
-    "_fileClasses/project.md",
-    "Templates/T-Project.md",
-    "04. Projects/안녕하세요.md",
     "04. Projects/Untitled Kanban.md",
-    "05. Tasks/이쁘게 만들고 있는 중.md",
+    "00. Dashboard/Second Brain.md",
     "00. Dashboard/Untitled Kanban.md",
+    "04. Projects/Untitled.md",
+    "02. Boxes/자기관리.md",
+    "2026-04-03.md",
+    "Templates/T-Project.md",
+    "_fileClasses/project.md",
+    "04. Projects/안녕하세요.md",
+    "05. Tasks/이쁘게 만들고 있는 중.md",
     "05. Tasks/Task_1775119890707.md",
     "03. Goals/나만의 세컨드 브레인 구축하기.md",
     "2026-04-08.md",
@@ -213,8 +215,6 @@
     "05. Tasks/무제.md",
     "05. Tasks/Task_1775118499437.md",
     "05. Tasks/Task_1775118618817.md",
-    "05. Tasks/대시보드 및 각 템플릿 구조 만들기.md",
-    "05. Tasks/일단 캘린더는 완성 1.md",
     "00. Dashboard/image.png",
     "00. Dashboard/🏠m Hoe.md.tmp.13372.1775110777508",
     "05. Tasks/무제",

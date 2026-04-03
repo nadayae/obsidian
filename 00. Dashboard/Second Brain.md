@@ -455,18 +455,21 @@ dv.el("div", html);
 ---
 
 ```dataviewjs
-// 1. 설정 및 데이터 강제 수집 (필터링을 느슨하게 해서 무조건 잡히게 함)
+// 1. 데이터 수집 및 그룹 설정
 const projects = dv.pages('"04. Projects"').filter(p => 
-    p.file.name !== "Project Dashboard" // 자기 자신 제외 모든 파일 수집
+    p.file.name !== "Project Dashboard"
 ).array();
 
 const today = dv.date("today");
-const statuses = ["계획 전", "계획", "진행중", "집중"];
 const ROSEWATER = "#e6aba9"; 
 const BORDER_COLOR = "rgba(230, 171, 169, 0.5)"; 
-const containerId = "kanban-notion-" + Date.now();
+const containerId = "kanban-final-v2-" + Date.now();
 
-// 2. UI 구조 생성 (목표별 탭 포함)
+// 사용자 지정 상태값 (활성 vs 아카이브)
+const activeStatuses = ["계획전", "계획", "진행중", "집중"];
+const archiveStatuses = ["중단", "완료"];
+
+// 2. UI 구조 생성
 let html = `
 <div id="${containerId}" style="font-family: var(--font-interface); padding: 10px 0;">
     <div style="display: flex; gap: 20px; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 0px; margin-bottom: 25px;">
@@ -482,9 +485,12 @@ let html = `
         <div class="ntab" data-target="goal" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
             <span style="font-size: 0.85rem;">🎯</span><span style="font-size: 0.85rem; font-weight: 500;">목표별</span>
         </div>
-    </div>
-    <div id="k-display-${containerId}" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; min-width: 900px; overflow-x: auto; padding-bottom: 15px;">
+        <div class="ntab" data-target="archive" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
+            <span style="font-size: 0.85rem;">📦</span><span style="font-size: 0.85rem; font-weight: 500;">아카이브</span>
         </div>
+    </div>
+    <div id="k-display-${containerId}" style="display: grid; gap: 18px; min-width: 900px; overflow-x: auto; padding-bottom: 15px;">
+    </div>
 </div>
 
 <style>
@@ -516,8 +522,10 @@ const renderK = (target) => {
     const display = document.getElementById(`k-display-${containerId}`);
     if (!display) return;
 
-    let filtered = projects; // 기본 '전체'
+    let filtered = projects;
+    let currentStatuses = activeStatuses; 
 
+    // 필터링 로직
     if (target === "today") {
         filtered = projects.filter(p => {
             const s = p.시작일 ? dv.date(String(p.시작일).replace(/[\[\]]/g, "")) : null;
@@ -527,18 +535,25 @@ const renderK = (target) => {
     } else if (target === "overdue") {
         filtered = projects.filter(p => {
             const e = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
-            return e && e < today && (p.상태 !== "완료" && p.상태 !== "집중");
+            return e && e < today && !archiveStatuses.includes((p.상태 || "").trim());
         });
     } else if (target === "goal") {
-        // 목표별 정렬 로직 (목표 속성이 있는 것들 우선)
         filtered = [...projects].sort((a, b) => String(a.목표 || "기타").localeCompare(String(b.목표 || "기타")));
+    } else if (target === "archive") {
+        currentStatuses = archiveStatuses; 
+        filtered = projects.filter(p => archiveStatuses.includes((p.상태 || "").trim()));
+    } else {
+        // 전체 탭: 아카이브/중단/완료 제외한 활성 프로젝트만 표시
+        filtered = projects.filter(p => !archiveStatuses.includes((p.상태 || "").trim()));
     }
 
+    // 그리드 열 개수 동적 조정 (4단 vs 2단)
+    display.style.gridTemplateColumns = `repeat(${currentStatuses.length}, 1fr)`;
+
     let columns = "";
-    statuses.forEach(status => {
-        // 상태 속성이 없어도 '계획 전'으로 분류해서 무조건 보여줌
+    currentStatuses.forEach(status => {
         const cards = filtered.filter(p => {
-            const pStatus = (p.상태 || "계획 전").trim();
+            const pStatus = (p.상태 || (currentStatuses === activeStatuses ? "계획전" : "")).trim();
             return pStatus === status;
         });
         
@@ -548,6 +563,7 @@ const renderK = (target) => {
             </div>`;
 
         cards.forEach(p => {
+            const e = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
             columns += `<div class="k-card">
                 <div style="font-size: 0.75rem; font-weight: 600; margin-bottom: 8px;">
                     <a class="internal-link" href="${p.file.path}" style="color: var(--text-normal); text-decoration: none;">${p.file.name}</a>
@@ -555,7 +571,7 @@ const renderK = (target) => {
                 <div style="font-size: 0.55rem; color: #8a81a3; display: flex; flex-direction: column; gap: 4px;">
                     <div>🎯 ${p.목표 || '미지정'}</div>
                     <div style="display: flex; justify-content: space-between; margin-top: 4px;">
-                        <span>📅 ${p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")).toFormat('MM/dd') : 'No Date'}</span>
+                        <span>📅 ${e ? e.toFormat('MM/dd') : 'No Date'}</span>
                         ${p.달성률 ? `<span style="color: ${ROSEWATER}; font-weight: 800;">${p.달성률}%</span>` : ''}
                     </div>
                 </div>
@@ -566,7 +582,7 @@ const renderK = (target) => {
     display.innerHTML = columns;
 };
 
-// 4. 실행 및 클릭 이벤트
+// 4. 이벤트 핸들러 및 초기 실행
 setTimeout(() => {
     const root = document.getElementById(containerId);
     if (root) {
@@ -580,10 +596,9 @@ setTimeout(() => {
             });
         });
     }
-    renderK("all"); // 무조건 전체 탭으로 시작
+    renderK("all"); 
 }, 100);
 ```
-
 ---
 
 ## 🎯 목표
