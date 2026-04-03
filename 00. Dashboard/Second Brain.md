@@ -455,7 +455,7 @@ dv.el("div", html);
 ---
 
 ```dataviewjs
-// 1. 데이터 수집 및 그룹 설정
+// 1. 데이터 수집: '04. Projects' 폴더 내 모든 파일 (칸반 속성 검사 안 함)
 const projects = dv.pages('"04. Projects"').filter(p => 
     p.file.name !== "Project Dashboard"
 ).array();
@@ -463,10 +463,10 @@ const projects = dv.pages('"04. Projects"').filter(p =>
 const today = dv.date("today");
 const ROSEWATER = "#e6aba9"; 
 const BORDER_COLOR = "rgba(230, 171, 169, 0.5)"; 
-const containerId = "kanban-final-v2-" + Date.now();
+const containerId = "pure-property-kanban-" + Date.now();
 
-// 사용자 지정 상태값 (활성 vs 아카이브)
-const activeStatuses = ["계획전", "계획", "진행중", "집중"];
+// 상태값 정의 (사용자 요청 반영)
+const activeStatuses = ["계획 전", "계획", "진행중", "집중"];
 const archiveStatuses = ["중단", "완료"];
 
 // 2. UI 구조 생성
@@ -479,12 +479,6 @@ let html = `
         <div class="ntab" data-target="today" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
             <span style="font-size: 0.85rem;">⊙</span><span style="font-size: 0.85rem; font-weight: 500;">오늘</span>
         </div>
-        <div class="ntab" data-target="overdue" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
-            <span style="font-size: 0.85rem;">⚠️</span><span style="font-size: 0.85rem; font-weight: 500;">지연</span>
-        </div>
-        <div class="ntab" data-target="goal" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
-            <span style="font-size: 0.85rem;">🎯</span><span style="font-size: 0.85rem; font-weight: 500;">목표별</span>
-        </div>
         <div class="ntab" data-target="archive" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
             <span style="font-size: 0.85rem;">📦</span><span style="font-size: 0.85rem; font-weight: 500;">아카이브</span>
         </div>
@@ -495,65 +489,43 @@ let html = `
 
 <style>
     .ntab.active { color: ${ROSEWATER} !important; font-weight: 700 !important; }
-    .ntab.active::after {
-        content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background-color: ${ROSEWATER};
-    }
-    .k-column { 
-        background: rgba(245, 234, 224, 0.4); 
-        border: 2px solid ${BORDER_COLOR}; 
-        border-radius: 12px; 
-        padding: 15px; 
-        min-height: 300px;
-    }
-    .k-card {
-        background: var(--background-primary); 
-        border: 1px solid rgba(0,0,0,0.1); 
-        border-radius: 8px; 
-        padding: 12px; 
-        margin-bottom: 12px; 
-    }
+    .ntab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background-color: ${ROSEWATER}; }
+    .k-column { background: rgba(245, 234, 224, 0.4); border: 2px solid ${BORDER_COLOR}; border-radius: 12px; padding: 15px; min-height: 300px; }
+    .k-card { background: var(--background-primary); border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
 </style>
 `;
 
 dv.el("div", html);
 
-// 3. 렌더링 함수
+// 3. 렌더링 함수 (유연한 속성 추출)
 const renderK = (target) => {
     const display = document.getElementById(`k-display-${containerId}`);
     if (!display) return;
 
     let filtered = projects;
-    let currentStatuses = activeStatuses; 
+    let currentStatuses = activeStatuses;
 
-    // 필터링 로직
     if (target === "today") {
         filtered = projects.filter(p => {
             const s = p.시작일 ? dv.date(String(p.시작일).replace(/[\[\]]/g, "")) : null;
             const e = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
             return s && e && s <= today && e >= today;
         });
-    } else if (target === "overdue") {
-        filtered = projects.filter(p => {
-            const e = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
-            return e && e < today && !archiveStatuses.includes((p.상태 || "").trim());
-        });
-    } else if (target === "goal") {
-        filtered = [...projects].sort((a, b) => String(a.목표 || "기타").localeCompare(String(b.목표 || "기타")));
     } else if (target === "archive") {
-        currentStatuses = archiveStatuses; 
-        filtered = projects.filter(p => archiveStatuses.includes((p.상태 || "").trim()));
+        currentStatuses = archiveStatuses;
+        filtered = projects.filter(p => archiveStatuses.includes(String(p.상태 || "").trim()));
     } else {
-        // 전체 탭: 아카이브/중단/완료 제외한 활성 프로젝트만 표시
-        filtered = projects.filter(p => !archiveStatuses.includes((p.상태 || "").trim()));
+        filtered = projects.filter(p => !archiveStatuses.includes(String(p.상태 || "").trim()));
     }
 
-    // 그리드 열 개수 동적 조정 (4단 vs 2단)
     display.style.gridTemplateColumns = `repeat(${currentStatuses.length}, 1fr)`;
 
     let columns = "";
     currentStatuses.forEach(status => {
+        // 상태 속성이 없으면 '계획전'으로 강제 분류
         const cards = filtered.filter(p => {
-            const pStatus = (p.상태 || (currentStatuses === activeStatuses ? "계획전" : "")).trim();
+            let pStatus = String(p.상태 || "").trim();
+            if (!pStatus && status === "계획전") return true; 
             return pStatus === status;
         });
         
@@ -569,7 +541,7 @@ const renderK = (target) => {
                     <a class="internal-link" href="${p.file.path}" style="color: var(--text-normal); text-decoration: none;">${p.file.name}</a>
                 </div>
                 <div style="font-size: 0.55rem; color: #8a81a3; display: flex; flex-direction: column; gap: 4px;">
-                    <div>🎯 ${p.목표 || '미지정'}</div>
+                    <div>🎯 ${p.목표 || '목표 미지정'}</div>
                     <div style="display: flex; justify-content: space-between; margin-top: 4px;">
                         <span>📅 ${e ? e.toFormat('MM/dd') : 'No Date'}</span>
                         ${p.달성률 ? `<span style="color: ${ROSEWATER}; font-weight: 800;">${p.달성률}%</span>` : ''}
@@ -582,7 +554,7 @@ const renderK = (target) => {
     display.innerHTML = columns;
 };
 
-// 4. 이벤트 핸들러 및 초기 실행
+// 4. 실행
 setTimeout(() => {
     const root = document.getElementById(containerId);
     if (root) {
