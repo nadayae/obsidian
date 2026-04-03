@@ -455,108 +455,129 @@ dv.el("div", html);
 ---
 
 ```dataviewjs
-// 1. 데이터 수집: '04. Projects' 폴더 내 모든 파일 (칸반 속성 검사 안 함)
-const projects = dv.pages('"04. Projects"').filter(p => 
-    p.file.name !== "Project Dashboard"
-).array();
-
+const FIXED_ID = "notion-style-project-kanban";
+const projects = dv.pages('"04. Projects"').array();
 const today = dv.date("today");
 const ROSEWATER = "#e6aba9"; 
-const BORDER_COLOR = "rgba(230, 171, 169, 0.5)"; 
-const containerId = "pure-property-kanban-" + Date.now();
+const BORDER_COLOR = "rgba(230, 171, 169, 0.4)"; 
 
-// 상태값 정의 (사용자 요청 반영)
 const activeStatuses = ["계획 전", "계획", "진행중", "집중"];
 const archiveStatuses = ["중단", "완료"];
 
-// 2. UI 구조 생성
+// UI 생성
 let html = `
-<div id="${containerId}" style="font-family: var(--font-interface); padding: 10px 0;">
+<div id="${FIXED_ID}" style="font-family: var(--font-interface); padding: 10px 0;">
     <div style="display: flex; gap: 20px; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 0px; margin-bottom: 25px;">
         <div class="ntab active" data-target="all" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${ROSEWATER};">
             <span style="font-size: 0.85rem;">目</span><span style="font-size: 0.85rem; font-weight: 700;">전체</span>
-        </div>
-        <div class="ntab" data-target="today" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
-            <span style="font-size: 0.85rem;">⊙</span><span style="font-size: 0.85rem; font-weight: 500;">오늘</span>
         </div>
         <div class="ntab" data-target="archive" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
             <span style="font-size: 0.85rem;">📦</span><span style="font-size: 0.85rem; font-weight: 500;">아카이브</span>
         </div>
     </div>
-    <div id="k-display-${containerId}" style="display: grid; gap: 18px; min-width: 900px; overflow-x: auto; padding-bottom: 15px;">
-    </div>
+    <div id="display-area" style="display: grid; gap: 18px; min-width: 950px; overflow-x: auto; padding-bottom: 15px;"></div>
 </div>
 
 <style>
     .ntab.active { color: ${ROSEWATER} !important; font-weight: 700 !important; }
     .ntab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background-color: ${ROSEWATER}; }
-    .k-column { background: rgba(245, 234, 224, 0.4); border: 2px solid ${BORDER_COLOR}; border-radius: 12px; padding: 15px; min-height: 300px; }
-    .k-card { background: var(--background-primary); border: 1px solid rgba(0,0,0,0.1); border-radius: 8px; padding: 12px; margin-bottom: 12px; }
+    .k-column { background: rgba(245, 234, 224, 0.3); border: 2px solid ${BORDER_COLOR}; border-radius: 12px; padding: 15px; min-height: 400px; }
+    .k-card { 
+        background: var(--background-primary); 
+        border: 1px solid rgba(0,0,0,0.08); 
+        border-radius: 10px; 
+        padding: 16px; 
+        margin-bottom: 15px; 
+        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
+    }
+    .k-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(230, 171, 169, 0.1); border-color: ${ROSEWATER}; transition: 0.3s; }
 </style>
 `;
 
 dv.el("div", html);
 
-// 3. 렌더링 함수 (유연한 속성 추출)
 const renderK = (target) => {
-    const display = document.getElementById(`k-display-${containerId}`);
+    const root = document.getElementById(FIXED_ID);
+    if (!root) return;
+    const display = root.querySelector("#display-area");
     if (!display) return;
 
-    let filtered = projects;
-    let currentStatuses = activeStatuses;
+    let filtered = projects.filter(p => p.file.name !== "Project Dashboard");
+    let currentStatuses = target === "archive" ? archiveStatuses : activeStatuses;
 
-    if (target === "today") {
-        filtered = projects.filter(p => {
-            const s = p.시작일 ? dv.date(String(p.시작일).replace(/[\[\]]/g, "")) : null;
-            const e = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
-            return s && e && s <= today && e >= today;
-        });
-    } else if (target === "archive") {
-        currentStatuses = archiveStatuses;
-        filtered = projects.filter(p => archiveStatuses.includes(String(p.상태 || "").trim()));
+    if (target === "archive") {
+        filtered = filtered.filter(p => archiveStatuses.includes(String(p.상태 || "").trim()));
     } else {
-        filtered = projects.filter(p => !archiveStatuses.includes(String(p.상태 || "").trim()));
+        filtered = filtered.filter(p => !archiveStatuses.includes(String(p.상태 || "").trim()));
     }
 
     display.style.gridTemplateColumns = `repeat(${currentStatuses.length}, 1fr)`;
 
     let columns = "";
     currentStatuses.forEach(status => {
-        // 상태 속성이 없으면 '계획전'으로 강제 분류
         const cards = filtered.filter(p => {
-            let pStatus = String(p.상태 || "").trim();
-            if (!pStatus && status === "계획전") return true; 
+            const pStatus = String(p.상태 || "").trim();
+            if (!pStatus && status === "계획 전") return true;
             return pStatus === status;
         });
         
         columns += `<div class="k-column">
-            <div style="font-size: 0.65rem; font-weight: 900; color: #8a81a3; text-transform: uppercase; margin-bottom: 20px; display: flex; justify-content: space-between;">
-                <span>${status}</span><span style="background: ${ROSEWATER}; color: white; padding: 1px 6px; border-radius: 4px;">${cards.length}</span>
+            <div style="font-size: 0.7rem; font-weight: 800; color: #8a81a3; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
+                <span>${status}</span><span style="background: ${ROSEWATER}; color: white; padding: 2px 8px; border-radius: 100px; font-size: 0.6rem;">${cards.length}</span>
             </div>`;
 
         cards.forEach(p => {
-            const e = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
-            columns += `<div class="k-card">
-                <div style="font-size: 0.75rem; font-weight: 600; margin-bottom: 8px;">
-                    <a class="internal-link" href="${p.file.path}" style="color: var(--text-normal); text-decoration: none;">${p.file.name}</a>
-                </div>
-                <div style="font-size: 0.55rem; color: #8a81a3; display: flex; flex-direction: column; gap: 4px;">
-                    <div>🎯 ${p.목표 || '목표 미지정'}</div>
-                    <div style="display: flex; justify-content: space-between; margin-top: 4px;">
-                        <span>📅 ${e ? e.toFormat('MM/dd') : 'No Date'}</span>
-                        ${p.달성률 ? `<span style="color: ${ROSEWATER}; font-weight: 800;">${p.달성률}%</span>` : ''}
+            const sDate = p.시작일 ? dv.date(String(p.시작일).replace(/[\[\]]/g, "")) : null;
+            const eDate = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
+            const progress = p.달성률 || 0;
+            
+            // D-Day 계산
+            let dDayText = "D-Day 미정";
+            if (eDate) {
+                const diff = Math.ceil(eDate.diff(today, 'days').days);
+                dDayText = diff === 0 ? "D-Day" : (diff > 0 ? `D-${diff}` : `D+${Math.abs(diff)}`);
+            }
+
+            columns += `
+                <div class="k-card">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                        <span style="font-size: 0.9rem;">📑</span>
+                        <a class="internal-link" href="${p.file.path}" style="font-size: 0.85rem; font-weight: 700; color: var(--text-normal); text-decoration: none;">${p.file.name}</a>
                     </div>
-                </div>
-            </div>`;
+
+                    <div style="display: inline-block; background: rgba(67, 123, 255, 0.1); color: #437bff; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-bottom: 12px;">
+                        ${dDayText}
+                    </div>
+
+                    <div style="margin-bottom: 12px;">
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 0.7rem; font-weight: 700; color: #8a81a3; width: 40px;">${progress}%</span>
+                            <div style="flex-grow: 1; background: #eee; height: 6px; border-radius: 10px; overflow: hidden;">
+                                <div style="width: ${progress}%; background: ${ROSEWATER}; height: 100%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="font-size: 0.65rem; color: #666; margin-bottom: 12px; font-weight: 500;">
+                        총 작업: ${p.총작업 || 0} | 남은 작업: ${p.남은작업 || 0} | ${progress}% 달성
+                    </div>
+
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #444; margin-bottom: 12px; font-weight: 600;">
+                        <span>📦</span> <span>${p.목표 || '미지정'}</span>
+                    </div>
+
+                    <div style="font-size: 0.65rem; color: #888; font-family: var(--font-monospace);">
+                        ${sDate ? sDate.toFormat('yyyy/MM/dd') : '----/--/--'} → ${eDate ? eDate.toFormat('yyyy/MM/dd') : '----/--/--'}
+                    </div>
+                </div>`;
         });
         columns += `</div>`;
     });
     display.innerHTML = columns;
 };
 
-// 4. 실행
 setTimeout(() => {
-    const root = document.getElementById(containerId);
+    const root = document.getElementById(FIXED_ID);
     if (root) {
         const tabs = root.querySelectorAll(".ntab");
         tabs.forEach(tab => {
@@ -567,8 +588,8 @@ setTimeout(() => {
                 renderK(tab.dataset.target);
             });
         });
+        renderK("all");
     }
-    renderK("all"); 
 }, 100);
 ```
 ---

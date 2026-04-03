@@ -4,9 +4,9 @@ fileClass: project
 제목: <% tp.file.title %>
 박스: ""
 목표: ""
-상태: 시작 전
+상태:
 달성률: 0
-종료일: ""
+목표일: ""
 url: ""
 시작일: <% tp.date.now("YYYY-MM-DD") %>
 ---
