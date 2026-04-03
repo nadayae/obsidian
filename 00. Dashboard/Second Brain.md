@@ -455,18 +455,16 @@ dv.el("div", html);
 ---
 
 ```dataviewjs
-const FIXED_ID = "notion-style-project-kanban";
+const FIXED_ID = "task-sync-project-kanban";
 const projects = dv.pages('"04. Projects"').array();
 const today = dv.date("today");
 const ROSEWATER = "#e6aba9"; 
-const BORDER_COLOR = "rgba(230, 171, 169, 0.4)"; 
 
 const activeStatuses = ["계획 전", "계획", "진행중", "집중"];
 const archiveStatuses = ["중단", "완료"];
 
 // UI 생성
-let html = `
-<div id="${FIXED_ID}" style="font-family: var(--font-interface); padding: 10px 0;">
+let html = `<div id="${FIXED_ID}" style="font-family: var(--font-interface); padding: 10px 0;">
     <div style="display: flex; gap: 20px; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 0px; margin-bottom: 25px;">
         <div class="ntab active" data-target="all" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${ROSEWATER};">
             <span style="font-size: 0.85rem;">目</span><span style="font-size: 0.85rem; font-weight: 700;">전체</span>
@@ -475,24 +473,8 @@ let html = `
             <span style="font-size: 0.85rem;">📦</span><span style="font-size: 0.85rem; font-weight: 500;">아카이브</span>
         </div>
     </div>
-    <div id="display-area" style="display: grid; gap: 18px; min-width: 950px; overflow-x: auto; padding-bottom: 15px;"></div>
-</div>
-
-<style>
-    .ntab.active { color: ${ROSEWATER} !important; font-weight: 700 !important; }
-    .ntab.active::after { content: ''; position: absolute; bottom: -1px; left: 0; width: 100%; height: 2px; background-color: ${ROSEWATER}; }
-    .k-column { background: rgba(245, 234, 224, 0.3); border: 2px solid ${BORDER_COLOR}; border-radius: 12px; padding: 15px; min-height: 400px; }
-    .k-card { 
-        background: var(--background-primary); 
-        border: 1px solid rgba(0,0,0,0.08); 
-        border-radius: 10px; 
-        padding: 16px; 
-        margin-bottom: 15px; 
-        box-shadow: 0 2px 5px rgba(0,0,0,0.03);
-    }
-    .k-card:hover { transform: translateY(-3px); box-shadow: 0 8px 15px rgba(230, 171, 169, 0.1); border-color: ${ROSEWATER}; transition: 0.3s; }
-</style>
-`;
+    <div id="display-area" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; min-width: 950px; overflow-x: auto; padding-bottom: 15px;"></div>
+</div>`;
 
 dv.el("div", html);
 
@@ -500,38 +482,32 @@ const renderK = (target) => {
     const root = document.getElementById(FIXED_ID);
     if (!root) return;
     const display = root.querySelector("#display-area");
-    if (!display) return;
-
+    
     let filtered = projects.filter(p => p.file.name !== "Project Dashboard");
     let currentStatuses = target === "archive" ? archiveStatuses : activeStatuses;
-
-    if (target === "archive") {
-        filtered = filtered.filter(p => archiveStatuses.includes(String(p.상태 || "").trim()));
-    } else {
-        filtered = filtered.filter(p => !archiveStatuses.includes(String(p.상태 || "").trim()));
-    }
-
+    
     display.style.gridTemplateColumns = `repeat(${currentStatuses.length}, 1fr)`;
 
     let columns = "";
     currentStatuses.forEach(status => {
-        const cards = filtered.filter(p => {
-            const pStatus = String(p.상태 || "").trim();
-            if (!pStatus && status === "계획 전") return true;
-            return pStatus === status;
-        });
+        const cards = filtered.filter(p => (String(p.상태 || "").trim() || "계획 전") === status);
         
-        columns += `<div class="k-column">
-            <div style="font-size: 0.7rem; font-weight: 800; color: #8a81a3; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-                <span>${status}</span><span style="background: ${ROSEWATER}; color: white; padding: 2px 8px; border-radius: 100px; font-size: 0.6rem;">${cards.length}</span>
+        columns += `<div class="k-column" style="background: rgba(245, 234, 224, 0.3); border: 2px solid rgba(230, 171, 169, 0.4); border-radius: 12px; padding: 15px;">
+            <div style="font-size: 0.7rem; font-weight: 800; color: #8a81a3; margin-bottom: 20px; display: flex; justify-content: space-between;">
+                <span>${status}</span><span style="background: ${ROSEWATER}; color: white; padding: 2px 8px; border-radius: 100px;">${cards.length}</span>
             </div>`;
 
         cards.forEach(p => {
-            const sDate = p.시작일 ? dv.date(String(p.시작일).replace(/[\[\]]/g, "")) : null;
-            const eDate = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
-            const progress = p.달성률 || 0;
+            // [핵심 로직] 프로젝트 파일 내의 체크박스(Tasks) 수집
+            const allTasks = p.file.tasks;
+            const totalTasks = allTasks.length;
+            const completedTasks = allTasks.filter(t => t.completed).length;
+            const remainingTasks = totalTasks - completedTasks;
             
-            // D-Day 계산
+            // 퍼센트 계산 (작업이 없을 경우 0% 처리)
+            const calcProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+            
+            const eDate = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
             let dDayText = "D-Day 미정";
             if (eDate) {
                 const diff = Math.ceil(eDate.diff(today, 'days').days);
@@ -539,35 +515,27 @@ const renderK = (target) => {
             }
 
             columns += `
-                <div class="k-card">
+                <div class="k-card" style="background: var(--background-primary); border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 16px; margin-bottom: 15px;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                        <span style="font-size: 0.9rem;">📑</span>
                         <a class="internal-link" href="${p.file.path}" style="font-size: 0.85rem; font-weight: 700; color: var(--text-normal); text-decoration: none;">${p.file.name}</a>
                     </div>
-
-                    <div style="display: inline-block; background: rgba(67, 123, 255, 0.1); color: #437bff; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-bottom: 12px;">
-                        ${dDayText}
-                    </div>
-
+                    <div style="display: inline-block; background: rgba(67, 123, 255, 0.1); color: #437bff; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-bottom: 12px;">${dDayText}</div>
+                    
                     <div style="margin-bottom: 12px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 0.7rem; font-weight: 700; color: #8a81a3; width: 40px;">${progress}%</span>
+                            <span style="font-size: 0.7rem; font-weight: 700; color: #8a81a3; width: 35px;">${calcProgress}%</span>
                             <div style="flex-grow: 1; background: #eee; height: 6px; border-radius: 10px; overflow: hidden;">
-                                <div style="width: ${progress}%; background: ${ROSEWATER}; height: 100%;"></div>
+                                <div style="width: ${calcProgress}%; background: ${ROSEWATER}; height: 100%;"></div>
                             </div>
                         </div>
                     </div>
 
                     <div style="font-size: 0.65rem; color: #666; margin-bottom: 12px; font-weight: 500;">
-                        총 작업: ${p.총작업 || 0} | 남은 작업: ${p.남은작업 || 0} | ${progress}% 달성
+                        총 작업: ${totalTasks} | 남은 작업: ${remainingTasks} | ${calcProgress}% 달성
                     </div>
 
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #444; margin-bottom: 12px; font-weight: 600;">
+                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #444; font-weight: 600;">
                         <span>📦</span> <span>${p.목표 || '미지정'}</span>
-                    </div>
-
-                    <div style="font-size: 0.65rem; color: #888; font-family: var(--font-monospace);">
-                        ${sDate ? sDate.toFormat('yyyy/MM/dd') : '----/--/--'} → ${eDate ? eDate.toFormat('yyyy/MM/dd') : '----/--/--'}
                     </div>
                 </div>`;
         });

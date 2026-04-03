@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "05. Tasks/대시보드 및 각 템플릿 구조 만들기.md",
+                "file": "00. Dashboard/Second Brain.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "대시보드 및 각 템플릿 구조 만들기"
+              "title": "Second Brain"
             }
           }
         ]
@@ -189,8 +189,8 @@
   },
   "active": "052925657130d2ce",
   "lastOpenFiles": [
-    "00. Dashboard/Second Brain.md",
     "04. Projects/Untitled.md",
+    "00. Dashboard/Second Brain.md",
     "04. Projects/Untitled 1.md",
     "05. Tasks/대시보드 및 각 템플릿 구조 만들기.md",
     "Templates/T-Project.md",
