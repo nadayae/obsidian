@@ -9,5 +9,6 @@
   "showLineNumber": false,
   "spellcheck": false,
   "strictLineBreaks": false,
-  "readableLineLength": false
+  "readableLineLength": false,
+  "alwaysUpdateLinks": true
 }
