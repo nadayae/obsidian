@@ -93,12 +93,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Templates/T-Goal.md",
+                "file": "03. Goals/123.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "T-Goal"
+              "title": "123"
             }
           }
         ],
@@ -262,10 +262,10 @@
             "state": {
               "type": "file-properties",
               "state": {
-                "file": "Templates/T-Goal.md"
+                "file": "03. Goals/123.md"
               },
               "icon": "lucide-info",
-              "title": "T-Goal 의 파일 속성"
+              "title": "123 의 파일 속성"
             }
           }
         ],
@@ -295,6 +295,10 @@
   },
   "active": "f4b924c10eabd023",
   "lastOpenFiles": [
+    "04. Projects/Untitled 1.md",
+    "03. Goals/123.md",
+    "Templates/T-Goal.md",
+    "Templates/T-Daily.md",
     "Templates/T-Monthly.md",
     "Templates/T-Project.md",
     "Templates/T-Resource.md",
@@ -308,7 +312,6 @@
     "04. Projects/test.md",
     "06. Resources/Notes/hello.md",
     "05. Tasks/무제.md",
-    "04. Projects/Untitled 1.md",
     "04. Projects/무제.md",
     "05. Tasks/0.md",
     "05. Tasks/sss.md",
@@ -324,7 +327,6 @@
     "05. Tasks/이쁘게 만들고 있는 중.md",
     "Templates/T-Project.md.tmp.17356.1775291718907",
     "00. Dashboard/Second Brain.md",
-    "02. Boxes/자기관리.md",
     "00. Dashboard/Second Brain.md.tmp.17356.1775280477341",
     "00. Dashboard/Second Brain.md.tmp.17356.1775280318319",
     "00. Dashboard/Second Brain.md.tmp.17356.1775280313881",
