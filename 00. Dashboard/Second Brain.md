@@ -508,18 +508,23 @@ const renderK = (target) => {
             // [연동 핵심] 프로젝트 이름 매칭 로직 강화
             const linkedTasks = allTasksFiles.filter(t => {
                 const prop = t.프로젝트;
-                if (!prop) return false;
-                
-                // 링크 객체라면 fileName을, 텍스트라면 대괄호를 제거한 값을 가져와서 프로젝트 파일명과 비교
-                const taskProjName = prop.path ? prop.fileName : String(prop).replace(/[\[\]]/g, "").trim();
+                if (!prop || prop === "") return false;
+
+                let taskProjName;
+                if (typeof prop === 'object' && prop.path) {
+                    // 링크 객체 ([[프로젝트명]]): path에서 파일명 추출
+                    taskProjName = prop.path.split('/').pop().replace(/\.md$/, '');
+                } else {
+                    // 텍스트: 대괄호 및 따옴표 제거
+                    taskProjName = String(prop).replace(/[\[\]"]/g, "").trim();
+                }
                 return taskProjName === p.file.name;
             });
 
             const totalTasks = linkedTasks.length;
-            // 상태가 '완료'이거나, 파일 내의 모든 체크박스가 완료된 경우를 합산
-            const completedTasks = linkedTasks.filter(t => 
-                String(t.상태 || "").trim() === "완료" || 
-                (t.file.tasks.length > 0 && t.file.tasks.every(tk => tk.completed))
+            // 완료여부 필드 기준으로 완료 판단
+            const completedTasks = linkedTasks.filter(t =>
+                t.완료여부 === true || String(t.완료여부).toLowerCase() === "true"
             ).length;
             
             const remainingTasks = totalTasks - completedTasks;

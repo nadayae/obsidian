@@ -78,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "745189a8707a5fcd",
@@ -189,9 +190,9 @@
   },
   "active": "052925657130d2ce",
   "lastOpenFiles": [
+    "04. Projects/딥러닝 공부.md",
     "05. Tasks/대시보드 및 각 템플릿 구조 만들기.md",
     "00. Dashboard/Second Brain.md",
-    "04. Projects/딥러닝 공부.md",
     "04. Projects/Untitled 1.md",
     "05. Tasks/Task_1775127360365.md",
     "05. Tasks/Task_1775119908585.md",
