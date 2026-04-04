@@ -664,7 +664,7 @@ const makeGoalCard = (g) => {
     const totalProjects   = linkedProjects.length;
     const doneProjects    = linkedProjects.filter(p => String(p.상태 || "").trim() === "완료").length;
     const remainProjects  = totalProjects - doneProjects;
-    const activeProjects  = linkedProjects.filter(p => ["진행 중","집중"].includes(String(p.상태 || "").trim()));
+    const activeProjects  = linkedProjects.filter(p => ["진행중","집중"].includes(String(p.상태 || "").replace(/\s/g, "")));
 
     // 연결된 전체 tasks
     const linkedTasks = allTasks.filter(t => {
@@ -697,7 +697,7 @@ const makeGoalCard = (g) => {
                 <a class="internal-link" href="${p.file.path}" style="color:var(--text-normal); text-decoration:none;">${p.file.name}</a>
             </div>`
           ).join("")
-        : `<div style="font-size:0.65rem; color:var(--text-faint);">현재 진행중인 프로젝트가 없습니다.</div>`;
+        : `<div style="font-size:0.65rem; color:${ROSEWATER_G};">현재 진행중인 프로젝트가 없습니다.</div>`;
 
     return `<div style="background:var(--background-primary); border:1px solid rgba(0,0,0,0.1); border-radius:10px; padding:16px; margin-bottom:15px;">
 
@@ -706,21 +706,21 @@ const makeGoalCard = (g) => {
         <div style="display:inline-block; background:rgba(67,123,255,0.1); color:#437bff; font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:4px; margin-bottom:10px;">${dDayText}</div>
 
         <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
-            <span style="font-size:0.7rem; font-weight:700; color:#8a81a3; width:30px;">${rate}%</span>
+            <span style="font-size:0.7rem; font-weight:700; color:${ROSEWATER_G}; width:30px;">${rate}%</span>
             <div style="flex-grow:1; background:#eee; height:5px; border-radius:10px; overflow:hidden;">
                 <div style="width:${rate}%; background:${ROSEWATER_G}; height:100%;"></div>
             </div>
         </div>
 
         <div style="font-size:0.65rem; color:#666; margin-bottom:10px; line-height:1.8;">
-            <div style="font-weight:700; color:#8a81a3; margin-bottom:4px;">지금까지</div>
+            <div style="font-weight:700; color:${ROSEWATER_G}; margin-bottom:4px;">지금까지</div>
             총 프로젝트: ${totalProjects}<br>
             완료된 프로젝트: ${doneProjects}<br>
             남은 프로젝트: ${remainProjects}
         </div>
 
         <div style="font-size:0.65rem; margin-bottom:10px;">
-            <div style="font-weight:700; color:#8a81a3; margin-bottom:6px;">진행중인 프로젝트</div>
+            <div style="font-weight:700; color:${ROSEWATER_G}; margin-bottom:6px;">진행중인 프로젝트</div>
             ${activeProjHTML}
         </div>
 
