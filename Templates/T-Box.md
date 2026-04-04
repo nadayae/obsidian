@@ -2,7 +2,6 @@
 type: box
 fileClass: box
 제목: <% tp.file.title %>
-이모지: 🗂️
 설명: ""
 상태:
 생성일: <% tp.date.now("YYYY-MM-DD") %>
