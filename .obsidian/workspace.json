@@ -22,16 +22,6 @@
             }
           },
           {
-            "id": "d68711cfd8e2f681",
-            "type": "leaf",
-            "state": {
-              "type": "full-calendar-view",
-              "state": {},
-              "icon": "calendar-glyph",
-              "title": "Calendar"
-            }
-          },
-          {
             "id": "f44cda6e2c17dec8",
             "type": "leaf",
             "state": {
@@ -103,8 +93,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "745189a8707a5fcd",
@@ -213,7 +202,7 @@
       "obsidian-full-calendar:Open Full Calendar": false
     }
   },
-  "active": "d68711cfd8e2f681",
+  "active": "f44cda6e2c17dec8",
   "lastOpenFiles": [
     "Templates/T-Monthly.md",
     "Templates/T-Project.md",
