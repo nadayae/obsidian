@@ -789,10 +789,12 @@ let html = `<div id="${GOAL_ID}" style="font-family:var(--font-interface); paddi
 
 dv.el("div", html);
 
-const renderG = (target) => {
-    const root = document.getElementById(GOAL_ID);
+const _goalRoot = dv.container.querySelector("#" + GOAL_ID);
+
+function renderG(target) {
+    const root = _goalRoot;
     if (!root) return;
-    const area = root.querySelector(`#${GOAL_ID}-area`);
+    const area = root.querySelector("#" + GOAL_ID + "-area");
 
     // ── 전체 탭 (진행 중 / 집중 / 시작 전 / 완료 컬럼) ────
     if (target === "all") {
@@ -843,10 +845,11 @@ const renderG = (target) => {
     }
 };
 
+renderG("all");
+
 setTimeout(() => {
-    const root = document.getElementById(GOAL_ID);
-    if (!root) return;
-    const tabs = root.querySelectorAll(".gtab");
+    if (!_goalRoot) return;
+    const tabs = _goalRoot.querySelectorAll(".gtab");
     tabs.forEach(tab => {
         tab.addEventListener("click", () => {
             tabs.forEach(t => { t.style.color = "#8a81a3"; t.style.fontWeight = "500"; });
@@ -855,8 +858,7 @@ setTimeout(() => {
             renderG(tab.dataset.target);
         });
     });
-    renderG("all");
-}, 200);
+}, 100);
 ```
 
 ---
@@ -914,6 +916,8 @@ let html = `<div id="${RES_ID}" style="font-family:var(--font-interface); paddin
 
 dv.el("div", html);
 
+const _resRoot = dv.container.querySelector("#" + RES_ID);
+
 function getResTag(r) {
     const t = r.태그;
     if (!t) return ["기타"];
@@ -923,7 +927,7 @@ function getResTag(r) {
 }
 
 function renderRes(target) {
-    const root = document.getElementById(RES_ID);
+    const root = _resRoot;
     if (!root) return;
     const area = root.querySelector("#" + RES_ID + "-area");
     const tab = tabs.find(t => t.id === target);
