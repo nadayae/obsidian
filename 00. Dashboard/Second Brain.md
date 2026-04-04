@@ -457,14 +457,16 @@ dv.el("div", html);
 ```dataviewjs
 const FIXED_ID = "task-sync-project-kanban";
 const projects = dv.pages('"04. Projects"').array();
-const allTasksFiles = dv.pages('"05. Tasks"'); // 할 일 폴더 경로
+// [수정] 폴더 경로를 05. Tasks로 정확히 지정
+const allTasksFiles = dv.pages('"05. Tasks"'); 
 const today = dv.date("today");
 const ROSEWATER = "#e6aba9"; 
 
-const activeStatuses = ["계획 전", "계획", "진행중", "집중"];
+// [수정] 사용자님의 환경에 맞춰 '계획전' 상태 대응
+const activeStatuses = ["계획전", "계획", "진행중", "집중"];
 const archiveStatuses = ["중단", "완료"];
 
-// 1. UI 생성 (사용자님이 맘에 들어하신 디자인 레이아웃)
+// UI 생성 (사용자님이 지정하신 디자인 그대로)
 let html = `<div id="${FIXED_ID}" style="font-family: var(--font-interface); padding: 10px 0;">
     <div style="display: flex; gap: 20px; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 0px; margin-bottom: 25px;">
         <div class="ntab active" data-target="all" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${ROSEWATER};">
@@ -491,7 +493,11 @@ const renderK = (target) => {
 
     let columns = "";
     currentStatuses.forEach(status => {
-        const cards = filtered.filter(p => (String(p.상태 || "").trim() || "계획 전") === status);
+        // [수정] 상태값 비교 시 앞뒤 공백 제거하여 매칭 확률 높임
+        const cards = filtered.filter(p => {
+            const pStatus = String(p.상태 || "").replace(/\s/g, "") || "계획전";
+            return pStatus === status.replace(/\s/g, "");
+        });
         
         columns += `<div class="k-column" style="background: rgba(245, 234, 224, 0.3); border: 2px solid rgba(230, 171, 169, 0.4); border-radius: 12px; padding: 15px;">
             <div style="font-size: 0.7rem; font-weight: 800; color: #8a81a3; margin-bottom: 20px; display: flex; justify-content: space-between;">
@@ -499,16 +505,18 @@ const renderK = (target) => {
             </div>`;
 
         cards.forEach(p => {
-            // [연동 핵심] Tasks 폴더 내 파일 중 '프로젝트' 속성이 이 프로젝트 이름과 일치하는 것들 수집
+            // [연동 핵심] 프로젝트 이름 매칭 로직 강화
             const linkedTasks = allTasksFiles.filter(t => {
                 const prop = t.프로젝트;
                 if (!prop) return false;
-                // 링크형태이든 문자열이든 대괄호 제거 후 프로젝트 파일명과 대조
-                const nameOnly = prop.path ? prop.fileName : String(prop).replace(/[\[\]]/g, "").trim();
-                return nameOnly === p.file.name;
+                
+                // 링크 객체라면 fileName을, 텍스트라면 대괄호를 제거한 값을 가져와서 프로젝트 파일명과 비교
+                const taskProjName = prop.path ? prop.fileName : String(prop).replace(/[\[\]]/g, "").trim();
+                return taskProjName === p.file.name;
             });
 
             const totalTasks = linkedTasks.length;
+            // 상태가 '완료'이거나, 파일 내의 모든 체크박스가 완료된 경우를 합산
             const completedTasks = linkedTasks.filter(t => 
                 String(t.상태 || "").trim() === "완료" || 
                 (t.file.tasks.length > 0 && t.file.tasks.every(tk => tk.completed))
@@ -524,7 +532,7 @@ const renderK = (target) => {
                 dDayText = diff === 0 ? "D-Day" : (diff > 0 ? `D-${diff}` : `D+${Math.abs(diff)}`);
             }
 
-            // 디자인 요소 (카드 내부 레이아웃 복구)
+            // 디자인 요소 (사용자님 요청에 따라 카드 디자인 유지)
             columns += `
                 <div class="k-card" style="background: var(--background-primary); border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 16px; margin-bottom: 15px;">
                     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
@@ -545,7 +553,7 @@ const renderK = (target) => {
                         총 작업: ${totalTasks} | 남은 작업: ${remainingTasks} | ${calcProgress}% 달성
                     </div>
 
-                    <div style="display: flex; align-items: center; gap: 6px; font-size: 0.7rem; color: #444; font-weight: 600;">
+                    <div style="display: center; align-items: center; gap: 6px; font-size: 0.7rem; color: #444; font-weight: 600;">
                         <span>📦</span> <span>${p.목표 || '미지정'}</span>
                     </div>
                 </div>`;
@@ -569,7 +577,7 @@ setTimeout(() => {
         });
         renderK("all");
     }
-}, 100);
+}, 150);
 ```
 ---
 
