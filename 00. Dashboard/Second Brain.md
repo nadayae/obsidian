@@ -979,16 +979,17 @@ function renderRes(target) {
     }).join("");
 }
 
+renderRes("pinned");
+
 setTimeout(() => {
-    const root = document.getElementById(RES_ID);
-    if (!root) return;
+    if (!_resRoot) return;
 
     // 태그 헤더 토글 (이벤트 위임)
-    root.addEventListener("click", e => {
+    _resRoot.addEventListener("click", e => {
         const header = e.target.closest(".res-tag-header");
         if (!header) return;
         const gid = header.dataset.gid;
-        const body = document.getElementById(gid);
+        const body = _resRoot.querySelector("#" + gid);
         const chevron = header.querySelector(".res-chevron");
         if (!body) return;
         const isOpen = body.style.display !== "none";
@@ -996,7 +997,7 @@ setTimeout(() => {
         chevron.style.transform = isOpen ? "rotate(180deg)" : "rotate(0deg)";
     });
 
-    const tabEls = root.querySelectorAll(".rtab");
+    const tabEls = _resRoot.querySelectorAll(".rtab");
     tabEls.forEach(el => {
         el.addEventListener("click", () => {
             tabEls.forEach(t => { t.style.color = "#8a81a3"; t.style.fontWeight = "500"; });
@@ -1005,7 +1006,6 @@ setTimeout(() => {
             renderRes(el.dataset.target);
         });
     });
-    renderRes("pinned");
 }, 200);
 ```
 
@@ -1113,8 +1113,10 @@ let html = `<div id="${BOX_ID}" style="font-family:var(--font-interface); paddin
 
 dv.el("div", html);
 
+const _boxRoot = dv.container.querySelector("#" + BOX_ID);
+
 function renderBox(target) {
-    const root = document.getElementById(BOX_ID);
+    const root = _boxRoot;
     if (!root) return;
     const area = root.querySelector("#" + BOX_ID + "-area");
     const tab  = boxTabs.find(t => t.id === target);
@@ -1125,10 +1127,11 @@ function renderBox(target) {
         : `<div style="grid-column:1/-1; padding:40px; text-align:center; font-size:0.8rem; color:var(--text-faint);">박스가 없습니다</div>`;
 }
 
+renderBox("all");
+
 setTimeout(() => {
-    const root = document.getElementById(BOX_ID);
-    if (!root) return;
-    const tabs = root.querySelectorAll(".btab");
+    if (!_boxRoot) return;
+    const tabs = _boxRoot.querySelectorAll(".btab");
     tabs.forEach(el => {
         el.addEventListener("click", () => {
             tabs.forEach(t => { t.style.color = "#8a81a3"; t.style.fontWeight = "500"; });
@@ -1137,7 +1140,6 @@ setTimeout(() => {
             renderBox(el.dataset.target);
         });
     });
-    renderBox("all");
 }, 200);
 ```
 
