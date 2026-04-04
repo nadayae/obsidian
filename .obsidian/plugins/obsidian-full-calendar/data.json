@@ -1,5 +1,11 @@
 {
-  "calendarSources": [],
+  "calendarSources": [
+    {
+      "type": "local",
+      "color": "#f0adad",
+      "directory": "05. Tasks"
+    }
+  ],
   "defaultCalendar": 0,
   "firstDay": 0,
   "initialView": {
