@@ -34,9 +34,19 @@
               "icon": "lucide-file",
               "title": "무제 1"
             }
+          },
+          {
+            "id": "2029b7163eec5de0",
+            "type": "leaf",
+            "state": {
+              "type": "planner-weekly",
+              "state": {},
+              "icon": "table-2",
+              "title": "4월, 4–4월, 6"
+            }
           }
         ],
-        "currentTab": 1
+        "currentTab": 2
       }
     ],
     "direction": "vertical"
@@ -179,6 +189,16 @@
               "icon": "lucide-list",
               "title": "커리어(전공) 의 개요"
             }
+          },
+          {
+            "id": "8224571b53ae7d2c",
+            "type": "leaf",
+            "state": {
+              "type": "planner-timeline",
+              "state": {},
+              "icon": "calendar-with-checkmark",
+              "title": "Timeline"
+            }
           }
         ]
       }
@@ -199,14 +219,16 @@
       "command-palette:명령어 팔레트 열기": false,
       "bases:새 베이스 생성하기": false,
       "templater-obsidian:Templater": false,
-      "obsidian-full-calendar:Open Full Calendar": false
+      "obsidian-full-calendar:Open Full Calendar": false,
+      "obsidian-day-planner:Open Timeline": false,
+      "obsidian-day-planner:Open Multi-Day View": false
     }
   },
-  "active": "f44cda6e2c17dec8",
+  "active": "2029b7163eec5de0",
   "lastOpenFiles": [
+    "04. Projects/무제 1.md",
     "05. Tasks/무제.md",
     "05. Tasks/애국가.md",
-    "04. Projects/무제 1.md",
     "04. Projects/무제.md",
     "05. Tasks/sss.md",
     "Templates/T-Project.md",
