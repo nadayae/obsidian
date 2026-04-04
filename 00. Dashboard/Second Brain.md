@@ -628,61 +628,205 @@ setTimeout(() => {
 ---
 
 ```dataviewjs
-const goalAllTasks = dv.pages('"05. Tasks"');
-const goalAllProjects = dv.pages('"04. Projects"');
-const pages = dv.pages('"03. Goals"').where(g => g.상태 !== "아카이브");
-const colors = {
-  "진행 중": "green", "집중": "orange", "시작 전": "gray",
-  "완료": "blue", "중단": "red"
+const GOAL_ID = "goal-kanban-" + Math.random().toString(36).substring(2, 7);
+const ROSEWATER_G = "#e6aba9";
+const allGoals   = dv.pages('"03. Goals"').where(g => g.상태 !== "아카이브").array();
+const allProjects = dv.pages('"04. Projects"').array();
+const allTasks    = dv.pages('"05. Tasks"').array();
+
+// 목표 달성률: 연결된 프로젝트들의 task 완료율 평균
+const goalRate = (goalName) => {
+    const projs = allProjects.filter(p => String(p.목표 || "").trim() === goalName);
+    if (projs.length === 0) return 0;
+    let sum = 0;
+    projs.forEach(p => {
+        const t = allTasks.filter(t => {
+            const prop = t.프로젝트;
+            if (!prop || prop === "") return false;
+            const name = (typeof prop === 'object' && prop.path)
+                ? prop.path.split('/').pop().replace(/\.md$/, '')
+                : String(prop).replace(/[\[\]"]/g, "").trim();
+            return name === p.file.name;
+        });
+        if (t.length > 0) sum += (t.filter(t => t.완료여부 === true || String(t.완료여부).toLowerCase() === "true").length / t.length) * 100;
+    });
+    return Math.round(sum / projs.length);
 };
 
-function goalRate(goalName) {
-  const projs = goalAllProjects.where(p => p.목표 === goalName || String(p.목표) === goalName);
-  if (projs.length === 0) return 0;
-  let sumRate = 0;
-  for (let p of projs) {
-    const t = goalAllTasks.where(t => t.프로젝트 === p.file.name || String(t.프로젝트) === p.file.name);
-    if (t.length > 0) sumRate += (t.where(t => t.완료여부 === true).length / t.length) * 100;
-  }
-  return Math.round(sumRate / projs.length);
-}
+// 목표 카드 HTML
+const makeGoalCard = (g) => {
+    const goalName = String(g.제목 || g.file.name).trim();
 
-let html = `<div>`;
-html += `<div style="font-weight: 800; font-size: 1.3rem; color: #d6827d; letter-spacing: 0.06em; margin-top: 16px; margin-bottom: 14px;">목표</div>`;
-html += `</div><div class="sb-kanban">`;
+    // 연결된 프로젝트
+    const linkedProjects = allProjects.filter(p =>
+        String(p.목표 || "").trim() === goalName || String(p.목표 || "").trim() === g.file.name
+    );
+    const totalProjects   = linkedProjects.length;
+    const doneProjects    = linkedProjects.filter(p => String(p.상태 || "").trim() === "완료").length;
+    const remainProjects  = totalProjects - doneProjects;
+    const activeProjects  = linkedProjects.filter(p => ["진행 중","집중"].includes(String(p.상태 || "").trim()));
 
-const statuses = ["진행 중", "집중", "시작 전", "완료"];
-for (let status of statuses) {
-  const items = pages.where(g => g.상태 === status);
-  html += `<div class="sb-kanban-col">`;
-  html += `<div class="sb-kanban-col-title">${status} (${items.length})</div>`;
+    // 연결된 전체 tasks
+    const linkedTasks = allTasks.filter(t => {
+        const prop = t.프로젝트;
+        if (!prop || prop === "") return false;
+        const name = (typeof prop === 'object' && prop.path)
+            ? prop.path.split('/').pop().replace(/\.md$/, '')
+            : String(prop).replace(/[\[\]"]/g, "").trim();
+        return linkedProjects.some(p => p.file.name === name);
+    });
+    const totalTasks   = linkedTasks.length;
+    const doneTasks    = linkedTasks.filter(t => t.완료여부 === true || String(t.완료여부).toLowerCase() === "true").length;
+    const remainTasks  = totalTasks - doneTasks;
+    const rate         = totalTasks > 0 ? Math.round((doneTasks / totalTasks) * 100) : 0;
 
-  for (let g of items) {
-    const badge = colors[status] || "gray";
-    const rate = goalRate(g.file.name);
+    // D-day
+    let dDayText = "기한 미정";
+    if (g["목표 달성일"]) {
+        const eDate = dv.date(g["목표 달성일"]);
+        if (eDate) {
+            const diff = Math.ceil(eDate.diff(dv.date("today"), 'days').days);
+            dDayText = diff === 0 ? "D-Day" : (diff > 0 ? `D-${diff}` : `D+${Math.abs(diff)}`);
+        }
+    }
 
-    html += `<div class="sb-kanban-card">`;
-    html += `<div class="sb-kanban-card-title"><a class="internal-link" href="${g.file.name}">${g.제목 || g.file.name}</a></div>`;
+    // 진행중 프로젝트 목록
+    const activeProjHTML = activeProjects.length > 0
+        ? activeProjects.map(p =>
+            `<div style="font-size:0.65rem; padding:3px 6px; margin-bottom:3px; border-left:2px solid ${ROSEWATER_G}; background:rgba(230,171,169,0.08); border-radius:3px;">
+                <a class="internal-link" href="${p.file.path}" style="color:var(--text-normal); text-decoration:none;">${p.file.name}</a>
+            </div>`
+          ).join("")
+        : `<div style="font-size:0.65rem; color:var(--text-faint);">현재 진행중인 프로젝트가 없습니다.</div>`;
 
-    html += `<div style="height:3px; background:#e0e0e0; border-radius:2px; margin:6px 0;">`;
-    html += `<div style="height:100%; width:${rate}%; background:#34c759; border-radius:2px;"></div>`;
-    html += `</div>`;
+    return `<div style="background:var(--background-primary); border:1px solid rgba(0,0,0,0.1); border-radius:10px; padding:16px; margin-bottom:15px;">
 
-    html += `<div class="sb-kanban-card-meta">`;
-    html += `<span class="sb-kanban-badge ${badge}">${status}</span>`;
-    html += `<span>${rate}%</span>`;
-    if (g.분기) html += `<span>${g.분기}</span>`;
-    if (g["목표 달성일"]) html += `<span>${dv.date(g["목표 달성일"]).toFormat("MM/dd")}</span>`;
-    html += `</div>`;
-    html += `</div>`;
-  }
-  if (items.length === 0) {
-    html += `<div style="font-size:0.7rem; color:#8e8e93; text-align:center; padding:16px 0;">비어있음</div>`;
-  }
-  html += `</div>`;
-}
-html += `</div>`;
+        <a class="internal-link" href="${g.file.path}" style="font-size:0.85rem; font-weight:700; color:var(--text-normal); text-decoration:none; display:block; margin-bottom:8px;">${goalName}</a>
+
+        <div style="display:inline-block; background:rgba(67,123,255,0.1); color:#437bff; font-size:0.65rem; font-weight:800; padding:2px 6px; border-radius:4px; margin-bottom:10px;">${dDayText}</div>
+
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px;">
+            <span style="font-size:0.7rem; font-weight:700; color:#8a81a3; width:30px;">${rate}%</span>
+            <div style="flex-grow:1; background:#eee; height:5px; border-radius:10px; overflow:hidden;">
+                <div style="width:${rate}%; background:${ROSEWATER_G}; height:100%;"></div>
+            </div>
+        </div>
+
+        <div style="font-size:0.65rem; color:#666; margin-bottom:10px; line-height:1.8;">
+            <div style="font-weight:700; color:#8a81a3; margin-bottom:4px;">지금까지</div>
+            총 프로젝트: ${totalProjects}<br>
+            완료된 프로젝트: ${doneProjects}<br>
+            남은 프로젝트: ${remainProjects}
+        </div>
+
+        <div style="font-size:0.65rem; margin-bottom:10px;">
+            <div style="font-weight:700; color:#8a81a3; margin-bottom:6px;">진행중인 프로젝트</div>
+            ${activeProjHTML}
+        </div>
+
+        <div style="font-size:0.65rem; color:#666; font-weight:500; margin-bottom:10px;">
+            총 작업: ${totalTasks} | 남은 작업: ${remainTasks} | 달성률: ${rate}%
+        </div>
+
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+            ${g.박스 ? `<span style="font-size:0.6rem; background:rgba(230,171,169,0.15); border:1px solid rgba(230,171,169,0.4); color:#8a81a3; padding:2px 7px; border-radius:100px;">${g.박스}</span>` : ""}
+            ${g.분기 ? `<span style="font-size:0.6rem; background:rgba(230,171,169,0.15); border:1px solid rgba(230,171,169,0.4); color:#8a81a3; padding:2px 7px; border-radius:100px;">${g.분기}</span>` : ""}
+        </div>
+    </div>`;
+};
+
+// 칸반 컬럼 HTML
+const makeColumn = (label, items) =>
+    `<div style="background:rgba(245,234,224,0.3); border:2px solid rgba(230,171,169,0.4); border-radius:12px; padding:15px;">
+        <div style="font-size:0.7rem; font-weight:800; color:#8a81a3; margin-bottom:20px; display:flex; justify-content:space-between;">
+            <span>${label}</span>
+            <span style="background:${ROSEWATER_G}; color:white; padding:2px 8px; border-radius:100px;">${items.length}</span>
+        </div>
+        ${items.length > 0 ? items.map(g => makeGoalCard(g)).join("") : `<div style="font-size:0.7rem; color:var(--text-faint); text-align:center; padding:20px 0;">비어있음</div>`}
+    </div>`;
+
+// UI
+let html = `<div id="${GOAL_ID}" style="font-family:var(--font-interface); padding:10px 0;">
+    <div style="font-weight:800; font-size:1.3rem; color:#d6827d; letter-spacing:0.06em; margin-top:16px; margin-bottom:14px;">목표</div>
+    <div style="display:flex; gap:20px; border-bottom:1px solid rgba(0,0,0,0.08); padding-bottom:0; margin-bottom:25px;">
+        <div class="gtab active" data-target="all"      style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:700; color:${ROSEWATER_G};">전체</div>
+        <div class="gtab"        data-target="active"   style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:500; color:#8a81a3;">달성중</div>
+        <div class="gtab"        data-target="byquarter" style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:500; color:#8a81a3;">분기별</div>
+        <div class="gtab"        data-target="bybox"    style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:500; color:#8a81a3;">박스별</div>
+    </div>
+    <div id="${GOAL_ID}-area" style="display:grid; gap:18px; overflow-x:auto; padding-bottom:15px;"></div>
+</div>`;
+
 dv.el("div", html);
+
+const renderG = (target) => {
+    const root = document.getElementById(GOAL_ID);
+    if (!root) return;
+    const area = root.querySelector(`#${GOAL_ID}-area`);
+
+    // ── 전체 탭 (진행 중 / 집중 / 시작 전 / 완료 컬럼) ────
+    if (target === "all") {
+        const allCols = ["진행 중", "집중", "시작 전", "완료"];
+        area.style.gridTemplateColumns = `repeat(${allCols.length}, 1fr)`;
+        area.innerHTML = allCols.map(s =>
+            makeColumn(s, allGoals.filter(g => String(g.상태 || "").trim() === s))
+        ).join("");
+        return;
+    }
+
+    // ── 달성중 탭 (진행 중 / 집중 컬럼만) ─────────────────
+    if (target === "active") {
+        const activeCols = ["진행 중", "집중"];
+        area.style.gridTemplateColumns = `repeat(${activeCols.length}, 1fr)`;
+        area.innerHTML = activeCols.map(s =>
+            makeColumn(s, allGoals.filter(g => String(g.상태 || "").trim() === s))
+        ).join("");
+        return;
+    }
+
+    // ── 분기별 탭 ──────────────────────────────────────────
+    if (target === "byquarter") {
+        const qMap = {};
+        allGoals.forEach(g => {
+            const key = String(g.분기 || "미정").trim();
+            if (!qMap[key]) qMap[key] = [];
+            qMap[key].push(g);
+        });
+        const keys = Object.keys(qMap).sort();
+        area.style.gridTemplateColumns = `repeat(${Math.min(keys.length, 4)}, 1fr)`;
+        area.innerHTML = keys.map(k => makeColumn(k, qMap[k])).join("");
+        return;
+    }
+
+    // ── 박스별 탭 ──────────────────────────────────────────
+    if (target === "bybox") {
+        const bMap = {};
+        allGoals.forEach(g => {
+            const key = String(g.박스 || "미지정").trim();
+            if (!bMap[key]) bMap[key] = [];
+            bMap[key].push(g);
+        });
+        const keys = Object.keys(bMap).sort();
+        area.style.gridTemplateColumns = `repeat(${Math.min(keys.length, 4)}, 1fr)`;
+        area.innerHTML = keys.map(k => makeColumn(k, bMap[k])).join("");
+        return;
+    }
+};
+
+setTimeout(() => {
+    const root = document.getElementById(GOAL_ID);
+    if (!root) return;
+    const tabs = root.querySelectorAll(".gtab");
+    tabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            tabs.forEach(t => { t.style.color = "#8a81a3"; t.style.fontWeight = "500"; });
+            tab.style.color = ROSEWATER_G;
+            tab.style.fontWeight = "700";
+            renderG(tab.dataset.target);
+        });
+    });
+    renderG("all");
+}, 200);
 ```
 
 ---
