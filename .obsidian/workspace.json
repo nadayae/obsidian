@@ -174,9 +174,21 @@
               "icon": "calendar-with-checkmark",
               "title": "Timeline"
             }
+          },
+          {
+            "id": "d9c723fb849f0eaf",
+            "type": "leaf",
+            "state": {
+              "type": "file-properties",
+              "state": {
+                "file": "Templates/T-Project.md"
+              },
+              "icon": "lucide-info",
+              "title": "T-Project 의 파일 속성"
+            }
           }
         ],
-        "currentTab": 4
+        "currentTab": 6
       }
     ],
     "direction": "horizontal",
