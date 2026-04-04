@@ -81,7 +81,7 @@ const uid = "mega-cal-" + Math.random().toString(36).substring(2, 7);
 
 let html = `<div id="${uid}-container">`;
 html += `<details open style="background: transparent !important; border: none !important; padding: 0;">`;
-html += `<summary style="font-weight: 800; cursor: pointer; margin-bottom: 16px; color: rgb(var(--ctp-rosewater)); font-size: 1.1rem; list-style: none; opacity: 0.8;">캘린더</summary>`;
+html += `<summary style="font-weight: 800; cursor: pointer; margin-bottom: 16px; color: rgb(var(--ctp-subtext0)); font-size: 1.3rem; letter-spacing: 0.06em; list-style: none;">캘린더</summary>`;
 
 html += `<div class="sb-tabs" style="margin-bottom: 16px; display: flex; gap: 14px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); padding-bottom: 8px;">`;
 taskTabs.forEach((tab) => {
@@ -225,7 +225,7 @@ const uid = "hybrid-v4-final-" + Math.random().toString(36).substring(2, 7);
 // 2. UI 생성
 let html = `<div id="${uid}-container" class="dataviewjs-today-view">`;
 html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="font-weight: 800; font-size: 1.1rem; color: rgb(var(--ctp-rosewater)); letter-spacing: 0.02em;">할일</div>
+            <div style="font-weight: 800; font-size: 0.75rem; color: rgb(var(--ctp-subtext0)); letter-spacing: 0.06em;">할일</div>
             <button class="add-btn-top" style="background: rgba(var(--ctp-rosewater), 0.2); cursor: pointer; font-size: 0.65rem; color: rgb(var(--ctp-rosewater)); border: 1px solid rgba(var(--ctp-rosewater), 0.4); padding: 6px 14px; border-radius: 4px; font-weight: 700;">+ ADD TASK</button>
          </div>`;
 
@@ -376,7 +376,7 @@ let html = `<div id="${containerId}" style="background: ${BG_COLOR}; border-radi
 
 // 상단 헤더
 html += `<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; padding: 15px 15px 0;">
-            <div style="font-weight: 900; font-size: 1rem; color: ${ROSEWATER_ACCENT}; letter-spacing: -0.01em;">프로젝트 타임라인 <span style="font-weight: 300; font-size: 0.65rem; color: var(--text-faint); margin-left: 10px;">${today.year}.${today.toFormat('LL')}</span></div>
+            <div style="font-weight: 800; font-size: 0.75rem; color: ${ROSEWATER_ACCENT}; letter-spacing: 0.06em;">프로젝트 타임라인 <span style="font-weight: 400; font-size: 0.6rem; color: var(--text-faint); margin-left: 8px;">${today.year}.${today.toFormat('LL')}</span></div>
             <div style="font-size: 0.55rem; color: var(--text-faint); text-transform: uppercase;">Shift + Scroll to Navigate</div>
          </div>`;
 
@@ -468,6 +468,7 @@ const archiveStatuses = ["중단", "완료"];
 
 // UI 생성 (사용자님이 지정하신 디자인 그대로)
 let html = `<div id="${FIXED_ID}" style="font-family: var(--font-interface); padding: 10px 0;">
+    <div style="font-weight: 800; font-size: 0.75rem; color: rgb(var(--ctp-subtext0)); letter-spacing: 0.06em; margin-bottom: 14px;">프로젝트</div>
     <div style="display: flex; gap: 20px; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 0px; margin-bottom: 25px;">
         <div class="ntab active" data-target="all" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${ROSEWATER};">
             <span style="font-size: 0.85rem;">目</span><span style="font-size: 0.85rem; font-weight: 700;">전체</span>
@@ -586,7 +587,7 @@ setTimeout(() => {
 ```
 ---
 
-## 🎯 목표
+## 목표
 
 ```dataviewjs
 const goalAllTasks = dv.pages('"05. Tasks"');
@@ -614,7 +615,7 @@ const statuses = ["진행 중", "집중", "시작 전", "완료"];
 for (let status of statuses) {
   const items = pages.where(g => g.상태 === status);
   html += `<div class="sb-kanban-col">`;
-  html += `<div class="sb-kanban-col-title">🎯 ${status} (${items.length})</div>`;
+  html += `<div class="sb-kanban-col-title">${status} (${items.length})</div>`;
 
   for (let g of items) {
     const badge = colors[status] || "gray";
@@ -646,7 +647,7 @@ dv.el("div", html);
 
 ---
 
-## 📝 자료
+## 자료
 
 ```dataview
 TABLE WITHOUT ID
@@ -670,7 +671,7 @@ color default
 
 ---
 
-## 📦 박스
+## 박스
 
 ```dataviewjs
 const pages = dv.pages('"02. Boxes"').where(b => b.type === "box");
