@@ -71,10 +71,10 @@ const allResources = dv.pages('"06. Resources"');
 
 // [변경] 이모지를 세련된 모노톤 기호로 교체
 const taskTabs = [
-  { id: "thisweek", icon: "⊙", label: "이번 주", filter: t => true, isDefault: true },
-  { id: "total", icon: "▤", label: "전체(월간)", isMonth: true },
-  { id: "done", icon: "▣", label: "이번 주 완료", filter: t => t.완료여부 === true },
-  { id: "recent", icon: "▧", label: "최근 자료", isResource: true }
+  { id: "thisweek", icon: "", label: "이번 주", filter: t => true, isDefault: true },
+  { id: "total", icon: "", label: "전체(월간)", isMonth: true },
+  { id: "done", icon: "", label: "이번 주 완료", filter: t => t.완료여부 === true },
+  { id: "recent", icon: "", label: "최근 자료", isResource: true }
 ];
 
 const uid = "mega-cal-" + Math.random().toString(36).substring(2, 7);
