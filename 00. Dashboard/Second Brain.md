@@ -874,22 +874,30 @@ const tabs = [
     { id: "important", label: "중요",    filter: r => String(r.중요도 || "").trim() === "중요" },
 ];
 
-function makeResCard(r) {
-    const title = r.제목 || r.file.name;
-    const summary = r.요약 || "";
-    const url = r.url || "";
-    const tags = Array.isArray(r.태그) ? r.태그 : (r.태그 ? [r.태그] : []);
-    const date = r.생성일 ? String(r.생성일).substring(0, 10) : r.file.cday ? r.file.cday.toFormat("yyyy-MM-dd") : "";
-    const tagHTML = tags.map(t =>
-        `<span style="font-size:0.55rem; background:rgba(230,171,169,0.15); border:1px solid rgba(230,171,169,0.4); color:#8a81a3; padding:1px 6px; border-radius:100px;">${t}</span>`
-    ).join(" ");
+function resolveResName(val) {
+    if (!val) return "-";
+    if (typeof val === "object" && val.path)
+        return val.path.split("/").pop().replace(/\.md$/, "");
+    return String(val).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim() || "-";
+}
 
-    return `<div style="background:var(--background-primary); border:1px solid rgba(0,0,0,0.08); border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:6px;">
-        <a class="internal-link" href="${r.file.path}" style="font-size:0.8rem; font-weight:700; color:var(--text-normal); text-decoration:none; line-height:1.3;">${title}</a>
-        ${url ? `<a href="${url}" style="font-size:0.6rem; color:${ROSE}; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" target="_blank">${url}</a>` : ""}
-        ${summary ? `<div style="font-size:0.65rem; color:var(--text-muted); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${summary}</div>` : ""}
-        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:2px;">${tagHTML}</div>
-        <div style="font-size:0.6rem; color:var(--text-faint); margin-top:auto;">${date}</div>
+function makeResRow(r) {
+    const title = r.제목 || r.file.name;
+    const box = resolveResName(r.박스);
+    const proj = resolveResName(r.프로젝트);
+    const 분류 = String(r.분류 || "-").trim();
+    const 중요도 = String(r.중요도 || "-").trim();
+
+    const badge = (text, color) => text === "-" ? `<span style="color:var(--text-faint);">-</span>`
+        : `<span style="font-size:0.6rem; background:${color}22; color:${color}; border:1px solid ${color}44; padding:1px 7px; border-radius:100px; white-space:nowrap;">${text}</span>`;
+
+    return `<div style="display:grid; grid-template-columns:2fr 0.8fr 0.8fr 0.8fr 0.8fr; align-items:center; gap:10px; padding:7px 10px; border-radius:7px; transition:background 0.1s;"
+        onmouseenter="this.style.background='rgba(230,171,169,0.07)'" onmouseleave="this.style.background='transparent'">
+        <a class="internal-link" href="${r.file.path}" style="font-size:0.75rem; font-weight:600; color:var(--text-normal); text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${title}</a>
+        <div>${badge(box, "#8a81a3")}</div>
+        <div>${badge(proj, "#8a81a3")}</div>
+        <div>${badge(분류, ROSE)}</div>
+        <div>${badge(중요도, "#437bff")}</div>
     </div>`;
 }
 
@@ -937,13 +945,21 @@ function renderRes(target) {
         });
     });
 
+    // 컬럼 헤더
+    const header = `<div style="display:grid; grid-template-columns:2fr 0.8fr 0.8fr 0.8fr 0.8fr; gap:10px; padding:4px 10px; margin-bottom:4px;">
+        ${["제목","박스","프로젝트","분류","중요도"].map(h =>
+            `<div style="font-size:0.6rem; font-weight:700; color:var(--text-faint); letter-spacing:0.04em;">${h}</div>`
+        ).join("")}
+    </div>`;
+
     area.style.display = "block";
     area.innerHTML = Object.keys(groupMap).sort().map(tag =>
-        `<div style="margin-bottom:24px;">
-            <div style="font-size:0.7rem; font-weight:800; color:${ROSE}; letter-spacing:0.05em; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid rgba(230,171,169,0.25);">${tag} <span style="font-weight:400; color:var(--text-faint);">${groupMap[tag].length}</span></div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px;">
-                ${groupMap[tag].map(r => makeResCard(r)).join("")}
+        `<div style="margin-bottom:20px;">
+            <div style="font-size:0.7rem; font-weight:800; color:${ROSE}; letter-spacing:0.05em; margin-bottom:6px; padding-bottom:6px; border-bottom:1px solid rgba(230,171,169,0.2);">
+                ${tag} <span style="font-weight:400; color:var(--text-faint);">${groupMap[tag].length}</span>
             </div>
+            ${header}
+            <div>${groupMap[tag].map(r => makeResRow(r)).join("")}</div>
         </div>`
     ).join("");
 }
