@@ -4,6 +4,19 @@ limit: 20
 mapWithTag: false
 version: "2.1"
 fields:
+  - id: rs0006
+    name: 태그
+    type: MultiSelect
+    options:
+      sourceType: ValuesList
+      valuesList:
+        AI: AI
+        메이크업: 메이크업
+        사업: 사업
+        생활: 생활
+        자기관리: 자기관리
+        정보보안: 정보보안
+        패션: 패션
   - id: rs0001
     name: 분류
     type: Select
@@ -46,6 +59,7 @@ extends:
 savedViews: []
 favoriteView:
 fieldsOrder:
+  - rs0006
   - rs0005
   - rs0004
   - rs0003

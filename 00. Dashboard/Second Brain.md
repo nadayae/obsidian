@@ -866,12 +866,32 @@ const RES_ID = "resource-tabs-" + Math.random().toString(36).substring(2, 7);
 const ROSE = "#e6aba9";
 const allRes = dv.pages('"06. Resources"').array();
 
+// 태그 목록 (정해진 순서)
+const TAG_LIST = ["AI", "메이크업", "사업", "생활", "자기관리", "정보보안", "패션"];
+
+// 고정 탭 + 태그별 탭 동적 생성
+const tagSet = new Set();
+allRes.forEach(r => {
+    const t = r.태그;
+    if (!t) return;
+    if (Array.isArray(t)) t.forEach(v => tagSet.add(String(v).trim()));
+    else tagSet.add(String(t).trim());
+});
+// 정해진 순서대로 + 새로운 태그는 뒤에 추가
+const orderedTags = [...TAG_LIST.filter(t => tagSet.has(t)), ...[...tagSet].filter(t => !TAG_LIST.includes(t))];
+
 const tabs = [
-    { id: "pinned",   label: "고정",    filter: r => r.고정 === true || String(r.고정).toLowerCase() === "true" },
-    { id: "scrap",    label: "스크랩",  filter: r => String(r.분류 || "").trim() === "스크랩" || r.file.path.includes("/Scraps/") },
-    { id: "notes",    label: "정리자료", filter: r => String(r.중요도 || "").trim() === "정리자료" || r.file.path.includes("/Notes/") },
-    { id: "important",label: "중요",    filter: r => String(r.중요도 || "").trim() === "중요" },
-    { id: "insight",  label: "인사이트", filter: r => String(r.분류 || "").trim() === "인사이트" || r.file.path.includes("/Insights/") },
+    { id: "pinned", label: "고정", filter: r => r.고정 === true || String(r.고정).toLowerCase() === "true" },
+    ...orderedTags.map(tag => ({
+        id: "tag-" + tag,
+        label: tag,
+        filter: r => {
+            const t = r.태그;
+            if (!t) return false;
+            if (Array.isArray(t)) return t.some(v => String(v).trim() === tag);
+            return String(t).trim() === tag;
+        }
+    }))
 ];
 
 function makeResCard(r) {

@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "00. Dashboard/Second Brain.md",
+                "file": "Templates/T-Resource.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "Second Brain"
+              "title": "T-Resource"
             }
           }
         ]
@@ -78,8 +78,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 300
   },
   "right": {
     "id": "745189a8707a5fcd",
@@ -190,6 +189,8 @@
   },
   "active": "052925657130d2ce",
   "lastOpenFiles": [
+    "06. Resources/노션에서 옵시디언으로 (경험담).md",
+    "00. Dashboard/Second Brain.md",
     "00. Dashboard/Second Brain.md.tmp.17356.1775278390957",
     "00. Dashboard/Second Brain.md.tmp.17356.1775278156539",
     "00. Dashboard/Second Brain.md.tmp.17356.1775278147767",
@@ -197,7 +198,6 @@
     "00. Dashboard/Second Brain.md.tmp.17356.1775278121541",
     "04. Projects/딥러닝 공부.md",
     "03. Goals/나만의 세컨드 브레인 구축하기.md",
-    "00. Dashboard/Second Brain.md",
     "00. Dashboard/Second Brain.md.tmp.17356.1775277803927",
     "00. Dashboard/Second Brain.md.tmp.17356.1775277799734",
     "05. Tasks/이쁘게 만들고 있는 중.md",
@@ -206,7 +206,6 @@
     "00. Dashboard/Second Brain.md.tmp.17356.1775277155697",
     "00. Dashboard/Second Brain.md.tmp.17356.1775277151094",
     "00. Dashboard/Second Brain.md.tmp.17356.1775276971032",
-    "00. Dashboard/Second Brain.md.tmp.17356.1775276758247",
     "04. Projects/Untitled 1.md",
     "05. Tasks/Task_1775127360365.md",
     "05. Tasks/Task_1775119908585.md",
@@ -224,7 +223,6 @@
     "04. Projects/대시보드 이쁘게 구현하기.md",
     "_fileClasses/task.md",
     "Templates/T-Task.md",
-    "06. Resources/노션에서 옵시디언으로 (경험담).md",
     "05. Tasks/Task_1775118641838.md",
     "00. Dashboard/image.png"
   ]
