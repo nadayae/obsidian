@@ -91,14 +91,10 @@
             "id": "f4b924c10eabd023",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "00. Dashboard/Second Brain.md",
-                "mode": "source",
-                "source": false
-              },
-              "icon": "lucide-file",
-              "title": "Second Brain"
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "그래프 뷰"
             }
           }
         ],
@@ -134,7 +130,7 @@
             "state": {
               "type": "search",
               "state": {
-                "query": "",
+                "query": "[\"상태\"]",
                 "matchingCase": false,
                 "explainSearch": false,
                 "collapseAll": false,
@@ -155,7 +151,8 @@
               "title": "북마크"
             }
           }
-        ]
+        ],
+        "currentTab": 1
       }
     ],
     "direction": "horizontal",
@@ -164,114 +161,7 @@
   "right": {
     "id": "745189a8707a5fcd",
     "type": "split",
-    "children": [
-      {
-        "id": "75aa8a368e3119b5",
-        "type": "tabs",
-        "children": [
-          {
-            "id": "8541840d33492701",
-            "type": "leaf",
-            "state": {
-              "type": "backlink",
-              "state": {
-                "file": "02. Boxes/커리어(전공).md",
-                "collapseAll": false,
-                "extraContext": false,
-                "sortOrder": "alphabetical",
-                "showSearch": false,
-                "searchQuery": "",
-                "backlinkCollapsed": false,
-                "unlinkedCollapsed": true
-              },
-              "icon": "links-coming-in",
-              "title": "커리어(전공) 의 백링크"
-            }
-          },
-          {
-            "id": "27915a3a98c5ea06",
-            "type": "leaf",
-            "state": {
-              "type": "outgoing-link",
-              "state": {
-                "file": "04. Projects/무제 2.md",
-                "linksCollapsed": false,
-                "unlinkedCollapsed": true
-              },
-              "icon": "links-going-out",
-              "title": "무제 2 의 나가는 링크"
-            }
-          },
-          {
-            "id": "5b98b821d2799e5c",
-            "type": "leaf",
-            "state": {
-              "type": "tag",
-              "state": {
-                "sortOrder": "frequency",
-                "useHierarchy": false,
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-tags",
-              "title": "태그"
-            }
-          },
-          {
-            "id": "144d54300baff1ae",
-            "type": "leaf",
-            "state": {
-              "type": "all-properties",
-              "state": {
-                "sortOrder": "frequency",
-                "showSearch": false,
-                "searchQuery": ""
-              },
-              "icon": "lucide-archive",
-              "title": "모든 속성"
-            }
-          },
-          {
-            "id": "e6c360bbf5e4329a",
-            "type": "leaf",
-            "state": {
-              "type": "outline",
-              "state": {
-                "file": "04. Projects/무제 2.md",
-                "followCursor": true,
-                "showSearch": true,
-                "searchQuery": ""
-              },
-              "icon": "lucide-list",
-              "title": "무제 2 의 개요"
-            }
-          },
-          {
-            "id": "310c3a40b64cbe40",
-            "type": "leaf",
-            "state": {
-              "type": "planner-timeline",
-              "state": {},
-              "icon": "calendar-with-checkmark",
-              "title": "Timeline"
-            }
-          },
-          {
-            "id": "d9c723fb849f0eaf",
-            "type": "leaf",
-            "state": {
-              "type": "file-properties",
-              "state": {
-                "file": "00. Dashboard/Second Brain.md"
-              },
-              "icon": "lucide-info",
-              "title": "Second Brain 의 파일 속성"
-            }
-          }
-        ],
-        "currentTab": 6
-      }
-    ],
+    "children": [],
     "direction": "horizontal",
     "width": 300,
     "collapsed": true
@@ -293,11 +183,12 @@
       "obsidian-day-planner:Open Multi-Day View": false
     }
   },
-  "active": "d8411454daa42e08",
+  "active": "f4b924c10eabd023",
   "lastOpenFiles": [
+    "04. Projects/test1.md",
+    "00. Dashboard/Second Brain.md",
     "05. Tasks/Task_1775119908585.md",
     "06. Resources/Scraps/노션에서 옵시디언으로 (경험담).md",
-    "00. Dashboard/Second Brain.md",
     "05. Tasks/Task_1775120010165.md",
     "Templates/T-Project.md",
     "Templates/T-Goal.md",
@@ -309,7 +200,6 @@
     "03. Goals/나만의 세컨드 브레인 구축하기.md",
     "04. Projects/Untitled 1.md",
     "04. Projects/test.md",
-    "04. Projects/test1.md",
     "Templates/T-Daily.md",
     "Templates/T-Monthly.md",
     "06. Resources/Notes/hello1.md",
