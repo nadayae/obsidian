@@ -946,27 +946,52 @@ function renderRes(target) {
     });
 
     // 컬럼 헤더
-    const header = `<div style="display:grid; grid-template-columns:2fr 0.8fr 0.8fr 0.8fr 0.8fr; gap:10px; padding:4px 10px; margin-bottom:4px;">
+    const header = `<div style="display:grid; grid-template-columns:2fr 0.8fr 0.8fr 0.8fr 0.8fr; gap:10px; padding:4px 10px; margin-bottom:2px;">
         ${["제목","박스","프로젝트","분류","중요도"].map(h =>
             `<div style="font-size:0.6rem; font-weight:700; color:var(--text-faint); letter-spacing:0.04em;">${h}</div>`
         ).join("")}
     </div>`;
 
     area.style.display = "block";
-    area.innerHTML = Object.keys(groupMap).sort().map(tag =>
-        `<div style="margin-bottom:20px;">
-            <div style="font-size:0.7rem; font-weight:800; color:${ROSE}; letter-spacing:0.05em; margin-bottom:6px; padding-bottom:6px; border-bottom:1px solid rgba(230,171,169,0.2);">
-                ${tag} <span style="font-weight:400; color:var(--text-faint);">${groupMap[tag].length}</span>
+    area.innerHTML = Object.keys(groupMap).sort().map((tag, i) => {
+        const gid = RES_ID + "-g-" + i;
+        return `<div style="margin-bottom:16px;">
+            <div class="res-tag-header" data-gid="${gid}" style="
+                display:flex; align-items:center; justify-content:space-between;
+                cursor:pointer; padding:8px 12px; border-radius:8px;
+                background:rgba(230,171,169,0.12); border-left:3px solid ${ROSE};
+                margin-bottom:8px; user-select:none;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:0.85rem; font-weight:800; color:${ROSE}; letter-spacing:0.03em;">${tag}</span>
+                    <span style="font-size:0.65rem; font-weight:500; color:var(--text-faint); background:rgba(0,0,0,0.06); padding:1px 7px; border-radius:100px;">${groupMap[tag].length}개</span>
+                </div>
+                <span class="res-chevron" style="font-size:0.7rem; color:${ROSE}; transition:transform 0.2s;">▲</span>
             </div>
-            ${header}
-            <div>${groupMap[tag].map(r => makeResRow(r)).join("")}</div>
-        </div>`
-    ).join("");
+            <div id="${gid}" style="overflow:hidden;">
+                ${header}
+                <div>${groupMap[tag].map(r => makeResRow(r)).join("")}</div>
+            </div>
+        </div>`;
+    }).join("");
 }
 
 setTimeout(() => {
     const root = document.getElementById(RES_ID);
     if (!root) return;
+
+    // 태그 헤더 토글 (이벤트 위임)
+    root.addEventListener("click", e => {
+        const header = e.target.closest(".res-tag-header");
+        if (!header) return;
+        const gid = header.dataset.gid;
+        const body = document.getElementById(gid);
+        const chevron = header.querySelector(".res-chevron");
+        if (!body) return;
+        const isOpen = body.style.display !== "none";
+        body.style.display = isOpen ? "none" : "block";
+        chevron.style.transform = isOpen ? "rotate(180deg)" : "rotate(0deg)";
+    });
+
     const tabEls = root.querySelectorAll(".rtab");
     tabEls.forEach(el => {
         el.addEventListener("click", () => {
@@ -983,29 +1008,133 @@ setTimeout(() => {
 ---
 
 ```dataviewjs
-const pages = dv.pages('"02. Boxes"').where(b => b.type === "box");
+const BOX_ID  = "box-tabs-" + Math.random().toString(36).substring(2, 7);
+const ROSE_B  = "#e6aba9";
 
-let html = `<div style="font-weight: 800; font-size: 1.3rem; color: #d6827d; letter-spacing: 0.06em; margin-top: 16px; margin-bottom: 14px;">박스</div>`;
-html += `<div class="sb-gallery">`;
-for (let b of pages) {
-  const emoji = b.이모지 || "📦";
-  const desc = b.설명 || "";
-  const status = b.상태 || "일반";
+const allBoxes    = dv.pages('"02. Boxes"').where(b => b.type === "box").array();
+const allGoals_b  = dv.pages('"03. Goals"').array();
+const allProjs_b  = dv.pages('"04. Projects"').array();
+const allTasks_b  = dv.pages('"05. Tasks"').array();
+const allRes_b    = dv.pages('"06. Resources"').array();
 
-  html += `<div class="sb-gallery-card">`;
-  html += `<div class="sb-gallery-icon">${emoji}</div>`;
-  html += `<div class="sb-gallery-title"><a class="internal-link" href="${b.file.name}">${b.제목 || b.file.name}</a></div>`;
-  html += `<div class="sb-gallery-desc">${desc}</div>`;
-  html += `<div class="sb-gallery-stats">`;
-  html += `<span class="sb-kanban-badge ${status === "고정하기" ? "blue" : "gray"}">${status}</span>`;
-  html += `</div>`;
-  html += `</div>`;
+function resolveBox(val) {
+    if (!val) return "";
+    if (typeof val === "object" && val.path)
+        return val.path.split("/").pop().replace(/\.md$/, "");
+    return String(val).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim();
 }
-if (pages.length === 0) {
-  html += `<div style="color:#8e8e93; font-size:0.8rem; padding:20px; text-align:center;">박스가 없습니다. 새 박스를 만들어보세요.</div>`;
+
+function matchBox(fieldVal, boxName) {
+    return resolveBox(fieldVal) === boxName;
 }
-html += `</div>`;
+
+function makeBoxCard(b) {
+    const name   = b.제목 || b.file.name;
+    const emoji  = b.이모지 || "";
+    const desc   = b.설명 || "";
+
+    // 데이터 집계
+    const goals   = allGoals_b.filter(g  => matchBox(g.박스,  name));
+    const projs   = allProjs_b.filter(p  => matchBox(p.박스,  name));
+    const tasks   = allTasks_b.filter(t  => matchBox(t.박스,  name));
+    const res     = allRes_b.filter(r    => matchBox(r.박스,  name));
+
+    const doneTasks = tasks.filter(t => t.완료여부 === true || String(t.완료여부).toLowerCase() === "true").length;
+    const doneProjs = projs.filter(p => String(p.상태 || "").trim() === "완료").length;
+    const doneGoals = goals.filter(g => String(g.상태 || "").trim() === "완료").length;
+
+    const activeGoals = goals.filter(g => ["진행 중","집중","진행중"].includes(String(g.상태 || "").trim()));
+    const activeProjs = projs.filter(p => ["진행중","집중"].includes(String(p.상태 || "").replace(/\s/g,"")));
+
+    const activeGoalHTML = activeGoals.length > 0
+        ? activeGoals.map(g => `<div style="font-size:0.68rem; padding:3px 0; display:flex; align-items:center; gap:6px;">
+            <span style="color:${ROSE_B};">◎</span>
+            <a class="internal-link" href="${g.file.path}" style="color:var(--text-normal); text-decoration:none;">${g.제목 || g.file.name}</a>
+          </div>`).join("")
+        : `<div style="font-size:0.65rem; color:var(--text-faint);">진행 중인 목표 없음</div>`;
+
+    const activeProjHTML = activeProjs.length > 0
+        ? activeProjs.map(p => `<div style="font-size:0.68rem; padding:3px 0; display:flex; align-items:center; gap:6px;">
+            <span style="color:${ROSE_B};">▣</span>
+            <a class="internal-link" href="${p.file.path}" style="color:var(--text-normal); text-decoration:none;">${p.file.name}</a>
+          </div>`).join("")
+        : `<div style="font-size:0.65rem; color:var(--text-faint);">현재 진행 중인 프로젝트 없음</div>`;
+
+    return `<div style="background:var(--background-primary); border:1px solid rgba(0,0,0,0.08); border-radius:12px; padding:18px; display:flex; flex-direction:column; gap:12px;">
+
+        <div style="display:flex; align-items:center; gap:8px;">
+            ${emoji ? `<span style="font-size:1.1rem;">${emoji}</span>` : ""}
+            <a class="internal-link" href="${b.file.path}" style="font-size:0.9rem; font-weight:800; color:var(--text-normal); text-decoration:none;">${name}</a>
+        </div>
+
+        ${desc ? `<div style="font-size:0.65rem; color:var(--text-muted);">${desc}</div>` : ""}
+
+        <div style="font-size:0.65rem; color:#666; line-height:2; border-top:1px solid rgba(0,0,0,0.06); padding-top:10px;">
+            <div style="font-size:0.6rem; font-weight:700; color:${ROSE_B}; margin-bottom:4px; letter-spacing:0.04em;">지금까지</div>
+            할 일 <b>${doneTasks}개</b> 완료<br>
+            프로젝트 <b>${doneProjs}개</b> 완료<br>
+            <b>${doneGoals}개</b>의 목표 달성
+        </div>
+
+        <div style="font-size:0.65rem; color:#666; border-top:1px solid rgba(0,0,0,0.06); padding-top:10px;">
+            <span style="font-weight:700; color:${ROSE_B};">관련된 자료</span>
+            <span style="margin-left:6px; font-size:0.7rem; font-weight:800;">${res.length}개</span>
+        </div>
+
+        <div style="border-top:1px solid rgba(0,0,0,0.06); padding-top:10px;">
+            <div style="font-size:0.6rem; font-weight:700; color:${ROSE_B}; margin-bottom:6px; letter-spacing:0.04em;">진행 중인 목표</div>
+            ${activeGoalHTML}
+        </div>
+
+        <div style="border-top:1px solid rgba(0,0,0,0.06); padding-top:10px;">
+            <div style="font-size:0.6rem; font-weight:700; color:${ROSE_B}; margin-bottom:6px; letter-spacing:0.04em;">현재 진행 중인 프로젝트</div>
+            ${activeProjHTML}
+        </div>
+    </div>`;
+}
+
+const boxTabs = [
+    { id: "all",    label: "전체", filter: b => true },
+    { id: "pinned", label: "고정", filter: b => String(b.상태 || "").trim() === "고정하기" },
+    { id: "normal", label: "일반", filter: b => String(b.상태 || "").trim() === "일반" },
+];
+
+let html = `<div id="${BOX_ID}" style="font-family:var(--font-interface); padding:10px 0;">
+    <div style="font-weight:800; font-size:1.3rem; color:#d6827d; letter-spacing:0.06em; margin-top:16px; margin-bottom:14px;">박스</div>
+    <div style="display:flex; gap:20px; border-bottom:1px solid rgba(0,0,0,0.08); margin-bottom:20px;">
+        ${boxTabs.map((t,i) => `<div class="btab" data-target="${t.id}" style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:${i===0?"700":"500"}; color:${i===0?ROSE_B:"#8a81a3"};">${t.label}</div>`).join("")}
+    </div>
+    <div id="${BOX_ID}-area" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(280px, 1fr)); gap:16px;"></div>
+</div>`;
+
 dv.el("div", html);
+
+function renderBox(target) {
+    const root = document.getElementById(BOX_ID);
+    if (!root) return;
+    const area = root.querySelector("#" + BOX_ID + "-area");
+    const tab  = boxTabs.find(t => t.id === target);
+    if (!tab) return;
+    const filtered = allBoxes.filter(tab.filter);
+    area.innerHTML = filtered.length > 0
+        ? filtered.map(b => makeBoxCard(b)).join("")
+        : `<div style="grid-column:1/-1; padding:40px; text-align:center; font-size:0.8rem; color:var(--text-faint);">박스가 없습니다</div>`;
+}
+
+setTimeout(() => {
+    const root = document.getElementById(BOX_ID);
+    if (!root) return;
+    const tabs = root.querySelectorAll(".btab");
+    tabs.forEach(el => {
+        el.addEventListener("click", () => {
+            tabs.forEach(t => { t.style.color = "#8a81a3"; t.style.fontWeight = "500"; });
+            el.style.color = ROSE_B;
+            el.style.fontWeight = "700";
+            renderBox(el.dataset.target);
+        });
+    });
+    renderBox("all");
+}, 200);
 ```
 
 ```button

@@ -31,7 +31,8 @@
       "Bash(powershell -Command \":*)",
       "Bash(powershell -Command \"Get-Item ''C:/Users/HOME/Desktop/fonts_temp/*.zip'' | Select-Object Name, Length\")",
       "Bash(head -20 /c/Users/HOME/Desktop/nadayae/06. Resources/*.md)",
-      "Bash(cat /c/Users/HOME/Desktop/nadayae/_fileClasses/*.md)"
+      "Bash(cat /c/Users/HOME/Desktop/nadayae/_fileClasses/*.md)",
+      "Bash(cat /c/Users/HOME/Desktop/nadayae/02. Boxes/*.md)"
     ]
   }
 }

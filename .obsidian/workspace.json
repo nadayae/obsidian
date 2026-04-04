@@ -78,7 +78,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "745189a8707a5fcd",
@@ -189,8 +190,9 @@
   },
   "active": "052925657130d2ce",
   "lastOpenFiles": [
-    "06. Resources/노션에서 옵시디언으로 (경험담).md",
+    "02. Boxes/자기관리.md",
     "00. Dashboard/Second Brain.md",
+    "06. Resources/노션에서 옵시디언으로 (경험담).md",
     "Templates/T-Resource.md",
     "00. Dashboard/Second Brain.md.tmp.17356.1775278390957",
     "00. Dashboard/Second Brain.md.tmp.17356.1775278156539",
@@ -214,7 +216,6 @@
     "Templates/T-Project.md",
     "04. Projects/Untitled Kanban.md",
     "00. Dashboard/Untitled Kanban.md",
-    "02. Boxes/자기관리.md",
     "2026-04-03.md",
     "_fileClasses/project.md",
     "04. Projects/안녕하세요.md",
