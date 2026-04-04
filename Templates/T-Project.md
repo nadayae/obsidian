@@ -47,15 +47,14 @@ color default
 ---
 
 ## 📋 할 일
-
 ```dataviewjs
-const FIXED_ID = "integrated-project-dashboard";
+// 1. 기본 설정 및 데이터 수집
 const ROSEWATER = "#e6aba9";
 const today = dv.date("today");
 const projectName = dv.current().file.name;
 const TASKS_PATH = '"05. Tasks"';
 
-// 1. 현재 프로젝트와 연결된 할 일 데이터 수집
+// 현재 프로젝트와 연결된 할 일 데이터 수집
 const allTasks = dv.pages(TASKS_PATH).filter(t => {
     const prop = t.프로젝트;
     if (!prop) return false;
@@ -63,68 +62,56 @@ const allTasks = dv.pages(TASKS_PATH).filter(t => {
     return nameOnly === projectName;
 }).array();
 
-// 2. 전체 레이아웃 (Grid: 왼쪽 4, 오른쪽 6 비율)
-let html = `
-<div id="${FIXED_ID}" style="display: grid; grid-template-columns: 380px 1fr; gap: 25px; font-family: var(--font-interface); padding: 10px 0;">
-    
-    <div id="left-task-panel">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h3 style="margin: 0; font-size: 1rem; color: ${ROSEWATER}; font-weight: 800;">할 일 목록 📋</h3>
-        </div>
-        
-        <div style="display: flex; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px;">
-            <div class="sub-tab s-active" data-sub="todo" style="cursor: pointer; font-size: 0.75rem; color: ${ROSEWATER}; font-weight: 700;">진행 중</div>
-            <div class="sub-tab" data-sub="done" style="cursor: pointer; font-size: 0.75rem; color: #8a81a3;">완료된 일</div>
-        </div>
+// 2. 전체 레이아웃 (DOM 요소를 직접 생성하여 null 에러 방지)
+const container = dv.el("div", "");
+container.style.display = "grid";
+container.style.gridTemplateColumns = "380px 1fr";
+container.style.gap = "25px";
+container.style.padding = "10px 0";
 
-        <div id="list-display" style="display: grid; gap: 10px; max-height: 600px; overflow-y: auto; padding-right: 5px;">
-            </div>
+// --- [왼쪽 패널: 할 일 리스트] ---
+const leftPanel = container.createDiv();
+leftPanel.innerHTML = `
+    <h3 style="margin: 0 0 20px 0; font-size: 1rem; color: ${ROSEWATER}; font-weight: 800;">할 일 목록 📋</h3>
+    <div style="display: flex; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid rgba(0,0,0,0.05); padding-bottom: 10px;">
+        <span id="btn-todo" style="cursor: pointer; font-size: 0.75rem; color: ${ROSEWATER}; font-weight: 700; border-bottom: 2px solid ${ROSEWATER}; padding-bottom: 10px;">진행 중</span>
+        <span id="btn-done" style="cursor: pointer; font-size: 0.75rem; color: #8a81a3; padding-bottom: 10px;">완료된 일</span>
     </div>
+`;
+const listArea = leftPanel.createDiv({ style: "display: grid; gap: 10px; max-height: 600px; overflow-y: auto;" });
 
-    <div id="right-calendar-panel">
-        <div style="display: flex; justify-content: flex-end; gap: 15px; margin-bottom: 20px;">
-            <div class="cal-tab c-active" data-cal="weekly" style="cursor: pointer; font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; border: 1.5px solid ${ROSEWATER}; color: ${ROSEWATER}; font-weight: 700;">Weekly</div>
-            <div class="cal-tab" data-cal="monthly" style="cursor: pointer; font-size: 0.75rem; padding: 4px 12px; border-radius: 20px; border: 1.5px solid #eee; color: #8a81a3;">Monthly</div>
-        </div>
-
-        <div id="calendar-display" style="background: rgba(245, 234, 224, 0.4); border: 2px solid rgba(230, 171, 169, 0.3); border-radius: 15px; height: 550px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 30px;">
-            <div id="cal-hint-icon" style="font-size: 2.5rem; margin-bottom: 15px;">🗓️</div>
-            <h4 id="cal-hint-title" style="margin: 0; font-size: 0.9rem; color: #444;">주간 일정 계획 뷰</h4>
-            <p style="font-size: 0.75rem; color: #8a81a3; margin-top: 10px; line-height: 1.5;">
-                왼쪽 목록의 할 일을 확인하고<br>
-                <b>Full Calendar</b> 플러그인의 'Unscheduled' 섹션에서<br>
-                이곳(달력)으로 드래그하여 일정을 배정하세요.
-            </p>
-        </div>
+// --- [오른쪽 패널: 캘린더 가이드] ---
+const rightPanel = container.createDiv();
+rightPanel.innerHTML = `
+    <div style="display: flex; justify-content: flex-end; gap: 10px; margin-bottom: 20px;">
+        <div id="btn-weekly" style="cursor: pointer; font-size: 0.7rem; padding: 4px 12px; border-radius: 20px; border: 1.5px solid ${ROSEWATER}; color: ${ROSEWATER}; background: ${ROSEWATER}1A; font-weight: 700;">Weekly</div>
+        <div id="btn-monthly" style="cursor: pointer; font-size: 0.7rem; padding: 4px 12px; border-radius: 20px; border: 1.5px solid #eee; color: #8a81a3;">Monthly</div>
     </div>
-</div>
-
-<style>
-    .sub-tab.s-active { border-bottom: 2px solid ${ROSEWATER}; padding-bottom: 10px; }
-    .cal-tab.c-active { background: ${ROSEWATER}1A; }
-    #list-display::-webkit-scrollbar { width: 4px; }
-    #list-display::-webkit-scrollbar-thumb { background: ${ROSEWATER}4D; border-radius: 10px; }
-</style>
+    <div id="cal-box" style="background: rgba(245, 234, 224, 0.4); border: 2px solid rgba(230, 171, 169, 0.3); border-radius: 15px; height: 500px; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px;">
+        <div id="cal-icon" style="font-size: 2rem; margin-bottom: 10px;">🗓️</div>
+        <h4 id="cal-title" style="margin: 0; font-size: 0.85rem; color: #444;">주간 일정 계획 뷰</h4>
+        <p style="font-size: 0.7rem; color: #8a81a3; margin-top: 10px; line-height: 1.6;">
+            왼쪽의 할 일을 <b>Full Calendar</b> 사이드바의<br>
+            'Unscheduled' 목록에서 이 영역으로 드래그하세요.
+        </p>
+    </div>
 `;
 
-dv.el("div", html);
-
-// 리스트 렌더링 함수
-const renderList = (subTarget) => {
-    const listDisplay = document.getElementById("list-display");
+// 3. 리스트 렌더링 함수 (listArea 객체를 직접 참조)
+const updateView = (subTarget) => {
     const tasks = subTarget === "done" 
         ? allTasks.filter(t => String(t.상태 || "").trim() === "완료") 
         : allTasks.filter(t => String(t.상태 || "").trim() !== "완료");
 
-    let items = "";
+    let content = "";
     if (tasks.length === 0) {
-        items = `<div style="font-size: 0.75rem; color: #999; text-align: center; padding: 40px 0;">항목이 없습니다.</div>`;
+        content = `<div style="font-size: 0.75rem; color: #999; text-align: center; padding: 40px 0;">항목이 없습니다.</div>`;
     } else {
         tasks.forEach(t => {
             const dateStr = t.날짜 ? `📅 ${t.날짜}` : "⚠️ 날짜 미지정";
-            items += `
-                <div style="background: var(--background-primary); border: 1px solid rgba(0,0,0,0.06); border-radius: 10px; padding: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
-                    <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 6px;">
+            content += `
+                <div style="background: var(--background-primary); border: 1px solid rgba(0,0,0,0.06); border-radius: 8px; padding: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
+                    <div style="font-size: 0.8rem; font-weight: 700; margin-bottom: 5px;">
                         <a class="internal-link" href="${t.file.path}" style="color: var(--text-normal); text-decoration: none;">${t.file.name}</a>
                     </div>
                     <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.65rem; color: #888;">
@@ -134,39 +121,41 @@ const renderList = (subTarget) => {
                 </div>`;
         });
     }
-    listDisplay.innerHTML = items;
+    listArea.innerHTML = content;
 };
 
-// 메인 루프 및 이벤트
-setTimeout(() => {
-    const root = document.getElementById(FIXED_ID);
-    if (!root) return;
+// 4. 이벤트 바인딩 (querySelector 대신 직접 객체 탐색)
+const bTodo = leftPanel.querySelector("#btn-todo");
+const bDone = leftPanel.querySelector("#btn-done");
+const bWeekly = rightPanel.querySelector("#btn-weekly");
+const bMonthly = rightPanel.querySelector("#btn-monthly");
+const cTitle = rightPanel.querySelector("#cal-title");
+const cIcon = rightPanel.querySelector("#cal-icon");
 
-    // 할 일 서브탭 이벤트
-    root.querySelectorAll(".sub-tab").forEach(tab => {
-        tab.addEventListener("click", () => {
-            root.querySelectorAll(".sub-tab").forEach(t => { t.classList.remove("s-active"); t.style.color = "#8a81a3"; });
-            tab.classList.add("s-active"); tab.style.color = ROSEWATER;
-            renderList(tab.dataset.sub);
-        });
-    });
+bTodo.onclick = () => {
+    bTodo.style.color = ROSEWATER; bTodo.style.borderBottom = `2px solid ${ROSEWATER}`;
+    bDone.style.color = "#8a81a3"; bDone.style.borderBottom = "none";
+    updateView("todo");
+};
+bDone.onclick = () => {
+    bDone.style.color = ROSEWATER; bDone.style.borderBottom = `2px solid ${ROSEWATER}`;
+    bTodo.style.color = "#8a81a3"; bTodo.style.borderBottom = "none";
+    updateView("done");
+};
 
-    // 캘린더 탭 전환 이벤트
-    root.querySelectorAll(".cal-tab").forEach(tab => {
-        tab.addEventListener("click", () => {
-            root.querySelectorAll(".cal-tab").forEach(t => { 
-                t.classList.remove("c-active"); t.style.borderColor = "#eee"; t.style.color = "#8a81a3"; t.style.background = "none";
-            });
-            tab.classList.add("c-active"); tab.style.borderColor = ROSEWATER; tab.style.color = ROSEWATER; tab.style.background = `${ROSEWATER}1A`;
-            
-            // 힌트 텍스트 변경
-            document.getElementById("cal-hint-title").innerText = tab.dataset.cal === "weekly" ? "주간 일정 계획 뷰" : "월간 일정 계획 뷰";
-            document.getElementById("cal-hint-icon").innerText = tab.dataset.cal === "weekly" ? "🗓️" : "📅";
-        });
-    });
+bWeekly.onclick = () => {
+    bWeekly.style.background = `${ROSEWATER}1A`; bWeekly.style.color = ROSEWATER; bWeekly.style.borderColor = ROSEWATER;
+    bMonthly.style.background = "none"; bMonthly.style.color = "#8a81a3"; bMonthly.style.borderColor = "#eee";
+    cTitle.innerText = "주간 일정 계획 뷰"; cIcon.innerText = "🗓️";
+};
+bMonthly.onclick = () => {
+    bMonthly.style.background = `${ROSEWATER}1A`; bMonthly.style.color = ROSEWATER; bMonthly.style.borderColor = ROSEWATER;
+    bWeekly.style.background = "none"; bWeekly.style.color = "#8a81a3"; bWeekly.style.borderColor = "#eee";
+    cTitle.innerText = "월간 일정 계획 뷰"; cIcon.innerText = "📅";
+};
 
-    renderList("todo");
-}, 150);
+// 초기화
+updateView("todo");
 ```
 
 ## ✅ 완료된 할 일

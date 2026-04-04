@@ -46,7 +46,7 @@
             }
           }
         ],
-        "currentTab": 2
+        "currentTab": 1
       }
     ],
     "direction": "vertical"
@@ -103,7 +103,8 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "right": {
     "id": "745189a8707a5fcd",
@@ -199,7 +200,6 @@
   },
   "left-ribbon": {
     "hiddenItems": {
-      "obsidian-full-calendar:Open Full Calendar": false,
       "obsidian-kanban:Create new board": false,
       "obsidian-git:Open Git source control": false,
       "switcher:빠른 전환기 열기": false,
@@ -209,10 +209,11 @@
       "templates:템플릿 삽입": false,
       "command-palette:명령어 팔레트 열기": false,
       "bases:새 베이스 생성하기": false,
-      "templater-obsidian:Templater": false
+      "templater-obsidian:Templater": false,
+      "obsidian-full-calendar:Open Full Calendar": false
     }
   },
-  "active": "f44cda6e2c17dec8",
+  "active": "d68711cfd8e2f681",
   "lastOpenFiles": [
     "Templates/T-Monthly.md",
     "Templates/T-Project.md",
