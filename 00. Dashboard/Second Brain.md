@@ -467,12 +467,13 @@ const activeStatuses = ["계획전", "계획", "진행중", "집중"];
 const archiveStatuses = ["중단", "완료"];
 
 // 공통: 링크 객체/텍스트 둘 다 이름 추출
-const resolveName = (val, fallback = "미지정") => {
+function resolveName(val, fallback) {
+    if (!fallback) fallback = "미지정";
     if (!val) return fallback;
-    if (typeof val === 'object' && val.path)
-        return val.path.split('/').pop().replace(/\.md$/, '');
-    return String(val).replace(/[\[\]"]/g, "").trim() || fallback;
-};
+    if (typeof val === "object" && val.path)
+        return val.path.split("/").pop().replace(/\.md$/, "");
+    return String(val).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim() || fallback;
+}
 
 // 공통: task-project 매칭 함수
 const getLinkedTasks = (p) => allTasksFiles.filter(t => {
@@ -480,7 +481,7 @@ const getLinkedTasks = (p) => allTasksFiles.filter(t => {
     if (!prop || prop === "") return false;
     let name = (typeof prop === 'object' && prop.path)
         ? prop.path.split('/').pop().replace(/\.md$/, '')
-        : String(prop).replace(/[\[\]"]/g, "").trim();
+        : String(prop).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim();
     return name === p.file.name;
 });
 
@@ -640,12 +641,13 @@ const GOAL_ID = "goal-kanban-" + Math.random().toString(36).substring(2, 7);
 const ROSEWATER_G = "#e6aba9";
 
 // 링크 객체/텍스트 둘 다 이름 추출
-const resolveNameG = (val, fallback = "미지정") => {
+function resolveNameG(val, fallback) {
+    if (!fallback) fallback = "미지정";
     if (!val) return fallback;
-    if (typeof val === 'object' && val.path)
-        return val.path.split('/').pop().replace(/\.md$/, '');
-    return String(val).replace(/[\[\]"]/g, "").trim() || fallback;
-};
+    if (typeof val === "object" && val.path)
+        return val.path.split("/").pop().replace(/\.md$/, "");
+    return String(val).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim() || fallback;
+}
 const allGoals   = dv.pages('"03. Goals"').where(g => g.상태 !== "아카이브").array();
 const allProjects = dv.pages('"04. Projects"').array();
 const allTasks    = dv.pages('"05. Tasks"').array();
@@ -657,7 +659,7 @@ const goalRate = (goalName) => {
         if (!val) return false;
         const name = (typeof val === 'object' && val.path)
             ? val.path.split('/').pop().replace(/\.md$/, '')
-            : String(val).replace(/[\[\]"]/g, "").trim();
+            : String(val).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim();
         return name === goalName;
     });
     if (projs.length === 0) return 0;
@@ -668,7 +670,7 @@ const goalRate = (goalName) => {
             if (!prop || prop === "") return false;
             const name = (typeof prop === 'object' && prop.path)
                 ? prop.path.split('/').pop().replace(/\.md$/, '')
-                : String(prop).replace(/[\[\]"]/g, "").trim();
+                : String(prop).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim();
             return name === p.file.name;
         });
         if (t.length > 0) sum += (t.filter(t => t.완료여부 === true || String(t.완료여부).toLowerCase() === "true").length / t.length) * 100;
@@ -686,7 +688,7 @@ const makeGoalCard = (g) => {
         if (!val) return false;
         const projGoalName = (typeof val === 'object' && val.path)
             ? val.path.split('/').pop().replace(/\.md$/, '')
-            : String(val).replace(/[\[\]"]/g, "").trim();
+            : String(val).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim();
         return projGoalName === goalName || projGoalName === g.file.name;
     });
     const totalProjects   = linkedProjects.length;
@@ -700,7 +702,7 @@ const makeGoalCard = (g) => {
         if (!prop || prop === "") return false;
         const name = (typeof prop === 'object' && prop.path)
             ? prop.path.split('/').pop().replace(/\.md$/, '')
-            : String(prop).replace(/[\[\]"]/g, "").trim();
+            : String(prop).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim();
         return linkedProjects.some(p => p.file.name === name);
     });
     const totalTasks   = linkedTasks.length;
@@ -860,27 +862,78 @@ setTimeout(() => {
 ---
 
 ```dataviewjs
-dv.el("div", `<div style="font-weight: 800; font-size: 1.3rem; color: #d6827d; letter-spacing: 0.06em; margin-top: 16px; margin-bottom: 14px;">자료</div>`);
-```
+const RES_ID = "resource-tabs-" + Math.random().toString(36).substring(2, 7);
+const ROSE = "#e6aba9";
+const allRes = dv.pages('"06. Resources"').array();
 
-```dataview
-TABLE WITHOUT ID
-  file.link AS "이름",
-  분류 AS "분류",
-  중요도 AS "중요도",
-  박스 AS "박스",
-  프로젝트 AS "프로젝트",
-  file.mtime AS "수정일"
-FROM "06. Resources"
-SORT file.mtime DESC
-LIMIT 20
-```
+const tabs = [
+    { id: "pinned",   label: "고정",    filter: r => r.고정 === true || String(r.고정).toLowerCase() === "true" },
+    { id: "scrap",    label: "스크랩",  filter: r => String(r.분류 || "").trim() === "스크랩" || r.file.path.includes("/Scraps/") },
+    { id: "notes",    label: "정리자료", filter: r => String(r.중요도 || "").trim() === "정리자료" || r.file.path.includes("/Notes/") },
+    { id: "important",label: "중요",    filter: r => String(r.중요도 || "").trim() === "중요" },
+    { id: "insight",  label: "인사이트", filter: r => String(r.분류 || "").trim() === "인사이트" || r.file.path.includes("/Insights/") },
+];
 
-```button
-name 새로 만들기
-type command
-action QuickAdd: New Resource
-color default
+function makeResCard(r) {
+    const title = r.제목 || r.file.name;
+    const summary = r.요약 || "";
+    const url = r.url || "";
+    const tags = Array.isArray(r.태그) ? r.태그 : (r.태그 ? [r.태그] : []);
+    const date = r.생성일 ? String(r.생성일).substring(0, 10) : r.file.cday ? r.file.cday.toFormat("yyyy-MM-dd") : "";
+    const tagHTML = tags.map(t =>
+        `<span style="font-size:0.55rem; background:rgba(230,171,169,0.15); border:1px solid rgba(230,171,169,0.4); color:#8a81a3; padding:1px 6px; border-radius:100px;">${t}</span>`
+    ).join(" ");
+
+    return `<div style="background:var(--background-primary); border:1px solid rgba(0,0,0,0.08); border-radius:10px; padding:14px; display:flex; flex-direction:column; gap:6px;">
+        <a class="internal-link" href="${r.file.path}" style="font-size:0.8rem; font-weight:700; color:var(--text-normal); text-decoration:none; line-height:1.3;">${title}</a>
+        ${url ? `<a href="${url}" style="font-size:0.6rem; color:${ROSE}; text-decoration:none; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" target="_blank">${url}</a>` : ""}
+        ${summary ? `<div style="font-size:0.65rem; color:var(--text-muted); line-height:1.5; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${summary}</div>` : ""}
+        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-top:2px;">${tagHTML}</div>
+        <div style="font-size:0.6rem; color:var(--text-faint); margin-top:auto;">${date}</div>
+    </div>`;
+}
+
+let html = `<div id="${RES_ID}" style="font-family:var(--font-interface); padding:10px 0;">
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; margin-top:16px;">
+        <div style="font-weight:800; font-size:1.3rem; color:#d6827d; letter-spacing:0.06em;">자료</div>
+        <button onclick="app.commands.executeCommandById('quickadd:choice:New Resource')" style="background:rgba(230,171,169,0.2); border:1px solid rgba(230,171,169,0.4); border-radius:6px; padding:4px 12px; font-size:0.65rem; font-weight:700; color:${ROSE}; cursor:pointer;">+ 추가</button>
+    </div>
+    <div style="display:flex; gap:20px; border-bottom:1px solid rgba(0,0,0,0.08); margin-bottom:20px;">
+        ${tabs.map((t, i) => `<div class="rtab" data-target="${t.id}" style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:${i===0?"700":"500"}; color:${i===0?ROSE:"#8a81a3"};">${t.label}</div>`).join("")}
+    </div>
+    <div id="${RES_ID}-area" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(220px, 1fr)); gap:14px;"></div>
+</div>`;
+
+dv.el("div", html);
+
+function renderRes(target) {
+    const root = document.getElementById(RES_ID);
+    if (!root) return;
+    const area = root.querySelector("#" + RES_ID + "-area");
+    const tab = tabs.find(t => t.id === target);
+    if (!tab) return;
+    const filtered = allRes.filter(tab.filter).sort((a, b) => b.file.mtime - a.file.mtime);
+    if (filtered.length === 0) {
+        area.innerHTML = `<div style="grid-column:1/-1; padding:40px; text-align:center; font-size:0.8rem; color:var(--text-faint);">자료가 없습니다</div>`;
+        return;
+    }
+    area.innerHTML = filtered.map(r => makeResCard(r)).join("");
+}
+
+setTimeout(() => {
+    const root = document.getElementById(RES_ID);
+    if (!root) return;
+    const tabEls = root.querySelectorAll(".rtab");
+    tabEls.forEach(el => {
+        el.addEventListener("click", () => {
+            tabEls.forEach(t => { t.style.color = "#8a81a3"; t.style.fontWeight = "500"; });
+            el.style.color = ROSE;
+            el.style.fontWeight = "700";
+            renderRes(el.dataset.target);
+        });
+    });
+    renderRes("pinned");
+}, 200);
 ```
 
 ---
