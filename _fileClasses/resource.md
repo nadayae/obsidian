@@ -6,7 +6,7 @@ version: "2.1"
 fields:
   - id: rs0006
     name: 태그
-    type: MultiSelect
+    type: Multi
     options:
       sourceType: ValuesList
       valuesList:

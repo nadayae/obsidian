@@ -11,20 +11,294 @@ url: ""
 시작일: <% tp.date.now("YYYY-MM-DD") %>
 ---
 
-# <% tp.file.title %>
+```dataviewjs
+const ROSE = "#d6827d";
+const p = dv.current();
+const projectName = p.file.name;
 
-> [!project] 프로젝트 정보
-> **Box:** *(연결할 Box 링크)*
-> **Goal:** *(연결할 Goal 링크)*
-> **상태:** 시작 전
-> **날짜:** *(마감일 입력)*
+function resolveName(val) {
+    if (!val) return "-";
+    if (typeof val === "object" && val.path)
+        return val.path.split("/").pop().replace(/\.md$/, "");
+    return String(val).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim() || "-";
+}
+
+const allTasks = dv.pages('"05. Tasks"').filter(t => {
+    const prop = t.프로젝트;
+    if (!prop) return false;
+    return resolveName(prop) === projectName;
+});
+
+const total = allTasks.length;
+const done = allTasks.filter(t => t.완료여부 === true || String(t.완료여부).toLowerCase() === "true").length;
+const rate = total > 0 ? Math.round((done / total) * 100) : 0;
+
+const 상태 = String(p.상태 || "-").trim();
+const 박스 = resolveName(p.박스);
+const 목표 = resolveName(p.목표);
+const 시작일 = p.시작일 ? String(p.시작일).substring(0, 10) : "-";
+const 목표일 = p.목표일 ? String(p.목표일).substring(0, 10) : "-";
+
+const statusColorMap = { "진행중": "#4caf7d", "집중": ROSE, "완료": "#8a81a3", "보류": "#f0a500", "계획전": "#aaa", "계획 전": "#aaa" };
+const statusColor = statusColorMap[상태.replace(/\s/g,"")] || "#aaa";
+
+const _infoWrap = dv.el("div", "");
+_infoWrap.innerHTML = `
+<div style="font-family:var(--font-interface); padding:10px 0 20px;">
+    <div style="font-weight:800; font-size:1.5rem; color:var(--text-normal); letter-spacing:0.02em; margin-bottom:20px;">${projectName}</div>
+
+    <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(150px, 1fr)); gap:10px; margin-bottom:14px;">
+        <div style="background:var(--background-secondary); border-radius:10px; padding:12px;">
+            <div style="font-size:0.58rem; font-weight:700; color:var(--text-faint); letter-spacing:0.05em; margin-bottom:5px;">상태</div>
+            <div style="font-size:0.8rem; font-weight:800; color:${statusColor};">${상태}</div>
+        </div>
+        <div style="background:var(--background-secondary); border-radius:10px; padding:12px;">
+            <div style="font-size:0.58rem; font-weight:700; color:var(--text-faint); letter-spacing:0.05em; margin-bottom:5px;">박스</div>
+            <div style="font-size:0.78rem; font-weight:600; color:var(--text-normal); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${박스}</div>
+        </div>
+        <div style="background:var(--background-secondary); border-radius:10px; padding:12px;">
+            <div style="font-size:0.58rem; font-weight:700; color:var(--text-faint); letter-spacing:0.05em; margin-bottom:5px;">목표</div>
+            <div style="font-size:0.78rem; font-weight:600; color:var(--text-normal); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${목표}</div>
+        </div>
+        <div style="background:var(--background-secondary); border-radius:10px; padding:12px;">
+            <div style="font-size:0.58rem; font-weight:700; color:var(--text-faint); letter-spacing:0.05em; margin-bottom:5px;">기간</div>
+            <div style="font-size:0.72rem; font-weight:600; color:var(--text-normal);">${시작일}<br><span style="color:var(--text-faint);">~ ${목표일}</span></div>
+        </div>
+    </div>
+
+    <div style="background:var(--background-secondary); border-radius:10px; padding:14px 16px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <div style="font-size:0.62rem; font-weight:700; color:var(--text-faint); letter-spacing:0.04em;">달성률</div>
+            <div style="font-size:0.78rem; font-weight:800; color:${ROSE};">${rate}% <span style="font-size:0.62rem; color:var(--text-faint); font-weight:400;">(${done} / ${total})</span></div>
+        </div>
+        <div style="background:rgba(0,0,0,0.08); border-radius:100px; height:5px; overflow:hidden;">
+            <div style="background:${ROSE}; width:${rate}%; height:100%; border-radius:100px;"></div>
+        </div>
+    </div>
+</div>
+`;
+```
 
 ```dataviewjs
-const tasks = dv.pages('"05. Tasks"').where(t => t.프로젝트 === dv.current().file.name || String(t.프로젝트) === dv.current().file.name);
-const total = tasks.length;
-const done = tasks.where(t => t.완료여부 === true).length;
-const rate = total > 0 ? Math.round((done / total) * 100) : 0;
-dv.el("div", `<progress value="${rate}" max="100" style="width:100%;"></progress><div style="font-size:0.8rem; margin-top:4px;">달성률 <b>${rate}%</b> (${done}/${total})</div>`);
+const UID = "ptask-" + Math.random().toString(36).substring(2, 7);
+const ROSE = "#d6827d";
+const projectName = dv.current().file.name;
+
+function resolveName(val) {
+    if (!val) return "";
+    if (typeof val === "object" && val.path)
+        return val.path.split("/").pop().replace(/\.md$/, "");
+    return String(val).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim();
+}
+
+const sortLogic = (t) => {
+    let timeRaw = String(t.계획 || "99:99").replace(":", "");
+    if (timeRaw.length === 3) timeRaw = "0" + timeRaw;
+    let prioWeight = 5;
+    const pStr = String(t.중요긴급 || "");
+    if (pStr.includes("중요O + 긴급O")) prioWeight = 1;
+    else if (pStr.includes("중요X + 긴급O")) prioWeight = 2;
+    else if (pStr.includes("중요O + 긴급X")) prioWeight = 3;
+    const catMap = { "집중": 1, "일반": 2, "쉬운": 3, "위임": 4, "일정": 5, "나중에": 6 };
+    return `${timeRaw}-${prioWeight}-${catMap[t.구분] || 7}`;
+};
+
+const allProjTasks = dv.pages('"05. Tasks"').filter(t => {
+    const prop = t.프로젝트;
+    if (!prop) return false;
+    return resolveName(prop) === projectName;
+}).array();
+
+const pendingTasks = allProjTasks
+    .filter(t => !(t.완료여부 === true || String(t.완료여부).toLowerCase() === "true"))
+    .sort((a, b) => sortLogic(a).localeCompare(sortLogic(b)));
+
+const doneTasks = allProjTasks
+    .filter(t => t.완료여부 === true || String(t.완료여부).toLowerCase() === "true")
+    .sort((a, b) => b.file.mtime - a.file.mtime);
+
+function makeTaskRow(t, isDone) {
+    const pStr = String(t.중요긴급 || "");
+    let pColor = "var(--text-faint)";
+    if (pStr.includes("중요O + 긴급O")) pColor = "#e64553";
+    else if (pStr.includes("중요X + 긴급O")) pColor = "#f2cdcd";
+    const catColors = { "집중": ROSE, "일반": "#4caf7d", "쉬운": "#8a81a3", "위임": "#f0a500", "일정": "#437bff", "나중에": "#999" };
+    const catColor = catColors[String(t.구분 || "").trim()] || "var(--text-faint)";
+    const title = t.제목 || t.file.name;
+    const dateStr = t.날짜 ? String(t.날짜).substring(0, 10) : "-";
+    const timeStr = t.계획 || "-";
+    return `<div style="display:grid; grid-template-columns:2fr 0.6fr 0.6fr 0.9fr; gap:8px; align-items:center;
+        padding:8px 10px; border-radius:8px; margin-bottom:4px; background:var(--background-secondary);
+        opacity:${isDone ? "0.55" : "1"}; ${isDone ? "text-decoration:line-through;" : ""}">
+        <div style="font-size:0.72rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            <a class="internal-link" href="${t.file.path}" style="color:var(--text-normal); text-decoration:none;">${title}</a>
+        </div>
+        <div style="font-size:0.62rem; font-weight:700; color:${catColor};">${t.구분 || "-"}</div>
+        <div style="font-size:0.62rem; color:var(--text-faint);">${timeStr}</div>
+        <div style="font-size:0.62rem; color:var(--text-faint);">${dateStr}</div>
+    </div>`;
+}
+
+const colHeader = `<div style="display:grid; grid-template-columns:2fr 0.6fr 0.6fr 0.9fr; gap:8px;
+    padding:2px 10px; margin-bottom:6px;">
+    ${["제목","구분","계획","날짜"].map(h =>
+        `<div style="font-size:0.58rem; font-weight:700; color:var(--text-faint); letter-spacing:0.04em;">${h}</div>`
+    ).join("")}
+</div>`;
+
+const html = `
+<div id="${UID}" style="font-family:var(--font-interface); padding:10px 0;">
+
+    <!-- Toggle Header -->
+    <div id="${UID}-toggle" style="display:flex; justify-content:space-between; align-items:center;
+        cursor:pointer; padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.07); user-select:none;">
+        <div style="font-weight:800; font-size:1.3rem; color:${ROSE}; letter-spacing:0.06em;">할일</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <span style="font-size:0.62rem; color:var(--text-faint);">${pendingTasks.length}개 진행중 · ${doneTasks.length}개 완료</span>
+            <span id="${UID}-chevron" style="font-size:0.7rem; color:${ROSE}; transition:transform 0.25s; display:inline-block;">▼</span>
+        </div>
+    </div>
+
+    <!-- Toggle Body -->
+    <div id="${UID}-body" style="padding-top:16px;">
+
+        <!-- Main Tabs: 추가 / 계획 -->
+        <div style="display:flex; gap:20px; border-bottom:1px solid rgba(0,0,0,0.06); margin-bottom:16px;">
+            <div class="${UID}-mtab" data-panel="${UID}-add-panel"
+                style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:700; color:${ROSE};">추가</div>
+            <div class="${UID}-mtab" data-panel="${UID}-plan-panel"
+                style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:500; color:#8a81a3;">계획</div>
+        </div>
+
+        <!-- 추가 Panel -->
+        <div id="${UID}-add-panel">
+            <!-- Sub header: sub-tabs + add button -->
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="display:flex; gap:0; border-radius:8px; overflow:hidden; background:var(--background-secondary);">
+                    <div class="${UID}-stab" data-panel="${UID}-pending-panel"
+                        style="cursor:pointer; font-size:0.72rem; font-weight:700; color:var(--background-primary);
+                        background:${ROSE}; padding:5px 14px;">
+                        할일 <span style="opacity:0.7;">(${pendingTasks.length})</span>
+                    </div>
+                    <div class="${UID}-stab" data-panel="${UID}-done-panel"
+                        style="cursor:pointer; font-size:0.72rem; font-weight:500; color:var(--text-muted);
+                        background:transparent; padding:5px 14px;">
+                        완료한 일 <span style="opacity:0.7;">(${doneTasks.length})</span>
+                    </div>
+                </div>
+                <button id="${UID}-add-btn"
+                    style="background:rgba(214,130,125,0.15); border:1px solid rgba(214,130,125,0.4);
+                    border-radius:6px; padding:4px 12px; font-size:0.65rem; font-weight:700;
+                    color:${ROSE}; cursor:pointer;">+ 추가</button>
+            </div>
+
+            ${colHeader}
+
+            <!-- 할일 Panel -->
+            <div id="${UID}-pending-panel">
+                ${pendingTasks.length > 0
+                    ? pendingTasks.map(t => makeTaskRow(t, false)).join("")
+                    : `<div style="padding:36px; text-align:center; font-size:0.8rem; color:var(--text-faint);">진행 중인 할 일이 없습니다 ✅</div>`}
+            </div>
+
+            <!-- 완료한 일 Panel -->
+            <div id="${UID}-done-panel" style="display:none;">
+                ${doneTasks.length > 0
+                    ? doneTasks.map(t => makeTaskRow(t, true)).join("")
+                    : `<div style="padding:36px; text-align:center; font-size:0.8rem; color:var(--text-faint);">완료된 할 일이 없습니다</div>`}
+            </div>
+        </div>
+
+        <!-- 계획 Panel (Full Calendar) -->
+        <div id="${UID}-plan-panel" style="display:none; min-height:500px;">
+            <div id="${UID}-cal"></div>
+        </div>
+
+    </div>
+</div>
+`;
+
+const _wrap = dv.el("div", "");
+_wrap.innerHTML = html;
+const _root = _wrap.querySelector("#" + UID);
+
+// Full Calendar embed
+try {
+    const { MarkdownRenderer } = require("obsidian");
+    const calTarget = _root ? _root.querySelector("#" + UID + "-cal") : null;
+    if (calTarget) {
+        await MarkdownRenderer.render(
+            app,
+            "```full-calendar\n{}\n```",
+            calTarget,
+            dv.current().file.path,
+            dv.component
+        );
+    }
+} catch(e) {
+    const calTarget = _root ? _root.querySelector("#" + UID + "-cal") : null;
+    if (calTarget) calTarget.innerHTML = `<div style="padding:40px; text-align:center; font-size:0.8rem; color:var(--text-faint);">Full Calendar 플러그인을 확인해주세요.</div>`;
+}
+
+setTimeout(() => {
+    const root = _root || dv.container.querySelector("#" + UID);
+    if (!root) return;
+
+    // Toggle collapse
+    const toggleBtn = root.querySelector("#" + UID + "-toggle");
+    const body = root.querySelector("#" + UID + "-body");
+    const chevron = root.querySelector("#" + UID + "-chevron");
+    if (toggleBtn && body && chevron) {
+        toggleBtn.addEventListener("click", () => {
+            const isOpen = body.style.display !== "none";
+            body.style.display = isOpen ? "none" : "block";
+            chevron.style.transform = isOpen ? "rotate(-90deg)" : "rotate(0deg)";
+        });
+    }
+
+    // + 추가 button
+    const addBtn = root.querySelector("#" + UID + "-add-btn");
+    if (addBtn) {
+        addBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            app.commands.executeCommandById("quickadd:choice:New Task");
+        });
+    }
+
+    // Main tabs: 추가 / 계획
+    const mainTabs = root.querySelectorAll("." + UID + "-mtab");
+    mainTabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            mainTabs.forEach(t => { t.style.color = "#8a81a3"; t.style.fontWeight = "500"; });
+            tab.style.color = ROSE; tab.style.fontWeight = "700";
+            mainTabs.forEach(t => {
+                const panelId = t.dataset.panel;
+                const panel = root.querySelector("#" + panelId);
+                if (panel) panel.style.display = (panelId === tab.dataset.panel) ? "block" : "none";
+            });
+        });
+    });
+
+    // Sub tabs: 할일 / 완료한 일
+    const subTabs = root.querySelectorAll("." + UID + "-stab");
+    subTabs.forEach(tab => {
+        tab.addEventListener("click", () => {
+            subTabs.forEach(t => {
+                t.style.background = "transparent";
+                t.style.color = "var(--text-muted)";
+                t.style.fontWeight = "500";
+            });
+            tab.style.background = ROSE;
+            tab.style.color = "var(--background-primary)";
+            tab.style.fontWeight = "700";
+            subTabs.forEach(t => {
+                const panelId = t.dataset.panel;
+                const panel = root.querySelector("#" + panelId);
+                if (panel) panel.style.display = (panelId === tab.dataset.panel) ? "block" : "none";
+            });
+        });
+    });
+}, 200);
 ```
 
 ---
@@ -35,111 +309,6 @@ dv.el("div", `<progress value="${rate}" max="100" style="width:100%;"></progress
 
 ---
 
-## ➕ 이 프로젝트에 할 일 추가
-
-```button
-name ✅ 새 할 일 만들기
-type command
-action QuickAdd: New Task
-color default
-```
-
----
-
-## 📋 할 일
-```dataviewjs
-const ROSEWATER = "#e6aba9";
-const projectName = dv.current().file.name;
-const TASKS_PATH = '"05. Tasks"';
-
-// 1. 데이터 수집 로직 강화
-const allTasks = dv.pages(TASKS_PATH).filter(t => {
-    const prop = t.프로젝트;
-    if (!prop) return false;
-    // 링크 형태와 문자열 형태 모두 대응
-    const nameMatch = prop.path ? prop.fileName === projectName : String(prop).replace(/[\[\]]/g, "").trim() === projectName;
-    return nameMatch;
-}).array();
-
-// 2. 레이아웃 (디자인 유지)
-const container = dv.el("div", "");
-container.style.display = "grid";
-container.style.gridTemplateColumns = "320px 1fr";
-container.style.gap = "25px";
-
-// [좌측 패널]
-const leftPanel = container.createDiv({ style: "border-right: 1px solid #eee; padding-right: 15px;" });
-leftPanel.innerHTML = `<h3 style="color:${ROSEWATER}; font-size:1rem; margin-bottom:15px;">미배정 할 일 📋</h3>`;
-const listArea = leftPanel.createDiv({ style: "display:grid; gap:10px; max-height:550px; overflow-y:auto;" });
-
-// [우측 패널]
-const rightPanel = container.createDiv();
-rightPanel.innerHTML = `
-    <div style="display:flex; justify-content:flex-end; gap:10px; margin-bottom:15px;">
-        <button id="view-week" style="font-size:0.7rem; padding:4px 12px; border-radius:15px; border:1px solid ${ROSEWATER}; background:${ROSEWATER}1A; color:${ROSEWATER};">Weekly</button>
-        <button id="view-month" style="font-size:0.7rem; padding:4px 12px; border-radius:15px; border:1px solid #eee; color:#888;">Monthly</button>
-    </div>
-    <div id="cal-render-area" style="background:rgba(245,234,224,0.3); border:2px solid ${ROSEWATER}4D; border-radius:15px; min-height:500px; padding:20px; text-align:center;">
-        <div style="font-size:2rem; margin-top:150px;">📅</div>
-        <div style="font-size:0.9rem; font-weight:700; color:#444;">계획 캘린더 영역</div>
-        <p style="font-size:0.7rem; color:#8a81a3; margin-top:10px;">왼쪽 카드를 드래그하여 날짜를 계획하세요.</p>
-    </div>
-`;
-
-// 3. 리스트 렌더링 (디버깅 포함)
-const renderList = () => {
-    // 날짜가 없거나(null/undefined/""), 완료여부가 true가 아닌 것들 필터링
-    const unscheduled = allTasks.filter(t => {
-        const hasNoDate = !t.날짜 || String(t.날짜).trim() === "";
-        const isNotDone = t.완료여부 !== true; 
-        return hasNoDate && isNotDone;
-    });
-
-    if (allTasks.length === 0) {
-        listArea.innerHTML = `<div style="font-size:0.75rem; color:#ff9b9b;">⚠️ 프로젝트 연결된 파일 0개<br>(속성 '프로젝트' 확인 필요)</div>`;
-    } else if (unscheduled.length === 0) {
-        listArea.innerHTML = `<div style="font-size:0.75rem; color:#999; text-align:center; padding-top:50px;">미배정된 할 일이 없습니다.</div>`;
-    } else {
-        listArea.innerHTML = unscheduled.map(t => `
-            <div draggable="true" style="background:var(--background-primary); border:1.5px solid #eee; border-radius:10px; padding:12px; cursor:grab; font-size:0.8rem; font-weight:700;">
-                <a class="internal-link" href="${t.file.path}">${t.file.name}</a>
-                <div style="font-size:0.6rem; color:#aaa; font-weight:400; margin-top:4px;"># ${t.구분 || '태그없음'}</div>
-            </div>
-        `).join("");
-    }
-};
-
-renderList();
-```
-
-## ✅ 완료된 할 일
-
-```dataview
-TABLE 구분 AS "구분", 날짜 AS "날짜"
-FROM "05. Tasks"
-WHERE (프로젝트 = this.file.link OR 프로젝트 = this.file.name) AND 완료여부 = true
-SORT file.mtime DESC
-LIMIT 5
-```
-
-## 🚧 장애물
-
-```dataview
-LIST
-FROM "09. Bottlenecks"
-WHERE (프로젝트 = this.file.link OR 프로젝트 = this.file.name) AND 장애물 상태 != "해결"
-```
-
-## 🔗 관련 리소스
-
-```dataview
-LIST
-FROM "06. Resources"
-WHERE contains(프로젝트, this.file.link) OR contains(프로젝트, this.file.name)
-SORT file.mtime DESC
-LIMIT 8
-```
-
-## 📝 작업 기록
+## 작업 기록
 
 *작업하면서 생긴 결정사항, 배운 것, 메모를 남겨두세요.*
