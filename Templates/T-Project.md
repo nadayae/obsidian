@@ -222,27 +222,30 @@ const _wrap = dv.el("div", "");
 _wrap.innerHTML = html;
 const _root = _wrap.querySelector("#" + UID);
 
-// Full Calendar embed
-try {
-    const { MarkdownRenderer } = require("obsidian");
-    const calTarget = _root ? _root.querySelector("#" + UID + "-cal") : null;
-    if (calTarget) {
-        await MarkdownRenderer.render(
-            app,
-            "```full-calendar\n{}\n```",
-            calTarget,
-            dv.current().file.path,
-            dv.component
-        );
-    }
-} catch(e) {
-    const calTarget = _root ? _root.querySelector("#" + UID + "-cal") : null;
-    if (calTarget) calTarget.innerHTML = `<div style="padding:40px; text-align:center; font-size:0.8rem; color:var(--text-faint);">Full Calendar 플러그인을 확인해주세요.</div>`;
-}
-
 setTimeout(() => {
     const root = _root || dv.container.querySelector("#" + UID);
     if (!root) return;
+
+    // Full Calendar: 계획 탭 클릭 시 lazy 렌더링
+    let calRendered = false;
+    async function renderCalendar() {
+        if (calRendered) return;
+        calRendered = true;
+        const calEl = root.querySelector("#" + UID + "-cal");
+        if (!calEl) return;
+        try {
+            const { MarkdownRenderer } = require("obsidian");
+            await MarkdownRenderer.render(
+                app,
+                "```full-calendar\n{}\n```",
+                calEl,
+                dv.current().file.path,
+                dv.component
+            );
+        } catch(e) {
+            calEl.innerHTML = `<div style="padding:40px; text-align:center; font-size:0.8rem; color:var(--text-faint);">Full Calendar 플러그인을 확인해주세요.</div>`;
+        }
+    }
 
     // Toggle collapse
     const toggleBtn = root.querySelector("#" + UID + "-toggle");
@@ -276,6 +279,10 @@ setTimeout(() => {
                 const panel = root.querySelector("#" + panelId);
                 if (panel) panel.style.display = (panelId === tab.dataset.panel) ? "block" : "none";
             });
+            // 계획 탭일 때 캘린더 렌더링
+            if (tab.dataset.panel === UID + "-plan-panel") {
+                renderCalendar();
+            }
         });
     });
 
