@@ -454,6 +454,121 @@ setTimeout(() => {
 }, 200);
 ```
 
+```dataviewjs
+const UID = "pres-" + Math.random().toString(36).substring(2, 7);
+const ROSE = "#d6827d";
+const projectName = dv.current().file.name;
+
+function resolveName(val) {
+    if (!val) return "";
+    if (typeof val === "object" && val.path)
+        return val.path.split("/").pop().replace(/\.md$/, "");
+    return String(val).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim();
+}
+
+const allRes = dv.pages('"06. Resources"').filter(r => {
+    const prop = r.프로젝트;
+    if (!prop) return false;
+    return resolveName(prop) === projectName;
+}).array().sort((a, b) => b.file.mtime - a.file.mtime);
+
+const tabs = [
+    { id: "related", label: "관련 자료", filter: r => String(r.중요도 || "").trim() !== "아카이브" },
+    { id: "archive", label: "아카이브",  filter: r => String(r.중요도 || "").trim() === "아카이브" },
+];
+
+const 분류Colors = { "스크랩": "#437bff", "노트": "#4caf7d", "인사이트": ROSE, "간단한 메모": "#8a81a3", "문장수집": "#f0a500" };
+
+function makeResRow(r) {
+    const title = r.제목 || r.file.name;
+    const 분류 = String(r.분류 || "-").trim();
+    const 중요도 = String(r.중요도 || "-").trim();
+    const tags = Array.isArray(r.태그) ? r.태그.map(t => String(t).trim()) : (r.태그 ? [String(r.태그).trim()] : []);
+    const 분류Color = 분류Colors[분류] || "var(--text-faint)";
+    const 중요도Color = 중요도 === "중요 자료" ? ROSE : 중요도 === "정리자료" ? "#4caf7d" : "var(--text-faint)";
+    return `<div style="display:grid; grid-template-columns:2fr 0.7fr 0.7fr 1fr; gap:8px; align-items:center;
+        padding:8px 10px; border-radius:8px; margin-bottom:4px; background:var(--background-secondary);">
+        <div style="font-size:0.72rem; font-weight:600; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            <a class="internal-link" href="${r.file.path}" style="color:var(--text-normal); text-decoration:none;">${title}</a>
+        </div>
+        <div style="font-size:0.62rem; font-weight:700; color:${분류Color};">${분류}</div>
+        <div style="font-size:0.62rem; color:${중요도Color}; font-weight:${중요도 === "중요 자료" ? "700" : "400"};">${중요도}</div>
+        <div style="display:flex; gap:4px; flex-wrap:wrap;">
+            ${tags.map(t => `<span style="font-size:0.55rem; font-weight:700; padding:1px 6px; border-radius:100px;
+                background:rgba(214,130,125,0.12); color:${ROSE};">${t}</span>`).join("")}
+        </div>
+    </div>`;
+}
+
+const colHeader = `<div style="display:grid; grid-template-columns:2fr 0.7fr 0.7fr 1fr; gap:8px;
+    padding:2px 10px; margin-bottom:6px;">
+    ${["제목","분류","중요도","태그"].map(h =>
+        `<div style="font-size:0.58rem; font-weight:700; color:var(--text-faint); letter-spacing:0.04em;">${h}</div>`
+    ).join("")}
+</div>`;
+
+const html = `
+<div id="${UID}" style="font-family:var(--font-interface); padding:10px 0;">
+    <div style="display:flex; justify-content:space-between; align-items:center;
+        padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.07); margin-bottom:16px;">
+        <div style="font-weight:800; font-size:1.3rem; color:${ROSE}; letter-spacing:0.06em;">자료</div>
+        <button id="${UID}-add-btn" style="background:rgba(214,130,125,0.15); border:1px solid rgba(214,130,125,0.4);
+            border-radius:6px; padding:4px 12px; font-size:0.65rem; font-weight:700;
+            color:${ROSE}; cursor:pointer;">+ 추가</button>
+    </div>
+    <div style="display:flex; gap:0; border-radius:8px; overflow:hidden; background:var(--background-secondary);
+        width:fit-content; margin-bottom:16px;">
+        ${tabs.map((t, i) => `<div class="${UID}-tab" data-id="${t.id}"
+            style="cursor:pointer; font-size:0.72rem; font-weight:${i===0?"700":"500"};
+            color:${i===0?"var(--background-primary)":"var(--text-muted)"};
+            background:${i===0?ROSE:"transparent"}; padding:5px 16px;">${t.label}</div>`).join("")}
+    </div>
+    ${colHeader}
+    <div id="${UID}-area"></div>
+</div>`;
+
+const _wrap = dv.el("div", "");
+_wrap.innerHTML = html;
+const _root = _wrap.querySelector("#" + UID);
+
+function renderRes(tabId) {
+    const area = _root.querySelector("#" + UID + "-area");
+    const tab = tabs.find(t => t.id === tabId);
+    const filtered = allRes.filter(tab.filter);
+    if (filtered.length === 0) {
+        area.innerHTML = `<div style="padding:36px; text-align:center; font-size:0.8rem; color:var(--text-faint);">자료가 없습니다</div>`;
+        return;
+    }
+    area.innerHTML = filtered.map(r => makeResRow(r)).join("");
+}
+
+renderRes("related");
+
+setTimeout(() => {
+    if (!_root) return;
+
+    const addBtn = _root.querySelector("#" + UID + "-add-btn");
+    if (addBtn) addBtn.addEventListener("click", () => {
+        app.commands.executeCommandById("quickadd:choice:sb-new-resource");
+    });
+
+    const tabEls = _root.querySelectorAll("." + UID + "-tab");
+    tabEls.forEach(el => {
+        el.addEventListener("click", () => {
+            tabEls.forEach(t => {
+                t.style.background = "transparent";
+                t.style.color = "var(--text-muted)";
+                t.style.fontWeight = "500";
+            });
+            el.style.background = ROSE;
+            el.style.color = "var(--background-primary)";
+            el.style.fontWeight = "700";
+            renderRes(el.dataset.id);
+        });
+    });
+}, 200);
+```
+
 ## 목적 & 범위
 
 *이 프로젝트를 통해 무엇을 달성하려 하는지, 어디까지가 범위인지 정의해주세요.*
