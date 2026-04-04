@@ -375,8 +375,8 @@ const containerId = "timeline-" + Date.now();
 let html = `<div id="${containerId}" style="background: ${BG_COLOR}; border-radius: 8px; font-family: var(--font-interface); color: var(--text-normal); overflow: hidden;">`;
 
 // 상단 헤더
-html += `<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; padding: 15px 15px 0;">
-            <div style="font-weight: 800; font-size: 1.3rem; color:#d6827d;; letter-spacing: 0.06em;">프로젝트 타임라인 <span style="font-weight: 400; font-size: 0.6rem; color: var(--text-faint); margin-left: 8px;">${today.year}.${today.toFormat('LL')}</span></div>
+html += `<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; padding: 0px05px 0;">
+            <div style="font-weight: 800; font-size: 1.3rem; marjin-top=16px; color:#d6827d;; letter-spacing: 0.06em;">프로젝트 타임라인 <span style="font-weight: 400; font-size: 0.6rem; color: var(--text-faint); margin-left: 8px;">${today.year}.${today.toFormat('LL')}</span></div>
             <div style="font-size: 0.55rem; color: var(--text-faint); text-transform: uppercase;">Shift + Scroll to Navigate</div>
          </div>`;
 
@@ -468,7 +468,7 @@ const archiveStatuses = ["중단", "완료"];
 
 // UI 생성 (사용자님이 지정하신 디자인 그대로)
 let html = `<div id="${FIXED_ID}" style="font-family: var(--font-interface); padding: 10px 0;">
-    <div style="font-weight: 800; font-size: 0.75rem; color: rgb(var(--ctp-subtext0)); letter-spacing: 0.06em; margin-bottom: 14px;">프로젝트</div>
+    <div style="font-weight: 800; font-size: 1.3rem; color:#d6827d; letter-spacing: 0.06em; margin-bottom: 14px; margin-top: 16px;">프로젝트</div>
     <div style="display: flex; gap: 20px; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 0px; margin-bottom: 25px;">
         <div class="ntab active" data-target="all" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${ROSEWATER};">
             <span style="font-size: 0.85rem;">目</span><span style="font-size: 0.85rem; font-weight: 700;">전체</span>
