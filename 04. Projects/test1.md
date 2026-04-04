@@ -14,6 +14,7 @@ url: ""
 ```dataviewjs
 const ROSE = "#d6827d";
 const p = dv.current();
+if (!p || !p.file) { dv.el("div",""); throw "loading"; }
 const projectName = p.file.name;
 
 function resolveName(val) {
@@ -80,7 +81,9 @@ _infoWrap.innerHTML = `
 ```dataviewjs
 const UID = "ptask-" + Math.random().toString(36).substring(2, 7);
 const ROSE = "#d6827d";
-const projectName = dv.current().file.name;
+const _cur1 = dv.current();
+if (!_cur1 || !_cur1.file) { dv.el("div",""); throw "loading"; }
+const projectName = _cur1.file.name;
 
 function resolveName(val) {
     if (!val) return "";
@@ -250,7 +253,9 @@ setTimeout(() => {
 ```dataviewjs
 const UID = "dvcal-" + Math.random().toString(36).substring(2, 7);
 const ROSE = "#d6827d";
-const projectName = dv.current().file.name;
+const _cur2 = dv.current();
+if (!_cur2 || !_cur2.file) { dv.el("div",""); throw "loading"; }
+const projectName = _cur2.file.name;
 
 function resolveName(val) {
     if (!val) return "";
@@ -457,7 +462,9 @@ setTimeout(() => {
 ```dataviewjs
 const UID = "pres-" + Math.random().toString(36).substring(2, 7);
 const ROSE = "#d6827d";
-const projectName = dv.current().file.name;
+const _cur3 = dv.current();
+if (!_cur3 || !_cur3.file) { dv.el("div",""); throw "loading"; }
+const projectName = _cur3.file.name;
 
 function resolveName(val) {
     if (!val) return "";
