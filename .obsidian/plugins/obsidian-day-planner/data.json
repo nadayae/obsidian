@@ -10,7 +10,7 @@
   "centerNeedle": false,
   "plannerHeading": "Day planner",
   "plannerHeadingLevel": 1,
-  "timelineColored": false,
+  "timelineColored": true,
   "timelineStartColor": "#006466",
   "timelineEndColor": "#4d194d",
   "timestampFormat": "HH:mm",

@@ -164,6 +164,16 @@
               "icon": "lucide-list",
               "title": "무제 2 의 개요"
             }
+          },
+          {
+            "id": "310c3a40b64cbe40",
+            "type": "leaf",
+            "state": {
+              "type": "planner-timeline",
+              "state": {},
+              "icon": "calendar-with-checkmark",
+              "title": "Timeline"
+            }
           }
         ],
         "currentTab": 4
@@ -185,20 +195,24 @@
       "command-palette:명령어 팔레트 열기": false,
       "bases:새 베이스 생성하기": false,
       "templater-obsidian:Templater": false,
-      "obsidian-full-calendar:Open Full Calendar": false
+      "obsidian-full-calendar:Open Full Calendar": false,
+      "obsidian-day-planner:Open Timeline": false,
+      "obsidian-day-planner:Open Multi-Day View": false
     }
   },
   "active": "22a6f729d664436c",
   "lastOpenFiles": [
     "04. Projects/무제 2.md",
+    "04. Projects/Untitled 1.md",
     "04. Projects/무제 1.md",
-    "05. Tasks/무제.md",
+    "04. Projects/딥러닝 공부.md",
+    "05. Tasks/이쁘게 만들고 있는 중.md",
     "Templates/T-Project.md",
+    "05. Tasks/무제.md",
     "Templates/T-Project.md.tmp.17356.1775291718907",
     "Templates/T-Monthly.md",
     "00. Dashboard/Second Brain.md",
     "02. Boxes/자기관리.md",
-    "04. Projects/딥러닝 공부.md",
     "Templates/T-Daily.md",
     "00. Dashboard/05. Tasks.md",
     "05. Tasks/애국가.md",
@@ -217,9 +231,7 @@
     "00. Dashboard/Second Brain.md.tmp.17356.1775278132068",
     "00. Dashboard/Second Brain.md.tmp.17356.1775278121541",
     "03. Goals/나만의 세컨드 브레인 구축하기.md",
-    "05. Tasks/이쁘게 만들고 있는 중.md",
     "05. Tasks/대시보드 및 각 템플릿 구조 만들기.md",
-    "04. Projects/Untitled 1.md",
     "05. Tasks/Task_1775127360365.md",
     "05. Tasks/Task_1775119908585.md",
     "05. Tasks/Task_1775120010165.md",
