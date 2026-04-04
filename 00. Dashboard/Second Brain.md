@@ -375,7 +375,7 @@ const containerId = "timeline-" + Date.now();
 let html = `<div id="${containerId}" style="background: ${BG_COLOR}; border-radius: 8px; font-family: var(--font-interface); color: var(--text-normal); overflow: hidden;">`;
 
 // 상단 헤더
-html += `<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; padding: 0px05px 0;">
+html += `<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; padding: 0px 0px 0;">
             <div style="font-weight: 800; font-size: 1.3rem; marjin-top=16px; color:#d6827d;; letter-spacing: 0.06em;">프로젝트 타임라인 <span style="font-weight: 400; font-size: 0.6rem; color: var(--text-faint); margin-left: 8px;">${today.year}.${today.toFormat('LL')}</span></div>
             <div style="font-size: 0.55rem; color: var(--text-faint); text-transform: uppercase;">Shift + Scroll to Navigate</div>
          </div>`;
