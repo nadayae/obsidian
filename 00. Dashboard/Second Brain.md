@@ -466,18 +466,61 @@ const ROSEWATER = "#e6aba9";
 const activeStatuses = ["계획전", "계획", "진행중", "집중"];
 const archiveStatuses = ["중단", "완료"];
 
-// UI 생성 (사용자님이 지정하신 디자인 그대로)
+// 공통: task-project 매칭 함수
+const getLinkedTasks = (p) => allTasksFiles.filter(t => {
+    const prop = t.프로젝트;
+    if (!prop || prop === "") return false;
+    let name = (typeof prop === 'object' && prop.path)
+        ? prop.path.split('/').pop().replace(/\.md$/, '')
+        : String(prop).replace(/[\[\]"]/g, "").trim();
+    return name === p.file.name;
+});
+
+// 공통: 프로젝트 카드 HTML 생성
+const makeCard = (p) => {
+    const linkedTasks = getLinkedTasks(p);
+    const totalTasks = linkedTasks.length;
+    const completedTasks = linkedTasks.filter(t =>
+        t.완료여부 === true || String(t.완료여부).toLowerCase() === "true"
+    ).length;
+    const remainingTasks = totalTasks - completedTasks;
+    const calcProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
+    const eDate = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
+    let dDayText = "D-Day 미정";
+    if (eDate) {
+        const diff = Math.ceil(eDate.diff(today, 'days').days);
+        dDayText = diff === 0 ? "D-Day" : (diff > 0 ? `D-${diff}` : `D+${Math.abs(diff)}`);
+    }
+    return `<div class="k-card" style="background: var(--background-primary); border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 16px; margin-bottom: 15px;">
+        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+            <a class="internal-link" href="${p.file.path}" style="font-size: 0.85rem; font-weight: 700; color: var(--text-normal); text-decoration: none;">${p.file.name}</a>
+        </div>
+        <div style="display: inline-block; background: rgba(67, 123, 255, 0.1); color: #437bff; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-bottom: 12px;">${dDayText}</div>
+        <div style="margin-bottom: 12px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <span style="font-size: 0.7rem; font-weight: 700; color: #8a81a3; width: 35px;">${calcProgress}%</span>
+                <div style="flex-grow: 1; background: #eee; height: 6px; border-radius: 10px; overflow: hidden;">
+                    <div style="width: ${calcProgress}%; background: ${ROSEWATER}; height: 100%;"></div>
+                </div>
+            </div>
+        </div>
+        <div style="font-size: 0.65rem; color: #666; margin-bottom: 12px; font-weight: 500;">
+            총 작업: ${totalTasks} | 남은 작업: ${remainingTasks} | ${calcProgress}% 달성
+        </div>
+        <div style="font-size: 0.7rem; color: #444; font-weight: 600;">${p.목표 || '미지정'}</div>
+    </div>`;
+};
+
+// UI 생성
 let html = `<div id="${FIXED_ID}" style="font-family: var(--font-interface); padding: 10px 0;">
     <div style="font-weight: 800; font-size: 1.3rem; color:#d6827d; letter-spacing: 0.06em; margin-bottom: 14px; margin-top: 16px;">프로젝트</div>
     <div style="display: flex; gap: 20px; border-bottom: 1px solid rgba(0,0,0,0.08); padding-bottom: 0px; margin-bottom: 25px;">
-        <div class="ntab active" data-target="all" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: ${ROSEWATER};">
-            <span style="font-size: 0.85rem;">目</span><span style="font-size: 0.85rem; font-weight: 700;">전체</span>
-        </div>
-        <div class="ntab" data-target="archive" style="cursor: pointer; padding: 8px 4px; display: flex; align-items: center; gap: 6px; position: relative; color: #8a81a3;">
-            <span style="font-size: 0.85rem;">📦</span><span style="font-size: 0.85rem; font-weight: 500;">아카이브</span>
-        </div>
+        <div class="ntab active" data-target="all"     style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:700; color:${ROSEWATER};">전체</div>
+        <div class="ntab"        data-target="today"   style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:500; color:#8a81a3;">오늘</div>
+        <div class="ntab"        data-target="bygoal"  style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:500; color:#8a81a3;">목표별</div>
+        <div class="ntab"        data-target="archive" style="cursor:pointer; padding:8px 4px; font-size:0.85rem; font-weight:500; color:#8a81a3;">아카이브</div>
     </div>
-    <div id="display-area" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 18px; min-width: 950px; overflow-x: auto; padding-bottom: 15px;"></div>
+    <div id="display-area" style="gap: 18px; overflow-x: auto; padding-bottom: 15px;"></div>
 </div>`;
 
 dv.el("div", html);
@@ -486,87 +529,83 @@ const renderK = (target) => {
     const root = document.getElementById(FIXED_ID);
     if (!root) return;
     const display = root.querySelector("#display-area");
-    
-    let filtered = projects.filter(p => p.file.name !== "Project Dashboard");
-    let currentStatuses = target === "archive" ? archiveStatuses : activeStatuses;
-    
-    display.style.gridTemplateColumns = `repeat(${currentStatuses.length}, 1fr)`;
+    const filtered = projects.filter(p => p.file.name !== "Project Dashboard");
 
-    let columns = "";
-    currentStatuses.forEach(status => {
-        // [수정] 상태값 비교 시 앞뒤 공백 제거하여 매칭 확률 높임
+    // ── 오늘 탭 (시작일 <= 오늘 <= 목표일 인 프로젝트) ───
+    if (target === "today") {
+        const todayProjects = filtered.filter(p => {
+            const parse = v => v ? dv.date(String(v).replace(/[\[\]]/g, "").trim()) : null;
+            const s = parse(p.시작일);
+            const e = parse(p.목표일) || parse(p.종료일);
+            if (!s || !e) return false;
+            return s <= today && today <= e;
+        });
+
+        display.style.display = "grid";
+        display.style.gridTemplateColumns = `repeat(${activeStatuses.length}, 1fr)`;
+        if (todayProjects.length === 0) {
+            display.innerHTML = `<div style="padding:40px; text-align:center; font-size:0.8rem; color:var(--text-faint);">오늘 진행 중인 프로젝트 없음</div>`;
+            return;
+        }
+        display.innerHTML = activeStatuses.map(status => {
+            const cards = todayProjects.filter(p => {
+                const pStatus = String(p.상태 || "").replace(/\s/g, "") || "계획전";
+                return pStatus === status.replace(/\s/g, "");
+            });
+            return `<div class="k-column" style="background:rgba(245,234,224,0.3); border:2px solid rgba(230,171,169,0.4); border-radius:12px; padding:15px;">
+                <div style="font-size:0.7rem; font-weight:800; color:#8a81a3; margin-bottom:20px; display:flex; justify-content:space-between;">
+                    <span>${status}</span>
+                    <span style="background:${ROSEWATER}; color:white; padding:2px 8px; border-radius:100px;">${cards.length}</span>
+                </div>
+                ${cards.map(p => makeCard(p)).join("")}
+            </div>`;
+        }).join("");
+        return;
+    }
+
+    // ── 목표별 탭 ─────────────────────────────────────────
+    if (target === "bygoal") {
+        const activeProjects = filtered.filter(p =>
+            !archiveStatuses.includes(String(p.상태 || "").replace(/\s/g, ""))
+        );
+        const goalMap = {};
+        activeProjects.forEach(p => {
+            const g = String(p.목표 || "미지정").trim();
+            if (!goalMap[g]) goalMap[g] = [];
+            goalMap[g].push(p);
+        });
+        const goals = Object.keys(goalMap);
+        display.style.display = "grid";
+        display.style.gridTemplateColumns = `repeat(${Math.min(goals.length, 4)}, 1fr)`;
+        display.innerHTML = goals.map(g =>
+            `<div style="background:rgba(245,234,224,0.3); border:2px solid rgba(230,171,169,0.4); border-radius:12px; padding:15px;">
+                <div style="font-size:0.7rem; font-weight:800; color:#8a81a3; margin-bottom:16px; display:flex; justify-content:space-between;">
+                    <span>${g}</span>
+                    <span style="background:${ROSEWATER}; color:white; padding:2px 8px; border-radius:100px;">${goalMap[g].length}</span>
+                </div>
+                ${goalMap[g].map(p => makeCard(p)).join("")}
+            </div>`
+        ).join("");
+        return;
+    }
+
+    // ── 전체 / 아카이브 탭 ───────────────────────────────
+    const currentStatuses = target === "archive" ? archiveStatuses : activeStatuses;
+    display.style.display = "grid";
+    display.style.gridTemplateColumns = `repeat(${currentStatuses.length}, 1fr)`;
+    display.innerHTML = currentStatuses.map(status => {
         const cards = filtered.filter(p => {
             const pStatus = String(p.상태 || "").replace(/\s/g, "") || "계획전";
             return pStatus === status.replace(/\s/g, "");
         });
-        
-        columns += `<div class="k-column" style="background: rgba(245, 234, 224, 0.3); border: 2px solid rgba(230, 171, 169, 0.4); border-radius: 12px; padding: 15px;">
-            <div style="font-size: 0.7rem; font-weight: 800; color: #8a81a3; margin-bottom: 20px; display: flex; justify-content: space-between;">
-                <span>${status}</span><span style="background: ${ROSEWATER}; color: white; padding: 2px 8px; border-radius: 100px;">${cards.length}</span>
-            </div>`;
-
-        cards.forEach(p => {
-            // [연동 핵심] 프로젝트 이름 매칭 로직 강화
-            const linkedTasks = allTasksFiles.filter(t => {
-                const prop = t.프로젝트;
-                if (!prop || prop === "") return false;
-
-                let taskProjName;
-                if (typeof prop === 'object' && prop.path) {
-                    // 링크 객체 ([[프로젝트명]]): path에서 파일명 추출
-                    taskProjName = prop.path.split('/').pop().replace(/\.md$/, '');
-                } else {
-                    // 텍스트: 대괄호 및 따옴표 제거
-                    taskProjName = String(prop).replace(/[\[\]"]/g, "").trim();
-                }
-                return taskProjName === p.file.name;
-            });
-
-            const totalTasks = linkedTasks.length;
-            // 완료여부 필드 기준으로 완료 판단
-            const completedTasks = linkedTasks.filter(t =>
-                t.완료여부 === true || String(t.완료여부).toLowerCase() === "true"
-            ).length;
-            
-            const remainingTasks = totalTasks - completedTasks;
-            const calcProgress = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
-            
-            const eDate = p.목표일 ? dv.date(String(p.목표일).replace(/[\[\]]/g, "")) : null;
-            let dDayText = "D-Day 미정";
-            if (eDate) {
-                const diff = Math.ceil(eDate.diff(today, 'days').days);
-                dDayText = diff === 0 ? "D-Day" : (diff > 0 ? `D-${diff}` : `D+${Math.abs(diff)}`);
-            }
-
-            // 디자인 요소 (사용자님 요청에 따라 카드 디자인 유지)
-            columns += `
-                <div class="k-card" style="background: var(--background-primary); border: 1px solid rgba(0,0,0,0.1); border-radius: 10px; padding: 16px; margin-bottom: 15px;">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
-                        <a class="internal-link" href="${p.file.path}" style="font-size: 0.85rem; font-weight: 700; color: var(--text-normal); text-decoration: none;">${p.file.name}</a>
-                    </div>
-                    <div style="display: inline-block; background: rgba(67, 123, 255, 0.1); color: #437bff; font-size: 0.65rem; font-weight: 800; padding: 2px 6px; border-radius: 4px; margin-bottom: 12px;">${dDayText}</div>
-                    
-                    <div style="margin-bottom: 12px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <span style="font-size: 0.7rem; font-weight: 700; color: #8a81a3; width: 35px;">${calcProgress}%</span>
-                            <div style="flex-grow: 1; background: #eee; height: 6px; border-radius: 10px; overflow: hidden;">
-                                <div style="width: ${calcProgress}%; background: ${ROSEWATER}; height: 100%;"></div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div style="font-size: 0.65rem; color: #666; margin-bottom: 12px; font-weight: 500;">
-                        총 작업: ${totalTasks} | 남은 작업: ${remainingTasks} | ${calcProgress}% 달성
-                    </div>
-
-                    <div style="display: center; align-items: center; gap: 6px; font-size: 0.7rem; color: #444; font-weight: 600;">
-                        <span>📦</span> <span>${p.목표 || '미지정'}</span>
-                    </div>
-                </div>`;
-        });
-        columns += `</div>`;
-    });
-    display.innerHTML = columns;
+        return `<div class="k-column" style="background:rgba(245,234,224,0.3); border:2px solid rgba(230,171,169,0.4); border-radius:12px; padding:15px;">
+            <div style="font-size:0.7rem; font-weight:800; color:#8a81a3; margin-bottom:20px; display:flex; justify-content:space-between;">
+                <span>${status}</span>
+                <span style="background:${ROSEWATER}; color:white; padding:2px 8px; border-radius:100px;">${cards.length}</span>
+            </div>
+            ${cards.map(p => makeCard(p)).join("")}
+        </div>`;
+    }).join("");
 };
 
 setTimeout(() => {
@@ -575,9 +614,10 @@ setTimeout(() => {
         const tabs = root.querySelectorAll(".ntab");
         tabs.forEach(tab => {
             tab.addEventListener("click", () => {
-                tabs.forEach(t => { t.classList.remove("active"); t.style.color = "#8a81a3"; });
+                tabs.forEach(t => { t.classList.remove("active"); t.style.color = "#8a81a3"; t.style.fontWeight = "500"; });
                 tab.classList.add("active");
                 tab.style.color = ROSEWATER;
+                tab.style.fontWeight = "700";
                 renderK(tab.dataset.target);
             });
         });
