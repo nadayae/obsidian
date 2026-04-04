@@ -248,7 +248,7 @@ sections.forEach((sec, i) => {
             grouped.forEach(group => {
                 html += `<div style="background: rgba(var(--ctp-surface0), 0.5); border: 1px solid rgba(var(--ctp-rosewater), 0.15); border-radius: 10px; padding: 12px;">
                             <div style="font-weight: 800; font-size: 0.75rem; color: rgb(var(--ctp-rosewater)); margin-bottom: 10px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.1); padding-bottom: 6px; display: flex; justify-content: space-between;">
-                                <span>📦 ${group.key}</span>
+                                <span>${(() => { const v = group.key; return (!v) ? "미지정" : (typeof v === 'object' && v.path) ? v.path.split('/').pop().replace(/\.md$/, '') : String(v).replace(/[\[\]"]/g,"").trim() || "미지정"; })()}</span>
                                 <span style="font-size: 0.6rem; opacity: 0.5;">Active</span>
                             </div>`;
                 group.rows.forEach(t => {
@@ -361,7 +361,7 @@ const timelineData = projectPages.map(p => {
         name: p.file.name, link: p.file.path,
         start: sDate, end: eDate,
         progress: p.달성률 || p.진행률 || 0,
-        goal: p.목표 || "기타/미지정"
+        goal: (() => { const v = p.목표; return (!v) ? "기타/미지정" : (typeof v === 'object' && v.path) ? v.path.split('/').pop().replace(/\.md$/, '') : String(v).replace(/[\[\]"]/g,"").trim() || "기타/미지정"; })()
     };
 }).filter(p => p !== null);
 
@@ -466,6 +466,14 @@ const ROSEWATER = "#e6aba9";
 const activeStatuses = ["계획전", "계획", "진행중", "집중"];
 const archiveStatuses = ["중단", "완료"];
 
+// 공통: 링크 객체/텍스트 둘 다 이름 추출
+const resolveName = (val, fallback = "미지정") => {
+    if (!val) return fallback;
+    if (typeof val === 'object' && val.path)
+        return val.path.split('/').pop().replace(/\.md$/, '');
+    return String(val).replace(/[\[\]"]/g, "").trim() || fallback;
+};
+
 // 공통: task-project 매칭 함수
 const getLinkedTasks = (p) => allTasksFiles.filter(t => {
     const prop = t.프로젝트;
@@ -507,7 +515,7 @@ const makeCard = (p) => {
         <div style="font-size: 0.65rem; color: #666; margin-bottom: 12px; font-weight: 500;">
             총 작업: ${totalTasks} | 남은 작업: ${remainingTasks} | ${calcProgress}% 달성
         </div>
-        <div style="font-size: 0.7rem; color: #444; font-weight: 600;">${p.목표 || '미지정'}</div>
+        <div style="font-size: 0.7rem; color: #444; font-weight: 600;">${resolveName(p.목표)}</div>
     </div>`;
 };
 
@@ -570,7 +578,7 @@ const renderK = (target) => {
         );
         const goalMap = {};
         activeProjects.forEach(p => {
-            const g = String(p.목표 || "미지정").trim();
+            const g = resolveName(p.목표, "미지정");
             if (!goalMap[g]) goalMap[g] = [];
             goalMap[g].push(p);
         });
@@ -630,13 +638,28 @@ setTimeout(() => {
 ```dataviewjs
 const GOAL_ID = "goal-kanban-" + Math.random().toString(36).substring(2, 7);
 const ROSEWATER_G = "#e6aba9";
+
+// 링크 객체/텍스트 둘 다 이름 추출
+const resolveNameG = (val, fallback = "미지정") => {
+    if (!val) return fallback;
+    if (typeof val === 'object' && val.path)
+        return val.path.split('/').pop().replace(/\.md$/, '');
+    return String(val).replace(/[\[\]"]/g, "").trim() || fallback;
+};
 const allGoals   = dv.pages('"03. Goals"').where(g => g.상태 !== "아카이브").array();
 const allProjects = dv.pages('"04. Projects"').array();
 const allTasks    = dv.pages('"05. Tasks"').array();
 
 // 목표 달성률: 연결된 프로젝트들의 task 완료율 평균
 const goalRate = (goalName) => {
-    const projs = allProjects.filter(p => String(p.목표 || "").trim() === goalName);
+    const projs = allProjects.filter(p => {
+        const val = p.목표;
+        if (!val) return false;
+        const name = (typeof val === 'object' && val.path)
+            ? val.path.split('/').pop().replace(/\.md$/, '')
+            : String(val).replace(/[\[\]"]/g, "").trim();
+        return name === goalName;
+    });
     if (projs.length === 0) return 0;
     let sum = 0;
     projs.forEach(p => {
@@ -657,10 +680,15 @@ const goalRate = (goalName) => {
 const makeGoalCard = (g) => {
     const goalName = String(g.제목 || g.file.name).trim();
 
-    // 연결된 프로젝트
-    const linkedProjects = allProjects.filter(p =>
-        String(p.목표 || "").trim() === goalName || String(p.목표 || "").trim() === g.file.name
-    );
+    // 연결된 프로젝트 (링크 객체 / 텍스트 둘 다 처리)
+    const linkedProjects = allProjects.filter(p => {
+        const val = p.목표;
+        if (!val) return false;
+        const projGoalName = (typeof val === 'object' && val.path)
+            ? val.path.split('/').pop().replace(/\.md$/, '')
+            : String(val).replace(/[\[\]"]/g, "").trim();
+        return projGoalName === goalName || projGoalName === g.file.name;
+    });
     const totalProjects   = linkedProjects.length;
     const doneProjects    = linkedProjects.filter(p => String(p.상태 || "").trim() === "완료").length;
     const remainProjects  = totalProjects - doneProjects;
@@ -729,7 +757,7 @@ const makeGoalCard = (g) => {
         </div>
 
         <div style="display:flex; gap:6px; flex-wrap:wrap;">
-            ${g.박스 ? `<span style="font-size:0.6rem; background:rgba(230,171,169,0.15); border:1px solid rgba(230,171,169,0.4); color:#8a81a3; padding:2px 7px; border-radius:100px;">${g.박스}</span>` : ""}
+            ${g.박스 ? `<span style="font-size:0.6rem; background:rgba(230,171,169,0.15); border:1px solid rgba(230,171,169,0.4); color:#8a81a3; padding:2px 7px; border-radius:100px;">${resolveNameG(g.박스)}</span>` : ""}
             ${g.분기 ? `<span style="font-size:0.6rem; background:rgba(230,171,169,0.15); border:1px solid rgba(230,171,169,0.4); color:#8a81a3; padding:2px 7px; border-radius:100px;">${g.분기}</span>` : ""}
         </div>
     </div>`;
@@ -802,7 +830,7 @@ const renderG = (target) => {
     if (target === "bybox") {
         const bMap = {};
         allGoals.forEach(g => {
-            const key = String(g.박스 || "미지정").trim();
+            const key = resolveNameG(g.박스, "미지정");
             if (!bMap[key]) bMap[key] = [];
             bMap[key].push(g);
         });
