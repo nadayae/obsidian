@@ -587,8 +587,6 @@ setTimeout(() => {
 ```
 ---
 
-## 목표
-
 ```dataviewjs
 const goalAllTasks = dv.pages('"05. Tasks"');
 const goalAllProjects = dv.pages('"04. Projects"');
@@ -609,7 +607,9 @@ function goalRate(goalName) {
   return Math.round(sumRate / projs.length);
 }
 
-let html = `<div class="sb-kanban">`;
+let html = `<div>`;
+html += `<div style="font-weight: 800; font-size: 1.3rem; color: #d6827d; letter-spacing: 0.06em; margin-top: 16px; margin-bottom: 14px;">목표</div>`;
+html += `</div><div class="sb-kanban">`;
 
 const statuses = ["진행 중", "집중", "시작 전", "완료"];
 for (let status of statuses) {
@@ -647,7 +647,9 @@ dv.el("div", html);
 
 ---
 
-## 자료
+```dataviewjs
+dv.el("div", `<div style="font-weight: 800; font-size: 1.3rem; color: #d6827d; letter-spacing: 0.06em; margin-top: 16px; margin-bottom: 14px;">자료</div>`);
+```
 
 ```dataview
 TABLE WITHOUT ID
@@ -671,12 +673,11 @@ color default
 
 ---
 
-## 박스
-
 ```dataviewjs
 const pages = dv.pages('"02. Boxes"').where(b => b.type === "box");
 
-let html = `<div class="sb-gallery">`;
+let html = `<div style="font-weight: 800; font-size: 1.3rem; color: #d6827d; letter-spacing: 0.06em; margin-top: 16px; margin-bottom: 14px;">박스</div>`;
+html += `<div class="sb-gallery">`;
 for (let b of pages) {
   const emoji = b.이모지 || "📦";
   const desc = b.설명 || "";
