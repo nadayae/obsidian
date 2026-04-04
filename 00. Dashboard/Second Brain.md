@@ -866,32 +866,12 @@ const RES_ID = "resource-tabs-" + Math.random().toString(36).substring(2, 7);
 const ROSE = "#e6aba9";
 const allRes = dv.pages('"06. Resources"').array();
 
-// 태그 목록 (정해진 순서)
-const TAG_LIST = ["AI", "메이크업", "사업", "생활", "자기관리", "정보보안", "패션"];
-
-// 고정 탭 + 태그별 탭 동적 생성
-const tagSet = new Set();
-allRes.forEach(r => {
-    const t = r.태그;
-    if (!t) return;
-    if (Array.isArray(t)) t.forEach(v => tagSet.add(String(v).trim()));
-    else tagSet.add(String(t).trim());
-});
-// 정해진 순서대로 + 새로운 태그는 뒤에 추가
-const orderedTags = [...TAG_LIST.filter(t => tagSet.has(t)), ...[...tagSet].filter(t => !TAG_LIST.includes(t))];
-
 const tabs = [
-    { id: "pinned", label: "고정", filter: r => r.고정 === true || String(r.고정).toLowerCase() === "true" },
-    ...orderedTags.map(tag => ({
-        id: "tag-" + tag,
-        label: tag,
-        filter: r => {
-            const t = r.태그;
-            if (!t) return false;
-            if (Array.isArray(t)) return t.some(v => String(v).trim() === tag);
-            return String(t).trim() === tag;
-        }
-    }))
+    { id: "pinned",    label: "고정",    filter: r => r.고정 === true || String(r.고정).toLowerCase() === "true" },
+    { id: "scrap",     label: "스크랩",  filter: r => String(r.분류 || "").trim() === "스크랩" || r.file.path.includes("/Scraps/") },
+    { id: "notes",     label: "정리자료", filter: r => String(r.중요도 || "").trim() === "정리자료" || r.file.path.includes("/Notes/") },
+    { id: "insight",   label: "인사이트", filter: r => String(r.분류 || "").trim() === "인사이트" || r.file.path.includes("/Insights/") },
+    { id: "important", label: "중요",    filter: r => String(r.중요도 || "").trim() === "중요" },
 ];
 
 function makeResCard(r) {
@@ -926,18 +906,46 @@ let html = `<div id="${RES_ID}" style="font-family:var(--font-interface); paddin
 
 dv.el("div", html);
 
+function getResTag(r) {
+    const t = r.태그;
+    if (!t) return ["기타"];
+    if (Array.isArray(t)) return t.length > 0 ? t.map(v => String(v).trim()) : ["기타"];
+    const s = String(t).trim();
+    return s ? [s] : ["기타"];
+}
+
 function renderRes(target) {
     const root = document.getElementById(RES_ID);
     if (!root) return;
     const area = root.querySelector("#" + RES_ID + "-area");
     const tab = tabs.find(t => t.id === target);
     if (!tab) return;
+
     const filtered = allRes.filter(tab.filter).sort((a, b) => b.file.mtime - a.file.mtime);
     if (filtered.length === 0) {
-        area.innerHTML = `<div style="grid-column:1/-1; padding:40px; text-align:center; font-size:0.8rem; color:var(--text-faint);">자료가 없습니다</div>`;
+        area.style.display = "block";
+        area.innerHTML = `<div style="padding:40px; text-align:center; font-size:0.8rem; color:var(--text-faint);">자료가 없습니다</div>`;
         return;
     }
-    area.innerHTML = filtered.map(r => makeResCard(r)).join("");
+
+    // 태그별 그룹핑
+    const groupMap = {};
+    filtered.forEach(r => {
+        getResTag(r).forEach(tag => {
+            if (!groupMap[tag]) groupMap[tag] = [];
+            groupMap[tag].push(r);
+        });
+    });
+
+    area.style.display = "block";
+    area.innerHTML = Object.keys(groupMap).sort().map(tag =>
+        `<div style="margin-bottom:24px;">
+            <div style="font-size:0.7rem; font-weight:800; color:${ROSE}; letter-spacing:0.05em; margin-bottom:10px; padding-bottom:6px; border-bottom:1px solid rgba(230,171,169,0.25);">${tag} <span style="font-weight:400; color:var(--text-faint);">${groupMap[tag].length}</span></div>
+            <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px, 1fr)); gap:12px;">
+                ${groupMap[tag].map(r => makeResCard(r)).join("")}
+            </div>
+        </div>`
+    ).join("");
 }
 
 setTimeout(() => {

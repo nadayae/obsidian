@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Templates/T-Resource.md",
+                "file": "00. Dashboard/Second Brain.md",
                 "mode": "preview",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "T-Resource"
+              "title": "Second Brain"
             }
           }
         ]
@@ -191,6 +191,7 @@
   "lastOpenFiles": [
     "06. Resources/노션에서 옵시디언으로 (경험담).md",
     "00. Dashboard/Second Brain.md",
+    "Templates/T-Resource.md",
     "00. Dashboard/Second Brain.md.tmp.17356.1775278390957",
     "00. Dashboard/Second Brain.md.tmp.17356.1775278156539",
     "00. Dashboard/Second Brain.md.tmp.17356.1775278147767",
