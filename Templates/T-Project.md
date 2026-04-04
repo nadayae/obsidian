@@ -12,9 +12,11 @@ url: ""
 ---
 
 ```dataviewjs
+(async () => {
 const ROSE = "#d6827d";
 const p = dv.current();
 if (!p || !p.file) return;
+const projectName = p.file.name;
 
 function resolveName(val) {
     if (!val) return "-";
@@ -75,14 +77,16 @@ _infoWrap.innerHTML = `
     </div>
 </div>
 `;
+})();
 ```
 
 ```dataviewjs
+(async () => {
 const UID = "ptask-" + Math.random().toString(36).substring(2, 7);
 const ROSE = "#d6827d";
-const _cur1 = dv.current();
-if (!_cur1 || !_cur1.file) return;
-const projectName = _cur1.file.name;
+const _cur = dv.current();
+if (!_cur || !_cur.file) return;
+const projectName = _cur.file.name;
 
 function resolveName(val) {
     if (!val) return "";
@@ -166,16 +170,10 @@ const html = `
                     완료한 일 <span style="opacity:0.7;">(${doneTasks.length})</span>
                 </div>
             </div>
-            <div style="display:flex; gap:6px;">
-                <button id="${UID}-add-btn"
-                    style="background:rgba(214,130,125,0.15); border:1px solid rgba(214,130,125,0.4);
-                    border-radius:6px; padding:4px 12px; font-size:0.65rem; font-weight:700;
-                    color:${ROSE}; cursor:pointer;">+ 추가</button>
-                <button id="${UID}-cal-btn"
-                    style="background:rgba(214,130,125,0.15); border:1px solid rgba(214,130,125,0.4);
-                    border-radius:6px; padding:4px 12px; font-size:0.65rem; font-weight:700;
-                    color:${ROSE}; cursor:pointer;">📅 계획</button>
-            </div>
+            <button id="${UID}-add-btn"
+                style="background:rgba(214,130,125,0.15); border:1px solid rgba(214,130,125,0.4);
+                border-radius:6px; padding:4px 12px; font-size:0.65rem; font-weight:700;
+                color:${ROSE}; cursor:pointer;">+ 추가</button>
         </div>
         ${colHeader}
         <div id="${UID}-pending-panel">
@@ -212,20 +210,11 @@ setTimeout(() => {
     }
 
     const addBtn = root.querySelector("#" + UID + "-add-btn");
-    if (addBtn) {
-        addBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            app.commands.executeCommandById("quickadd:choice:sb-new-task");
-        });
-    }
+    if (addBtn) addBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        app.commands.executeCommandById("quickadd:choice:sb-new-task");
+    });
 
-    const calBtn = root.querySelector("#" + UID + "-cal-btn");
-    if (calBtn) {
-        calBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            app.commands.executeCommandById("obsidian-full-calendar:full-calendar-open");
-        });
-    }
 
     const subTabs = root.querySelectorAll("." + UID + "-stab");
     subTabs.forEach(tab => {
@@ -246,15 +235,16 @@ setTimeout(() => {
         });
     });
 }, 200);
+})();
 ```
 
-
 ```dataviewjs
+(async () => {
 const UID = "dvcal-" + Math.random().toString(36).substring(2, 7);
 const ROSE = "#d6827d";
-const _cur2 = dv.current();
-if (!_cur2 || !_cur2.file) return;
-const projectName = _cur2.file.name;
+const _cur = dv.current();
+if (!_cur || !_cur.file) return;
+const projectName = _cur.file.name;
 
 function resolveName(val) {
     if (!val) return "";
@@ -271,7 +261,6 @@ const allProjTasks = dv.pages('"05. Tasks"').filter(t => {
     return resolveName(prop) === projectName;
 }).filter(t => !(t.완료여부 === true || String(t.완료여부).toLowerCase() === "true")).array();
 
-// 인메모리 상태 (드롭 시 변경됨)
 const taskState = allProjTasks.map(t => ({
     path: t.file.path,
     name: t.제목 || t.file.name,
@@ -290,16 +279,12 @@ _wrap.innerHTML = `
     <div style="font-weight:800; font-size:1.3rem; color:${ROSE}; letter-spacing:0.06em;
         padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.07); margin-bottom:16px;">계획</div>
     <div style="display:grid; grid-template-columns:190px 1fr; gap:16px; align-items:start;">
-
-        <!-- 왼쪽: 미배정 할일 -->
         <div>
             <div style="font-size:0.6rem; font-weight:700; color:var(--text-faint);
                 letter-spacing:0.05em; margin-bottom:8px;">미배정 할일 — 날짜 셀에 드래그</div>
             <div id="${UID}-unscheduled" style="display:flex; flex-direction:column; gap:6px; min-height:60px;
                 border:1.5px dashed rgba(214,130,125,0.25); border-radius:10px; padding:8px;"></div>
         </div>
-
-        <!-- 오른쪽: 캘린더 -->
         <div>
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
                 <button id="${UID}-prev" style="background:none; border:1px solid rgba(214,130,125,0.3);
@@ -354,21 +339,17 @@ function renderCalendar() {
     const monthTasks = taskState.filter(t => t.date && t.date.startsWith(monthStr));
 
     let html = `<div style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px;">`;
-
     ["일","월","화","수","목","금","토"].forEach((d, i) => {
         html += `<div style="text-align:center; font-size:0.58rem; font-weight:700; padding:4px 0;
             color:${i===0?"#e64553":i===6?"#437bff":"var(--text-faint)"};">${d}</div>`;
     });
-
     for (let i = 0; i < firstDay; i++) html += `<div></div>`;
-
     for (let d = 1; d <= daysInMonth; d++) {
         const dateStr = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
         const isToday = dateStr === todayStr;
         const dow = (firstDay + d - 1) % 7;
         const isSun = dow === 0, isSat = dow === 6;
         const dayTasks = monthTasks.filter(t => t.date === dateStr);
-
         html += `<div class="${UID}-cal-cell" data-date="${dateStr}"
             style="min-height:58px; padding:4px 3px; border-radius:7px;
             border:1.5px solid ${isToday ? ROSE : "rgba(0,0,0,0.06)"};
@@ -387,11 +368,9 @@ function renderCalendar() {
     html += `</div>`;
     calGrid.innerHTML = html;
 
-    // 셀 드롭 이벤트
     calGrid.querySelectorAll("." + UID + "-cal-cell").forEach(cell => {
         const dateStr = cell.dataset.date;
         const isToday = dateStr === todayStr;
-
         cell.addEventListener("dragover", e => {
             e.preventDefault();
             cell.style.background = "rgba(214,130,125,0.18)";
@@ -404,25 +383,18 @@ function renderCalendar() {
             cell.style.background = isToday ? "rgba(214,130,125,0.07)" : "var(--background-primary)";
             let data;
             try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch { return; }
-
             const task = taskState.find(t => t.path === data.path);
             if (!task) return;
             task.date = dateStr;
-
             const file = app.vault.getAbstractFileByPath(data.path);
-            if (file) {
-                await app.fileManager.processFrontMatter(file, fm => { fm["날짜"] = dateStr; });
-            }
-
+            if (file) await app.fileManager.processFrontMatter(file, fm => { fm["날짜"] = dateStr; });
             renderUnscheduled();
             renderCalendar();
         });
     });
 
-    // 캘린더 안 할일 → 클릭 시 노트 열기 + 드래그로 날짜 재배정
     calGrid.querySelectorAll("." + UID + "-cal-task").forEach(taskEl => {
         let dragStarted = false;
-
         taskEl.addEventListener("dragstart", e => {
             dragStarted = true;
             e.stopPropagation();
@@ -444,7 +416,6 @@ function renderCalendar() {
 setTimeout(() => {
     renderUnscheduled();
     renderCalendar();
-
     root.querySelector("#" + UID + "-prev").addEventListener("click", () => {
         viewMonth--;
         if (viewMonth < 0) { viewMonth = 11; viewYear--; }
@@ -456,14 +427,16 @@ setTimeout(() => {
         renderCalendar();
     });
 }, 200);
+})();
 ```
 
 ```dataviewjs
+(async () => {
 const UID = "pres-" + Math.random().toString(36).substring(2, 7);
 const ROSE = "#d6827d";
-const _cur3 = dv.current();
-if (!_cur3 || !_cur3.file) return;
-const projectName = _cur3.file.name;
+const _cur = dv.current();
+if (!_cur || !_cur.file) return;
+const projectName = _cur.file.name;
 
 function resolveName(val) {
     if (!val) return "";
@@ -552,12 +525,10 @@ renderRes("related");
 
 setTimeout(() => {
     if (!_root) return;
-
     const addBtn = _root.querySelector("#" + UID + "-add-btn");
     if (addBtn) addBtn.addEventListener("click", () => {
         app.commands.executeCommandById("quickadd:choice:sb-new-resource");
     });
-
     const tabEls = _root.querySelectorAll("." + UID + "-tab");
     tabEls.forEach(el => {
         el.addEventListener("click", () => {
@@ -573,6 +544,7 @@ setTimeout(() => {
         });
     });
 }, 200);
+})();
 ```
 
 ## 목적 & 범위
