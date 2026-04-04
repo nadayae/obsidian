@@ -81,7 +81,7 @@ const uid = "mega-cal-" + Math.random().toString(36).substring(2, 7);
 
 let html = `<div id="${uid}-container">`;
 html += `<details open style="background: transparent !important; border: none !important; padding: 0;">`;
-html += `<summary style="font-weight: 800; cursor: pointer; margin-bottom: 16px; color: rgb(var(--ctp-subtext0)); font-size: 1.3rem; letter-spacing: 0.06em; list-style: none;">캘린더</summary>`;
+html += `<summary style="font-weight: 800; cursor: pointer; margin-bottom: 16px; margin-top: 16px; color: rgb(var(--ctp-subtext0)); font-size: 1.3rem; letter-spacing: 0.06em; color:#d6827d; list-style: none;">캘린더</summary>`;
 
 html += `<div class="sb-tabs" style="margin-bottom: 16px; display: flex; gap: 14px; border-bottom: 1px solid rgba(var(--ctp-rosewater), 0.2); padding-bottom: 8px;">`;
 taskTabs.forEach((tab) => {
@@ -225,7 +225,7 @@ const uid = "hybrid-v4-final-" + Math.random().toString(36).substring(2, 7);
 // 2. UI 생성
 let html = `<div id="${uid}-container" class="dataviewjs-today-view">`;
 html += `<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <div style="font-weight: 800; font-size: 0.75rem; color: rgb(var(--ctp-subtext0)); letter-spacing: 0.06em;">할일</div>
+            <div style="font-weight: 800; font-size: 1.3rem;margin-top:20px;color:#d6827d;; letter-spacing: 0.06em;">할일</div>
             <button class="add-btn-top" style="background: rgba(var(--ctp-rosewater), 0.2); cursor: pointer; font-size: 0.65rem; color: rgb(var(--ctp-rosewater)); border: 1px solid rgba(var(--ctp-rosewater), 0.4); padding: 6px 14px; border-radius: 4px; font-weight: 700;">+ ADD TASK</button>
          </div>`;
 
@@ -376,7 +376,7 @@ let html = `<div id="${containerId}" style="background: ${BG_COLOR}; border-radi
 
 // 상단 헤더
 html += `<div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; padding: 15px 15px 0;">
-            <div style="font-weight: 800; font-size: 0.75rem; color: ${ROSEWATER_ACCENT}; letter-spacing: 0.06em;">프로젝트 타임라인 <span style="font-weight: 400; font-size: 0.6rem; color: var(--text-faint); margin-left: 8px;">${today.year}.${today.toFormat('LL')}</span></div>
+            <div style="font-weight: 800; font-size: 1.3rem; color:#d6827d;; letter-spacing: 0.06em;">프로젝트 타임라인 <span style="font-weight: 400; font-size: 0.6rem; color: var(--text-faint); margin-left: 8px;">${today.year}.${today.toFormat('LL')}</span></div>
             <div style="font-size: 0.55rem; color: var(--text-faint); text-transform: uppercase;">Shift + Scroll to Navigate</div>
          </div>`;
 
