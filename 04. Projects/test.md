@@ -1,7 +1,7 @@
 ---
 type: project
 fileClass: project
-제목: 무제 3
+제목: 무제 1
 박스: ""
 목표: ""
 상태:
@@ -213,7 +213,7 @@ setTimeout(() => {
     if (addBtn) {
         addBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            app.commands.executeCommandById("quickadd:choice:New Task");
+            app.commands.executeCommandById("quickadd:choice:sb-new-task");
         });
     }
 
@@ -221,7 +221,7 @@ setTimeout(() => {
     if (calBtn) {
         calBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            app.commands.executeCommandById("obsidian-full-calendar:full-calendar:open-calendar");
+            app.commands.executeCommandById("obsidian-full-calendar:full-calendar-open");
         });
     }
 
@@ -246,6 +246,202 @@ setTimeout(() => {
 }, 200);
 ```
 
+
+```dataviewjs
+const UID = "dvcal-" + Math.random().toString(36).substring(2, 7);
+const ROSE = "#d6827d";
+const projectName = dv.current().file.name;
+
+function resolveName(val) {
+    if (!val) return "";
+    if (typeof val === "object" && val.path)
+        return val.path.split("/").pop().replace(/\.md$/, "");
+    return String(val).replace(/\[/g,"").replace(/\]/g,"").replace(/"/g,"").trim();
+}
+
+const catColors = { "집중": ROSE, "일반": "#4caf7d", "쉬운": "#8a81a3", "위임": "#f0a500", "일정": "#437bff", "나중에": "#999" };
+
+const allProjTasks = dv.pages('"05. Tasks"').filter(t => {
+    const prop = t.프로젝트;
+    if (!prop) return false;
+    return resolveName(prop) === projectName;
+}).filter(t => !(t.완료여부 === true || String(t.완료여부).toLowerCase() === "true")).array();
+
+// 인메모리 상태 (드롭 시 변경됨)
+const taskState = allProjTasks.map(t => ({
+    path: t.file.path,
+    name: t.제목 || t.file.name,
+    date: t.날짜 ? String(t.날짜).substring(0, 10) : null,
+    구분: String(t.구분 || "").trim()
+}));
+
+const today = new Date();
+let viewYear = today.getFullYear();
+let viewMonth = today.getMonth();
+const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,"0")}-${String(today.getDate()).padStart(2,"0")}`;
+
+const _wrap = dv.el("div", "");
+_wrap.innerHTML = `
+<div id="${UID}" style="font-family:var(--font-interface); padding:10px 0;">
+    <div style="font-weight:800; font-size:1.3rem; color:${ROSE}; letter-spacing:0.06em;
+        padding:12px 0; border-bottom:1px solid rgba(0,0,0,0.07); margin-bottom:16px;">계획</div>
+    <div style="display:grid; grid-template-columns:190px 1fr; gap:16px; align-items:start;">
+
+        <!-- 왼쪽: 미배정 할일 -->
+        <div>
+            <div style="font-size:0.6rem; font-weight:700; color:var(--text-faint);
+                letter-spacing:0.05em; margin-bottom:8px;">미배정 할일 — 날짜 셀에 드래그</div>
+            <div id="${UID}-unscheduled" style="display:flex; flex-direction:column; gap:6px; min-height:60px;
+                border:1.5px dashed rgba(214,130,125,0.25); border-radius:10px; padding:8px;"></div>
+        </div>
+
+        <!-- 오른쪽: 캘린더 -->
+        <div>
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <button id="${UID}-prev" style="background:none; border:1px solid rgba(214,130,125,0.3);
+                    border-radius:6px; padding:2px 10px; cursor:pointer; font-size:0.85rem; color:${ROSE};">‹</button>
+                <div id="${UID}-month-label" style="font-size:0.85rem; font-weight:700; color:var(--text-normal);"></div>
+                <button id="${UID}-next" style="background:none; border:1px solid rgba(214,130,125,0.3);
+                    border-radius:6px; padding:2px 10px; cursor:pointer; font-size:0.85rem; color:${ROSE};">›</button>
+            </div>
+            <div id="${UID}-cal-grid"></div>
+        </div>
+    </div>
+</div>
+`;
+
+const root = _wrap.querySelector("#" + UID);
+const unscheduledEl = root.querySelector("#" + UID + "-unscheduled");
+const calGrid = root.querySelector("#" + UID + "-cal-grid");
+const monthLabel = root.querySelector("#" + UID + "-month-label");
+
+function renderUnscheduled() {
+    const tasks = taskState.filter(t => !t.date);
+    if (tasks.length === 0) {
+        unscheduledEl.innerHTML = `<div style="font-size:0.7rem; color:var(--text-faint); padding:10px; text-align:center;">모두 배정됨 ✅</div>`;
+        return;
+    }
+    unscheduledEl.innerHTML = tasks.map(t => `
+        <div class="${UID}-task-card" draggable="true" data-path="${t.path}" data-name="${t.name}"
+            style="background:var(--background-secondary); border:1px solid rgba(214,130,125,0.25);
+            border-radius:8px; padding:7px 10px; cursor:grab; user-select:none;">
+            <div style="font-size:0.7rem; font-weight:600; color:var(--text-normal);
+                white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${t.name}</div>
+            ${t.구분 ? `<div style="font-size:0.58rem; font-weight:700; color:${catColors[t.구분] || "var(--text-faint)"}; margin-top:2px;">${t.구분}</div>` : ""}
+        </div>
+    `).join("");
+
+    unscheduledEl.querySelectorAll("." + UID + "-task-card").forEach(card => {
+        card.addEventListener("dragstart", e => {
+            e.dataTransfer.setData("text/plain", JSON.stringify({ path: card.dataset.path, name: card.dataset.name }));
+            setTimeout(() => card.style.opacity = "0.35", 0);
+        });
+        card.addEventListener("dragend", () => { card.style.opacity = "1"; });
+    });
+}
+
+function renderCalendar() {
+    const monthNames = ["1월","2월","3월","4월","5월","6월","7월","8월","9월","10월","11월","12월"];
+    monthLabel.textContent = `${viewYear}년 ${monthNames[viewMonth]}`;
+
+    const firstDay = new Date(viewYear, viewMonth, 1).getDay();
+    const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
+    const monthStr = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}`;
+    const monthTasks = taskState.filter(t => t.date && t.date.startsWith(monthStr));
+
+    let html = `<div style="display:grid; grid-template-columns:repeat(7,1fr); gap:3px;">`;
+
+    ["일","월","화","수","목","금","토"].forEach((d, i) => {
+        html += `<div style="text-align:center; font-size:0.58rem; font-weight:700; padding:4px 0;
+            color:${i===0?"#e64553":i===6?"#437bff":"var(--text-faint)"};">${d}</div>`;
+    });
+
+    for (let i = 0; i < firstDay; i++) html += `<div></div>`;
+
+    for (let d = 1; d <= daysInMonth; d++) {
+        const dateStr = `${viewYear}-${String(viewMonth+1).padStart(2,"0")}-${String(d).padStart(2,"0")}`;
+        const isToday = dateStr === todayStr;
+        const dow = (firstDay + d - 1) % 7;
+        const isSun = dow === 0, isSat = dow === 6;
+        const dayTasks = monthTasks.filter(t => t.date === dateStr);
+
+        html += `<div class="${UID}-cal-cell" data-date="${dateStr}"
+            style="min-height:58px; padding:4px 3px; border-radius:7px;
+            border:1.5px solid ${isToday ? ROSE : "rgba(0,0,0,0.06)"};
+            background:${isToday ? "rgba(214,130,125,0.07)" : "var(--background-primary)"};
+            transition:background 0.12s; box-sizing:border-box;">
+            <div style="font-size:0.6rem; font-weight:${isToday?"800":"500"}; text-align:right; margin-bottom:2px;
+                color:${isToday?ROSE:isSun?"#e64553":isSat?"#437bff":"var(--text-muted)"};">${d}</div>
+            ${dayTasks.map(t => `
+                <div class="${UID}-cal-task" draggable="true" data-path="${t.path}" data-name="${t.name}"
+                    style="font-size:0.55rem; font-weight:700; padding:2px 4px; border-radius:4px; margin-bottom:2px;
+                    background:rgba(214,130,125,0.18); color:${ROSE};
+                    white-space:nowrap; overflow:hidden; text-overflow:ellipsis; cursor:grab;">${t.name}</div>
+            `).join("")}
+        </div>`;
+    }
+    html += `</div>`;
+    calGrid.innerHTML = html;
+
+    // 셀 드롭 이벤트
+    calGrid.querySelectorAll("." + UID + "-cal-cell").forEach(cell => {
+        const dateStr = cell.dataset.date;
+        const isToday = dateStr === todayStr;
+
+        cell.addEventListener("dragover", e => {
+            e.preventDefault();
+            cell.style.background = "rgba(214,130,125,0.18)";
+        });
+        cell.addEventListener("dragleave", () => {
+            cell.style.background = isToday ? "rgba(214,130,125,0.07)" : "var(--background-primary)";
+        });
+        cell.addEventListener("drop", async e => {
+            e.preventDefault();
+            cell.style.background = isToday ? "rgba(214,130,125,0.07)" : "var(--background-primary)";
+            let data;
+            try { data = JSON.parse(e.dataTransfer.getData("text/plain")); } catch { return; }
+
+            const task = taskState.find(t => t.path === data.path);
+            if (!task) return;
+            task.date = dateStr;
+
+            const file = app.vault.getAbstractFileByPath(data.path);
+            if (file) {
+                await app.fileManager.processFrontMatter(file, fm => { fm["날짜"] = dateStr; });
+            }
+
+            renderUnscheduled();
+            renderCalendar();
+        });
+    });
+
+    // 캘린더 안 할일 → 다른 날로 재배정 드래그
+    calGrid.querySelectorAll("." + UID + "-cal-task").forEach(taskEl => {
+        taskEl.addEventListener("dragstart", e => {
+            e.stopPropagation();
+            e.dataTransfer.setData("text/plain", JSON.stringify({ path: taskEl.dataset.path, name: taskEl.dataset.name }));
+            setTimeout(() => taskEl.style.opacity = "0.35", 0);
+        });
+        taskEl.addEventListener("dragend", () => { taskEl.style.opacity = "1"; });
+    });
+}
+
+setTimeout(() => {
+    renderUnscheduled();
+    renderCalendar();
+
+    root.querySelector("#" + UID + "-prev").addEventListener("click", () => {
+        viewMonth--;
+        if (viewMonth < 0) { viewMonth = 11; viewYear--; }
+        renderCalendar();
+    });
+    root.querySelector("#" + UID + "-next").addEventListener("click", () => {
+        viewMonth++;
+        if (viewMonth > 11) { viewMonth = 0; viewYear++; }
+        renderCalendar();
+    });
+}, 200);
+```
 
 ## 목적 & 범위
 
