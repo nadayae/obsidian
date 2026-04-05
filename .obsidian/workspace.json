@@ -86,19 +86,9 @@
               "icon": "lucide-file",
               "title": "T-Project"
             }
-          },
-          {
-            "id": "f4b924c10eabd023",
-            "type": "leaf",
-            "state": {
-              "type": "graph",
-              "state": {},
-              "icon": "lucide-git-fork",
-              "title": "그래프 뷰"
-            }
           }
         ],
-        "currentTab": 6
+        "currentTab": 5
       }
     ],
     "direction": "vertical"
@@ -172,6 +162,7 @@
             "state": {
               "type": "backlink",
               "state": {
+                "file": "Templates/T-Project.md",
                 "collapseAll": false,
                 "extraContext": false,
                 "sortOrder": "alphabetical",
@@ -181,7 +172,7 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "백링크"
+              "title": "T-Project 의 백링크"
             }
           },
           {
@@ -190,11 +181,12 @@
             "state": {
               "type": "outgoing-link",
               "state": {
+                "file": "Templates/T-Project.md",
                 "linksCollapsed": false,
                 "unlinkedCollapsed": true
               },
               "icon": "links-going-out",
-              "title": "나가는 링크"
+              "title": "T-Project 의 나가는 링크"
             }
           },
           {
@@ -232,12 +224,13 @@
             "state": {
               "type": "outline",
               "state": {
+                "file": "Templates/T-Project.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "개요"
+              "title": "T-Project 의 개요"
             }
           },
           {
@@ -274,7 +267,7 @@
       "obsidian-day-planner:Open Multi-Day View": false
     }
   },
-  "active": "f4b924c10eabd023",
+  "active": "4a806599db7ffa63",
   "lastOpenFiles": [
     "04. Projects/test1.md",
     "00. Dashboard/Second Brain.md",
